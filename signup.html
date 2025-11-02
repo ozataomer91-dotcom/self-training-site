@@ -3,13 +3,18 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Self Training – Kayıt & Giriş</title>
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+  <title>Self Training – Kayıt & Giriş (Basit Testli)</title>
   <style>
     body {font-family: Arial; background:#f3f6f9; margin:40px;}
     .card {background:#fff; padding:20px; border-radius:10px; max-width:420px; margin:auto; box-shadow:0 0 10px #ccc;}
     input, select {width:100%; padding:10px; margin:6px 0; border:1px solid #ccc; border-radius:6px;}
-    button {background:#1dbf73; color:#fff; border:none; padding:10px 14px; border-radius:6px; cursor:pointer; margin-right:6px;}
-    a{color:#1dbf73; text-decoration:none}
+    .row{display:flex; gap:8px; flex-wrap:wrap}
+    button {background:#1dbf73; color:#fff; border:none; padding:10px 14px; border-radius:6px; cursor:pointer;}
+    .alt{background:#333}
+    #msg{margin-top:6px}
   </style>
 </head>
 <body>
@@ -24,50 +29,48 @@
       <option value="meso">Mezomorf</option>
       <option value="endo">Endomorf</option>
     </select>
-    <button onclick="signup()">Kayıt Ol</button>
-    <button onclick="signin()">Giriş Yap</button>
+    <div class="row">
+      <button id="btnSignup">Kayıt Ol</button>
+      <button id="btnSignin" class="alt">Giriş Yap</button>
+      <button id="btnTest">Buton Testi</button>
+    </div>
     <p id="msg"></p>
     <p><a href="./index.html">Ana sayfa</a></p>
   </div>
 
-<script>
-  function LS(k,v){ if(v===undefined) return JSON.parse(localStorage.getItem(k)||'null'); localStorage.setItem(k,JSON.stringify(v)); }
-  function signup(){
-    const n=name.value.trim(), e=email.value.trim(), p=pw.value.trim(), b=bodyType.value;
-    if(!n||!e||!p||!b){ msg.textContent='Lütfen tüm alanları doldurun.'; return; }
-    LS('user',{n,e,b}); msg.textContent='Kayıt başarılı!'; setTimeout(()=>location.href='dashboard.html',700);
-  }
-  function signin(){
-    const u=LS('user'); 
-    if(u && email.value.trim()===u.e){ msg.textContent='Giriş başarılı!'; setTimeout(()=>location.href='dashboard.html',500); }
-    else msg.textContent='Kayıt bulunamadı. Önce kayıt olun.';
-  }
- 
-<script>
-  // Basit yerel depolama yardımcıları
-  function LS(k,v){ if(v===undefined) return JSON.parse(localStorage.getItem(k)||'null'); localStorage.setItem(k,JSON.stringify(v)); }
+  <script>
+    // ---- TEST: JS dosyası çalışıyor mu? ----
+    document.getElementById('btnTest').addEventListener('click', function(){
+      alert('JS ÇALIŞIYOR ✅');
+    });
 
-  // Tek akış: varsa giriş, yoksa kayıt
-  function action(){
-    const n = document.getElementById('name').value.trim();
-    const e = document.getElementById('email').value.trim();
-    const p = document.getElementById('pw').value.trim();
-    const b = document.getElementById('bodyType').value;
+    // ---- Mini Depo ----
+    function LS(k,v){ if(v===undefined) return JSON.parse(localStorage.getItem(k)||'null'); localStorage.setItem(k,JSON.stringify(v)); }
 
-    if(!n||!e||!p||!b){ document.getElementById('msg').textContent='Lütfen tüm alanları doldurun.'; return; }
+    // ---- Tek akış: varsa giriş, yoksa kayıt ----
+    function action(){
+      const n = document.getElementById('name').value.trim();
+      const e = document.getElementById('email').value.trim();
+      const p = document.getElementById('pw').value.trim();
+      const b = document.getElementById('bodyType').value;
+      const msg = document.getElementById('msg');
 
-    const u = LS('user');
-    if(u && u.e === e){
-      document.getElementById('msg').textContent = 'Giriş başarılı!';
-      setTimeout(()=>location.href='dashboard.html',500);
-      return;
+      if(!n||!e||!p||!b){ msg.textContent='Lütfen tüm alanları doldurun.'; return; }
+
+      const u = LS('user');
+      if(u && u.e === e){
+        msg.textContent = 'Giriş başarılı! Pano açılıyor…';
+        setTimeout(()=>location.href='dashboard.html',500);
+        return;
+      }
+      LS('user',{n,e,b});
+      msg.textContent = 'Kayıt başarılı! Pano açılıyor…';
+      setTimeout(()=>location.href='dashboard.html',700);
     }
-    LS('user',{n,e,b});
-    document.getElementById('msg').textContent = 'Kayıt başarılı!';
-    setTimeout(()=>location.href='dashboard.html',700);
-  }
 
-  // Mevcut butonları tek fonksiyona bağla
-  window.signup = action;
-  window.signin = action;
-</script>
+    // Butonları bağla (inline onclick yerine güvenli yöntem)
+    document.getElementById('btnSignup').addEventListener('click', action);
+    document.getElementById('btnSignin').addEventListener('click', action);
+  </script>
+</body>
+</html>
