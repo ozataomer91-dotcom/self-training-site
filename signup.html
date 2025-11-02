@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Self Training – Kayıt & Giriş</title>
+  <style>
+    body {font-family: Arial; background:#f3f6f9; margin:40px;}
+    .card {background:#fff; padding:20px; border-radius:10px; max-width:420px; margin:auto; box-shadow:0 0 10px #ccc;}
+    input, select {width:100%; padding:10px; margin:6px 0; border:1px solid #ccc; border-radius:6px;}
+    button {background:#1dbf73; color:#fff; border:none; padding:10px 14px; border-radius:6px; cursor:pointer; margin-right:6px;}
+    a{color:#1dbf73; text-decoration:none}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2>Kayıt Ol / Giriş Yap</h2>
+    <input id="name" placeholder="Ad Soyad">
+    <input id="email" placeholder="E-posta">
+    <input id="pw" type="password" placeholder="Şifre">
+    <select id="bodyType">
+      <option value="">Vücut Tipi</option>
+      <option value="ecto">Ektomorf</option>
+      <option value="meso">Mezomorf</option>
+      <option value="endo">Endomorf</option>
+    </select>
+    <button onclick="signup()">Kayıt Ol</button>
+    <button onclick="signin()">Giriş Yap</button>
+    <p id="msg"></p>
+    <p><a href="./index.html">Ana sayfa</a></p>
+  </div>
+
+<script>
+  function LS(k,v){ if(v===undefined) return JSON.parse(localStorage.getItem(k)||'null'); localStorage.setItem(k,JSON.stringify(v)); }
+  function signup(){
+    const n=name.value.trim(), e=email.value.trim(), p=pw.value.trim(), b=bodyType.value;
+    if(!n||!e||!p||!b){ msg.textContent='Lütfen tüm alanları doldurun.'; return; }
+    LS('user',{n,e,b}); msg.textContent='Kayıt başarılı!'; setTimeout(()=>location.href='dashboard.html',700);
+  }
+  function signin(){
+    const u=LS('user'); 
+    if(u && email.value.trim()===u.e){ msg.textContent='Giriş başarılı!'; setTimeout(()=>location.href='dashboard.html',500); }
+    else msg.textContent='Kayıt bulunamadı. Önce kayıt olun.';
+  }
+</script>
+</body>
+</html>
