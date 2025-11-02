@@ -42,6 +42,32 @@
     if(u && email.value.trim()===u.e){ msg.textContent='Giriş başarılı!'; setTimeout(()=>location.href='dashboard.html',500); }
     else msg.textContent='Kayıt bulunamadı. Önce kayıt olun.';
   }
+ 
+<script>
+  // Basit yerel depolama yardımcıları
+  function LS(k,v){ if(v===undefined) return JSON.parse(localStorage.getItem(k)||'null'); localStorage.setItem(k,JSON.stringify(v)); }
+
+  // Tek akış: varsa giriş, yoksa kayıt
+  function action(){
+    const n = document.getElementById('name').value.trim();
+    const e = document.getElementById('email').value.trim();
+    const p = document.getElementById('pw').value.trim();
+    const b = document.getElementById('bodyType').value;
+
+    if(!n||!e||!p||!b){ document.getElementById('msg').textContent='Lütfen tüm alanları doldurun.'; return; }
+
+    const u = LS('user');
+    if(u && u.e === e){
+      document.getElementById('msg').textContent = 'Giriş başarılı!';
+      setTimeout(()=>location.href='dashboard.html',500);
+      return;
+    }
+    LS('user',{n,e,b});
+    document.getElementById('msg').textContent = 'Kayıt başarılı!';
+    setTimeout(()=>location.href='dashboard.html',700);
+  }
+
+  // Mevcut butonları tek fonksiyona bağla
+  window.signup = action;
+  window.signin = action;
 </script>
-</body>
-</html>
