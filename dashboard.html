@@ -1,50 +1,93 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="tr">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Self Training – Pano</title>
-<style>
-body{font-family:Arial;background:#f3f6f9;margin:40px;}
-.card{background:#fff;padding:20px;border-radius:10px;max-width:520px;margin:auto;box-shadow:0 0 10px #ccc;}
-button{background:#1dbf73;color:#fff;border:none;padding:10px 14px;border-radius:6px;cursor:pointer;margin-top:8px}
-input{width:100%;padding:10px;margin:6px 0;border:1px solid #ccc;border-radius:6px;}
-pre{background:#f8fafc;border:1px solid #e5e7eb;border-radius:8px;padding:10px}
-a{color:#1dbf73;text-decoration:none}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Self Training</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f2f2f2;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 500px;
+            margin: 50px auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h2 {
+            color: #333;
+            text-align: center;
+        }
+        input, select, button {
+            width: 100%;
+            padding: 10px;
+            margin: 8px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .result {
+            margin-top: 15px;
+            background-color: #e7f3e7;
+            padding: 10px;
+            border-radius: 5px;
+        }
+    </style>
 </head>
 <body>
-<div class="card">
-  <h2>Hoş Geldiniz!</h2>
-  <div id="info">Yükleniyor…</div>
+    <div class="container">
+        <h2>Hoş Geldiniz!</h2>
+        <p>Antropometrik Bilgilerinizi Girin</p>
+        <input type="number" id="age" placeholder="Yaş">
+        <input type="number" id="height" placeholder="Boy (cm)">
+        <input type="number" id="weight" placeholder="Kilo (kg)">
+        <button onclick="calculatePlan()">Hesapla ve Kaydet</button>
 
-  <h3>Antropometrik Bilgiler</h3>
-  <input id="age" type="number" placeholder="Yaş">
-  <input id="height" type="number" placeholder="Boy (cm)">
-  <input id="weight" type="number" placeholder="Kilo (kg)">
-  <button onclick="save()">Hesapla & Kaydet</button>
+        <div class="result" id="resultBox">Henüz bir bilgi girilmedi.</div>
 
-  <h3>Plan Önerisi</h3>
-  <pre id="plan">Önce bilgileri kaydedin.</pre>
+        <button onclick="logout()">Çıkış Yap</button>
+    </div>
 
-  <p><a href="./signup.html">Kullanıcı değiştir</a> • <a href="./index.html">Ana sayfa</a></p>
-  <button onclick="logout()">Çıkış Yap</button>
-</div>
+    <script>
+        function calculatePlan() {
+            const age = document.getElementById("age").value;
+            const height = document.getElementById("height").value;
+            const weight = document.getElementById("weight").value;
 
-<script>
-  function LS(k,v){ if(v===undefined) return JSON.parse(localStorage.getItem(k)||'null'); localStorage.setItem(k,JSON.stringify(v)); }
-  const u=LS('user'); if(!u){ location.href='signup.html'; }
-  info.innerHTML=<b>${u.n}</b> olarak giriş yaptınız. Vücut tipi: ${u.b};
+            if (!age || !height || !weight) {
+                document.getElementById("resultBox").textContent = "Lütfen tüm alanları doldurun!";
+                return;
+            }
 
-  function save(){
-    const h=+height.value, w=+weight.value, a=+age.value;
-    if(!h||!w||!a){ plan.textContent='Eksik bilgi.'; return; }
-    const bmi=(w/Math.pow(h/100,2)).toFixed(1);
-    const sınıf=bmi<18.5?'Zayıf':bmi<25?'Normal':bmi<30?'Kilolu':'Obez';
-    LS('anthro',{h,w,a,bmi});
-    plan.textContent=BMI: ${bmi} (${sınıf})\nIsınma(10 dk) • Ana(40 dk) • Soğuma(10 dk);
-  }
-  function logout(){ localStorage.clear(); location.href='signup.html'; }
-</script>
+            const bmi = (weight / ((height / 100) ** 2)).toFixed(1);
+            let resultText = Yaş: ${age}, Boy: ${height} cm, Kilo: ${weight} kg\nVücut Kitle İndeksi (BMI): ${bmi}\n;
+
+            if (bmi < 18.5) resultText += "Durum: Zayıf — Daha fazla besin alımı gerekebilir.";
+            else if (bmi < 25) resultText += "Durum: Normal — Formunuzu koruyun!";
+            else if (bmi < 30) resultText += "Durum: Fazla kilolu — Hafif egzersiz ve beslenme önerilir.";
+            else resultText += "Durum: Obez — Düzenli egzersiz ve diyet programı önerilir.";
+
+            document.getElementById("resultBox").textContent = resultText;
+            localStorage.setItem("bmiResult", resultText);
+        }
+
+        function logout() {
+            localStorage.clear();
+            window.location.href = "signup.html";
+        }
+    </script>
 </body>
 </html>
