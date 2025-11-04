@@ -3,108 +3,304 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Kişisel Panel – Self Training</title>
+  <title>Dashboard - Self Training</title>
   <style>
-    body{font-family:Arial,sans-serif;background:#f0f3f6;margin:0;padding:0}
-    .container{max-width:600px;margin:40px auto;background:#fff;
-      border-radius:12px;box-shadow:0 6px 20px rgba(0,0,0,.08);padding:24px}
-    h1{margin:0 0 12px;text-align:center}
-    label{font-weight:600;display:block;margin-top:10px}
-    input{width:100%;padding:10px;border:1px solid #ccc;border-radius:8px;margin-top:4px}
-    button{margin-top:16px;padding:12px;width:100%;border:none;border-radius:8px;
-      background:#10b981;color:#fff;font-weight:600;cursor:pointer}
-    button:hover{background:#0ea371}
-    .result{margin-top:18px;padding:12px;border-radius:8px;background:#f9fafb}
-    .chat{margin-top:24px;border-top:1px solid #e5e7eb;padding-top:16px}
-    #chatBox{height:160px;overflow-y:auto;background:#f9fafb;border-radius:8px;
-      padding:8px;margin-bottom:8px;font-size:15px}
-    #chatInput{width:100%;padding:10px;border:1px solid #ccc;border-radius:8px}
+    body{font-family:Arial, sans-serif;background:#f2f2f2;margin:0}
+    .card{max-width:640px;margin:40px auto;background:#fff;border:1px solid #ddd;border-radius:12px;box-shadow:0 6px 18px rgba(0,0,0,.06)}
+    .card h2{margin:0;padding:18px 20px;border-bottom:1px solid #eee}
+    .content{padding:20px}
+    label{display:block;margin:10px 0 6px;font-weight:600}
+    input,select{width:100%;padding:10px;border:1px solid #ccc;border-radius:8px}
+    .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .row-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+    .btn{display:inline-block;background:#22c55e;color:#fff;border:none;border-radius:10px;padding:12px 16px;margin-top:14px;cursor:pointer}
+    .btn.alt{background:#0ea5e9}
+    .btn.ghost{background:#fff;color:#ef4444;border:1px solid #ef4444}
+    .muted{color:#666;font-size:14px}
+    .pill{display:inline-block;padding:4px 10px;border-radius:999px;background:#f1f5f9;font-size:12px;margin-right:6px}
+    .grid{display:grid;gap:10px}
+    .box{background:#f8fafc;border:1px solid #e5e7eb;border-radius:10px;padding:12px}
+    .small{font-size:13px;color:#475569}
+    .ok{color:#16a34a;font-weight:700}
+    .warn{color:#f59e0b;font-weight:700}
+    .bad{color:#dc2626;font-weight:700}
+    .center{text-align:center}
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>🏋️‍♂️ Kişisel Panel</h1>
-    <p id="welcome"></p>
+  <div class="card">
+    <h2>Hoş Geldiniz!</h2>
+    <div class="content">
 
-    <label>Yaş</label><input id="age" type="number" placeholder="örn. 25">
-    <label>Boy (cm)</label><input id="height" type="number" placeholder="örn. 175">
-    <label>Kilo (kg)</label><input id="weight" type="number" placeholder="örn. 70">
-    <label>Dinlenik Nabız (RHR)</label><input id="rhr" type="number" placeholder="örn. 65">
-    <label>Bel çevresi (cm)</label><input id="waist" type="number" placeholder="örn. 80">
-    <label>Boyun çevresi (cm)</label><input id="neck" type="number" placeholder="örn. 35">
-    <label>Kalça çevresi (cm, kadınlar için)</label><input id="hip" type="number" placeholder="örn. 90">
+      <p class="muted">Aşağıdaki ölçümleri girin; BMI, BMR, Vücut Yağ Oranı, Karvonen hedef nabızları ve kişisel özet otomatik hesaplanır.</p>
 
-    <button onclick="calc()">Hesapla 🔍</button>
+      <!-- TEMEL BİLGİLER -->
+      <div class="row">
+        <div>
+          <label>Yaş</label>
+          <input id="age" type="number" min="8" max="100" placeholder="örn. 24" />
+        </div>
+        <div>
+          <label>Cinsiyet</label>
+          <select id="gender">
+            <option value="">Seçiniz</option>
+            <option value="male">Erkek</option>
+            <option value="female">Kadın</option>
+          </select>
+        </div>
+      </div>
 
-    <div class="result" id="res"></div>
+      <div class="row">
+        <div>
+          <label>Boy (cm)</label>
+          <input id="height" type="number" min="100" max="230" placeholder="örn. 178" />
+        </div>
+        <div>
+          <label>Kilo (kg)</label>
+          <input id="weight" type="number" min="20" max="250" step="0.1" placeholder="örn. 74.5" />
+        </div>
+      </div>
 
-    <div class="chat">
-      <h3>💬 ChatGPT Mini Asistan (demo)</h3>
-      <div id="chatBox"></div>
-      <input id="chatInput" placeholder="Bir şey yaz... (örn. 'Kas geliştirmek istiyorum')" onkeydown="if(event.key==='Enter')chat()">
+      <!-- ÇEVRELER (US Navy yağ oranı) -->
+      <div class="row">
+        <div>
+          <label>Bel çevresi (cm)</label>
+          <input id="waist" type="number" min="40" max="200" step="0.1" placeholder="göbek hattı" />
+        </div>
+        <div>
+          <label>Boyun çevresi (cm)</label>
+          <input id="neck" type="number" min="20" max="60" step="0.1" placeholder="adam elması altı" />
+        </div>
+      </div>
+
+      <div class="row">
+        <div>
+          <label>Kalça çevresi (cm) <span class="small">(kadınlar için)</span></label>
+          <input id="hip" type="number" min="50" max="200" step="0.1" placeholder="kadın: zorunlu, erkek: boş bırak" />
+        </div>
+        <div>
+          <label>Dinlenik Nabız – RHR (dk⁻¹)</label>
+          <input id="rhr" type="number" min="30" max="120" placeholder="örn. 60" />
+        </div>
+      </div>
+
+      <!-- TİP & HEDEF -->
+      <div class="row">
+        <div>
+          <label>Vücut Tipi</label>
+          <select id="bodyType">
+            <option value="">Seçiniz</option>
+            <option value="ektomorf">Ektomorf</option>
+            <option value="mezomorf">Mezomorf</option>
+            <option value="endomorf">Endomorf</option>
+          </select>
+        </div>
+        <div>
+          <label>Hedef</label>
+          <select id="goal">
+            <option value="">Seçiniz</option>
+            <option value="kas">Kas kütlesi artırmak</option>
+            <option value="yağ">Yağ oranını düşürmek</option>
+            <option value="kondisyon">Kondisyon kazanmak</option>
+            <option value="esneklik">Esnekliği artırmak</option>
+          </select>
+        </div>
+      </div>
+
+      <button class="btn" id="calcBtn">Hesapla & Kaydet</button>
+      <button class="btn alt" id="fillBtn">Örnek değer doldur</button>
+      <button class="btn ghost" id="clearBtn">Tüm veriyi sil</button>
+
+      <hr/>
+
+      <!-- SONUÇLAR -->
+      <div class="grid">
+        <div class="box">
+          <div class="pill">BMI</div>
+          <div id="bmiText" class="small">–</div>
+        </div>
+
+        <div class="box">
+          <div class="pill">BMR (Mifflin–St Jeor)</div>
+          <div id="bmrText" class="small">–</div>
+        </div>
+
+        <div class="box">
+          <div class="pill">Vücut Yağ Oranı (US Navy)</div>
+          <div id="bfText" class="small">–</div>
+          <div id="lbmText" class="small">–</div>
+        </div>
+
+        <div class="box">
+          <div class="pill">Karvonen Hedef Nabızlar</div>
+          <div id="hrText" class="small">–</div>
+        </div>
+
+        <div class="box">
+          <div class="pill">AI Koç Özeti</div>
+          <div id="coachText" class="small">–</div>
+        </div>
+      </div>
+
+      <p class="center small" style="margin-top:14px">
+        <a href="index.html">Kullanıcı değiştir / Ana sayfa</a>
+      </p>
+
     </div>
   </div>
 
   <script>
-    const userEmail = localStorage.getItem("currentUser");
-    const users = JSON.parse(localStorage.getItem("users_v1")||"[]");
-    const user = users.find(u=>u.email===userEmail);
-    if(user){ document.getElementById("welcome").textContent=`Merhaba, ${user.name}! 🎯 Hedefin: ${user.goal}` }
+    const $ = id => document.getElementById(id);
 
-    function calc(){
-      const age = +v("age"), h = +v("height"), w = +v("weight"), rhr = +v("rhr");
-      const waist = +v("waist"), neck = +v("neck"), hip = +v("hip");
-      if(!age||!h||!w||!rhr||!waist||!neck) return msg("Lütfen tüm temel ölçümleri doldur.");
+    // localStorage anahtarları
+    const KEY = "selfUser";
+
+    // Sayfa açılışında verileri getir
+    (function init() {
+      const raw = localStorage.getItem(KEY);
+      if(!raw) return;
+      try{
+        const u = JSON.parse(raw);
+        for (const [k,v] of Object.entries(u)) {
+          if ($(k)) $(k).value = v;
+        }
+        computeAndRender();
+      }catch(e){}
+    })();
+
+    // Örnek doldur
+    $('fillBtn').onclick = () => {
+      $('age').value = 24;
+      $('gender').value = 'male';
+      $('height').value = 178;
+      $('weight').value = 74.5;
+      $('waist').value  = 82;
+      $('neck').value   = 38;
+      $('hip').value    = ''; // erkek
+      $('rhr').value    = 60;
+      $('bodyType').value = 'mezomorf';
+      $('goal').value   = 'kas';
+    };
+
+    // Temizle
+    $('clearBtn').onclick = () => {
+      localStorage.removeItem(KEY);
+      ['bmiText','bmrText','bfText','lbmText','hrText','coachText'].forEach(id=>$(id).textContent='–');
+      document.querySelectorAll('input,select').forEach(el=>el.value='');
+      alert('Veriler temizlendi.');
+    };
+
+    // Hesapla & kaydet
+    $('calcBtn').onclick = () => {
+      const data = grabInputs();
+      const missing = validate(data);
+      if (missing.length){
+        alert('Lütfen şu alanları doldurun: ' + missing.join(', '));
+        return;
+      }
+      localStorage.setItem(KEY, JSON.stringify(data));
+      computeAndRender();
+      // ufak motivasyon
+      alert('Kayıt başarılı. Aşağıdaki özet kişisel profiline göre üretildi. 👌');
+    };
+
+    function grabInputs(){
+      return {
+        age: +$('age').value,
+        gender: $('gender').value,
+        height: +$('height').value,
+        weight: +$('weight').value,
+        waist: +$('waist').value,
+        neck: +$('neck').value,
+        hip:  $('hip').value ? +$('hip').value : null,
+        rhr: +$('rhr').value,
+        bodyType: $('bodyType').value,
+        goal: $('goal').value
+      };
+    }
+
+    function validate(d){
+      const required = ['age','gender','height','weight','waist','neck','rhr','bodyType','goal'];
+      const miss = [];
+      for(const k of required){
+        if(d[k]===null || d[k]==='' || Number.isNaN(d[k])) miss.push(k);
+      }
+      if (d.gender==='female' && (!d.hip || Number.isNaN(d.hip))) miss.push('hip');
+      return miss;
+    }
+
+    // Hesaplamalar
+    function computeAndRender(){
+      const d = grabInputs();
 
       // BMI
-      const bmi = (w / ((h/100)**2)).toFixed(1);
-      // BMR (Mifflin-St Jeor)
-      const bmr = user.gender==="male"
-        ? (10*w + 6.25*h - 5*age + 5)
-        : (10*w + 6.25*h - 5*age - 161);
-      // HRmax ve Karvonen
-      const hrmax = 220 - age;
-      const karvLow = ((hrmax - rhr)*0.6 + rhr).toFixed(0);
-      const karvHigh = ((hrmax - rhr)*0.8 + rhr).toFixed(0);
-      // TDEE
-      const activityMap = {sedentary:1.2, light:1.375, moderate:1.55, very:1.725, athlete:1.9};
-      const tdee = (bmr * (activityMap[user.activity]||1.2)).toFixed(0);
-      // Yağ oranı (US Navy)
-      const bf = user.gender==="male"
-        ? (86.010*Math.log10(waist-neck) - 70.041*Math.log10(h) + 36.76).toFixed(1)
-        : (163.205*Math.log10(waist+hip-neck) - 97.684*Math.log10(h) - 78.387).toFixed(1);
+      const h = d.height/100;
+      const bmi = d.weight / (h*h);
+      const bmiCat = bmi<18.5 ? 'zayıf' : bmi<25 ? 'normal' : bmi<30 ? 'fazla kilolu' : 'obez';
+      $('bmiText').innerHTML = `BMI: <b>${bmi.toFixed(1)}</b> → <span class="${bmiCat==='normal'?'ok':(bmiCat==='zayıf'?'warn':'bad')}">${bmiCat}</span>`;
 
-      document.getElementById("res").innerHTML = `
-        <b>BMI:</b> ${bmi} kg/m²<br>
-        <b>BMR:</b> ${bmr.toFixed(0)} kcal/gün<br>
-        <b>TDEE:</b> ${tdee} kcal/gün<br>
-        <b>Maks Nabız:</b> ${hrmax} bpm<br>
-        <b>Hedef Nabız Aralığı (60–80%):</b> ${karvLow}–${karvHigh} bpm<br>
-        <b>Vücut Yağ %:</b> ${bf}%<br><br>
-        <i>Bu değerlere göre sana özel antrenman planı hazırlanıyor...</i>
-      `;
+      // BMR (Mifflin–St Jeor)
+      const bmr = (d.gender==='male')
+        ? (10*d.weight + 6.25*d.height - 5*d.age + 5)
+        : (10*d.weight + 6.25*d.height - 5*d.age - 161);
+      $('bmrText').innerHTML = `BMR: <b>${Math.round(bmr)}</b> kcal/gün <span class="small">(yaklaşık bazal enerji)</span>`;
+
+      // US Navy Body Fat %
+      const log10 = (x)=> Math.log(x)/Math.LN10;
+      let bf = null;
+      if (d.gender==='male'){
+        // bel - boyun cm, boy cm
+        if (d.waist>d.neck){
+          bf = 495/(1.0324 - 0.19077*log10(d.waist - d.neck) + 0.15456*log10(d.height)) - 450;
+        }
+      }else{
+        if (d.waist && d.hip && d.neck){
+          bf = 495/(1.29579 - 0.35004*log10(d.waist + d.hip - d.neck) + 0.22100*log10(d.height)) - 450;
+        }
+      }
+      if (bf!==null && isFinite(bf)){
+        const lbm = d.weight * (1 - bf/100);
+        $('bfText').innerHTML = `Vücut yağ oranı: <b>${bf.toFixed(1)}%</b>`;
+        $('lbmText').innerHTML = `Yağsız kütle (LBM): <b>${lbm.toFixed(1)} kg</b>`;
+      } else {
+        $('bfText').textContent = 'Vücut yağ oranı: hesaplanamadı (ölçüleri kontrol edin).';
+        $('lbmText').textContent = '—';
+      }
+
+      // Karvonen hedef nabızlar
+      const hrmax = 220 - d.age;               // basit formül; ileride Tanaka opsiyonu eklenebilir
+      const hrr   = hrmax - d.rhr;
+      const zone  = (p)=> Math.round(d.rhr + hrr*p);
+      const z1 = `${zone(0.60)}–${zone(0.70)} bpm (Yağ yakım/tempo)`;
+      const z2 = `${zone(0.70)}–${zone(0.80)} bpm (Kardiyo/gelişim)`;
+      const z3 = `${zone(0.80)}–${zone(0.90)} bpm (Tepe/interval)`;
+      $('hrText').innerHTML = `HRmax ≈ <b>${hrmax}</b> • RHR: <b>${d.rhr}</b><br>Hedef zonlar: ${z1} • ${z2} • ${z3}`;
+
+      // AI koç kısa özeti (hedef + vücut tipine göre)
+      $('coachText').innerHTML = buildCoachNote(d, bmi, bf, bmr, {z1,z2,z3});
     }
 
-    function v(id){return document.getElementById(id).value.trim()}
-    function msg(t){document.getElementById("res").innerHTML=t;}
+    function buildCoachNote(d, bmi, bf, bmr, zones){
+      const t = d.bodyType, g = d.goal;
+      const tips = [];
 
-    function chat(){
-      const box = document.getElementById("chatBox");
-      const input = document.getElementById("chatInput");
-      const text = input.value.trim();
-      if(!text) return;
-      box.innerHTML += `<div><b>Sen:</b> ${text}</div>`;
-      input.value="";
-      const reply = demoAI(text.toLowerCase());
-      setTimeout(()=>box.innerHTML += `<div><b>AI:</b> ${reply}</div>`,500);
-      box.scrollTop = box.scrollHeight;
-    }
+      // vücut tipine göre 1 cümle
+      if (t==='ektomorf') tips.push("Ektomorf: yoğun bileşik hareketler + yüksek kalori/karbonhidrat, haftada 3–4 tam vücut antrenmanı.");
+      if (t==='mezomorf') tips.push("Mezomorf: kuvvet + hipertrofi dengesi (6–12 tekrar), haftada 4 gün bölgesel plan verimli.");
+      if (t==='endomorf') tips.push("Endomorf: kalori kontrolü + daha yüksek NEAT + 3 gün kuvvet, 2–3 gün orta-üst seviye kardiyo.");
 
-    function demoAI(q){
-      if(q.includes("kas")) return "Kas geliştirmek için haftada en az 3 gün direnç antrenmanı öneririm 💪 Protein alımını ihmal etme!";
-      if(q.includes("yağ")) return "Yağ yakımı için nabzını 60-70% HRmax aralığında tut, düzenli kardiyo ekle 🏃‍♂️";
-      if(q.includes("motivasyon")) return "Bazen ilham değil disiplin işe yarar! Disiplinini koru 🔥";
-      return "Harika! Hedefini koru, azim seni zirveye taşır! 🚀";
+      // hedefe göre 1 cümle
+      if (g==='kas') tips.push("Hedef kas: 1RM’in %65–80 aralığı, 6–12 tekrar, set arası 60–120 sn; günlük protein ~1.6–2.2 g/kg.");
+      if (g==='yağ') tips.push("Hedef yağ: haftalık %0.5–1 kilo kaybı hedefle; kuvveti koru, kardiyoda " + zones.z1 + " aralığını kullan.");
+      if (g==='kondisyon') tips.push("Hedef kondisyon: interval/tempo koşularını " + zones.z2 + " bandında planla; haftada 2 kuvvet ekle.");
+      if (g==='esneklik') tips.push("Hedef esneklik: her antrenman sonrası 10–15 dk statik germe + haftada 2 mobilite seansı.");
+
+      // güvenlik/özet
+      const bmiInfo = isFinite(bmi) ? `BMI ${bmi.toFixed(1)}` : 'BMI -';
+      const bfInfo  = (bf && isFinite(bf)) ? ` • Yağ % ${bf.toFixed(1)}` : '';
+      tips.push(`Özet: ${bmiInfo}${bfInfo} • BMR ≈ ${Math.round(bmr)} kcal • Nabız zonlarını kullan.`);
+
+      return tips.join(" ");
     }
   </script>
 </body>
