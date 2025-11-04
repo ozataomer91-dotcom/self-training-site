@@ -103,6 +103,62 @@
 
     const v = id => document.getElementById(id).value.trim();
     const msg = t => document.getElementById("msg").textContent = t;
+ <!-- Firebase bağlantısı -->
+<script type="module">
+  // Firebase modülünü başlat
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+  import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendEmailVerification } 
+    from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyAnMzCWonT_zLi0EnChIDYANBhDiiwmur4",
+    authDomain: "self-training-128b5.firebaseapp.com",
+    projectId: "self-training-128b5",
+    storageBucket: "self-training-128b5.firebasestorage.app",
+    messagingSenderId: "61732879565",
+    appId: "1:61732879565:web:5a446fb76fa88f1103bd84"
+  };
+
+  // Firebase'i başlat
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+
+  // Kayıt olma işlemi
+  window.signup = function() {
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("pw").value;
+
+    createUserWithEmailAndPassword(auth, email, password)
+      .then((userCredential) => {
+        sendEmailVerification(auth.currentUser).then(() => {
+          alert("Kayıt başarılı! Lütfen e-postanızı doğrulayın.");
+        });
+      })
+      .catch((error) => {
+        alert("Hata: " + error.message);
+      });
+  }
+
+  // Giriş yapma işlemi
+  window.signin = function() {
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("pw").value;
+
+    signInWithEmailAndPassword(auth, email, password)
+      .then((userCredential) => {
+        const user = userCredential.user;
+        if (user.emailVerified) {
+          alert("Giriş başarılı, hoş geldiniz!");
+          window.location.href = "dashboard.html";
+        } else {
+          alert("Lütfen e-posta adresinizi doğrulayın.");
+        }
+      })
+      .catch((error) => {
+        alert("Hata: " + error.message);
+      });
+  }
+</script>
   </script>
 </body>
 </html>
