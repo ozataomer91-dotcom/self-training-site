@@ -1,76 +1,108 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="tr">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-  <meta http-equiv="Pragma" content="no-cache" />
-  <meta http-equiv="Expires" content="0" />
-  <title>Self Training – Kayıt & Giriş (Basit Testli)</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Kayıt / Giriş – Self Training</title>
   <style>
-    body {font-family: Arial; background:#f3f6f9; margin:40px;}
-    .card {background:#fff; padding:20px; border-radius:10px; max-width:420px; margin:auto; box-shadow:0 0 10px #ccc;}
-    input, select {width:100%; padding:10px; margin:6px 0; border:1px solid #ccc; border-radius:6px;}
-    .row{display:flex; gap:8px; flex-wrap:wrap}
-    button {background:#1dbf73; color:#fff; border:none; padding:10px 14px; border-radius:6px; cursor:pointer;}
-    .alt{background:#333}
-    #msg{margin-top:6px}
+    body{font-family:Arial, sans-serif;background:#f4f6f8;margin:0;padding:0}
+    .card{max-width:520px;margin:40px auto;background:#fff;border-radius:12px;
+      box-shadow:0 8px 24px rgba(0,0,0,.08);padding:24px}
+    h1{margin:0 0 6px}
+    .muted{color:#6b7280;margin:0 0 16px}
+    input,select,button{width:100%;padding:12px;border:1px solid #d1d5db;border-radius:8px;margin:8px 0}
+    button{background:#10b981;border:none;color:#fff;font-weight:600;cursor:pointer}
+    button:hover{background:#0ea371}
+    .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .link{display:inline-block;margin-top:8px;color:#2563eb;text-decoration:none}
+    #msg{margin-top:8px;font-weight:600}
   </style>
 </head>
 <body>
   <div class="card">
-    <h2>Kayıt Ol / Giriş Yap</h2>
-    <input id="name" placeholder="Ad Soyad">
-    <input id="email" placeholder="E-posta">
-    <input id="pw" type="password" placeholder="Şifre">
-    <select id="bodyType">
-      <option value="">Vücut Tipi</option>
-      <option value="ecto">Ektomorf</option>
-      <option value="meso">Mezomorf</option>
-      <option value="endo">Endomorf</option>
-    </select>
-    <div class="row">
-      <button id="btnSignup">Kayıt Ol</button>
-      <button id="btnSignin" class="alt">Giriş Yap</button>
-      <button id="btnTest">Buton Testi</button>
+    <h1>Self-Training’e Katıl</h1>
+    <p class="muted">Hedefini seç → kişisel önerini al.</p>
+
+    <div id="form">
+      <input id="name" placeholder="Ad Soyad" />
+      <input id="email" placeholder="E-posta" />
+      <input id="pwd" type="password" placeholder="Şifre" />
+
+      <div class="row">
+        <select id="gender">
+          <option value="">Cinsiyet</option>
+          <option value="male">Erkek</option>
+          <option value="female">Kadın</option>
+        </select>
+        <select id="bodyType">
+          <option value="">Vücut Tipi</option>
+          <option value="ecto">Ektomorf</option>
+          <option value="meso">Mezomorf</option>
+          <option value="endo">Endomorf</option>
+        </select>
+      </div>
+
+      <div class="row">
+        <select id="goal">
+          <option value="">Hedef</option>
+          <option value="fatloss">Yağ/Kilo verme</option>
+          <option value="muscle">Kas kazanımı</option>
+          <option value="maintain">Formu koruma</option>
+          <option value="strength">Kuvvet</option>
+          <option value="agility">Çeviklik/Kondisyon</option>
+          <option value="flexibility">Esneklik</option>
+        </select>
+        <select id="activity">
+          <option value="">Aktivite seviyesi</option>
+          <option value="sedentary">Sedanter</option>
+          <option value="light">Az aktif (1-3 gün)</option>
+          <option value="moderate">Orta (3-5 gün)</option>
+          <option value="very">Çok aktif (6-7 gün)</option>
+          <option value="athlete">Sporcu</option>
+        </select>
+      </div>
+
+      <button onclick="signup()">Kayıt Ol</button>
+      <button style="background:#3b82f6" onclick="signin()">Giriş Yap</button>
+      <div id="msg" class="muted"></div>
+      <a class="link" href="index.html">Ana sayfa</a>
     </div>
-    <p id="msg"></p>
-    <p><a href="./index.html">Ana sayfa</a></p>
   </div>
 
   <script>
-    // ---- TEST: JS dosyası çalışıyor mu? ----
-    document.getElementById('btnTest').addEventListener('click', function(){
-      alert('JS ÇALIŞIYOR ✅');
-    });
+    const KEY = "users_v1";
+    const getUsers = ()=> JSON.parse(localStorage.getItem(KEY)||"[]");
+    const setUsers = (u)=> localStorage.setItem(KEY, JSON.stringify(u));
 
-    // ---- Mini Depo ----
-    function LS(k,v){ if(v===undefined) return JSON.parse(localStorage.getItem(k)||'null'); localStorage.setItem(k,JSON.stringify(v)); }
-
-    // ---- Tek akış: varsa giriş, yoksa kayıt ----
-    function action(){
-      const n = document.getElementById('name').value.trim();
-      const e = document.getElementById('email').value.trim();
-      const p = document.getElementById('pw').value.trim();
-      const b = document.getElementById('bodyType').value;
-      const msg = document.getElementById('msg');
-
-      if(!n||!e||!p||!b){ msg.textContent='Lütfen tüm alanları doldurun.'; return; }
-
-      const u = LS('user');
-      if(u && u.e === e){
-        msg.textContent = 'Giriş başarılı! Pano açılıyor…';
-        setTimeout(()=>location.href='dashboard.html',500);
-        return;
+    function signup(){
+      const u = {
+        name: v("name"), email: v("email"), pwd: v("pwd"),
+        gender: v("gender"), bodyType: v("bodyType"),
+        goal: v("goal"), activity: v("activity"),
+        createdAt: Date.now(), points: 0, streak: 0
+      };
+      if(!u.name||!u.email||!u.pwd||!u.gender||!u.bodyType||!u.goal||!u.activity){
+        return msg("Lütfen tüm alanları doldurun.");
       }
-      LS('user',{n,e,b});
-      msg.textContent = 'Kayıt başarılı! Pano açılıyor…';
-      setTimeout(()=>location.href='dashboard.html',700);
+      const users = getUsers();
+      if(users.find(x=>x.email===u.email)) return msg("Bu e-posta zaten kayıtlı.");
+      users.push(u); setUsers(users);
+      localStorage.setItem("currentUser", u.email);
+      msg("Kayıt başarılı! Panele yönlendiriliyor…");
+      setTimeout(()=>location.href="dashboard.html",600);
     }
 
-    // Butonları bağla (inline onclick yerine güvenli yöntem)
-    document.getElementById('btnSignup').addEventListener('click', action);
-    document.getElementById('btnSignin').addEventListener('click', action);
+    function signin(){
+      const email = v("email"), pwd = v("pwd");
+      const u = getUsers().find(x=>x.email===email && x.pwd===pwd);
+      if(!u) return msg("Kayıt bulunamadı. Lütfen kayıt olun.");
+      localStorage.setItem("currentUser", u.email);
+      msg("Giriş başarılı. Panele yönlendiriliyor…");
+      setTimeout(()=>location.href="dashboard.html",600);
+    }
+
+    const v = id => document.getElementById(id).value.trim();
+    const msg = t => document.getElementById("msg").textContent = t;
   </script>
 </body>
 </html>
