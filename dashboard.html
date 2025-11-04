@@ -1,93 +1,111 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - Self Training</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f2f2f2;
-            margin: 0;
-            padding: 0;
-        }
-        .container {
-            max-width: 500px;
-            margin: 50px auto;
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-        }
-        h2 {
-            color: #333;
-            text-align: center;
-        }
-        input, select, button {
-            width: 100%;
-            padding: 10px;
-            margin: 8px 0;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-        }
-        button {
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            cursor: pointer;
-        }
-        button:hover {
-            background-color: #45a049;
-        }
-        .result {
-            margin-top: 15px;
-            background-color: #e7f3e7;
-            padding: 10px;
-            border-radius: 5px;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Kişisel Panel – Self Training</title>
+  <style>
+    body{font-family:Arial,sans-serif;background:#f0f3f6;margin:0;padding:0}
+    .container{max-width:600px;margin:40px auto;background:#fff;
+      border-radius:12px;box-shadow:0 6px 20px rgba(0,0,0,.08);padding:24px}
+    h1{margin:0 0 12px;text-align:center}
+    label{font-weight:600;display:block;margin-top:10px}
+    input{width:100%;padding:10px;border:1px solid #ccc;border-radius:8px;margin-top:4px}
+    button{margin-top:16px;padding:12px;width:100%;border:none;border-radius:8px;
+      background:#10b981;color:#fff;font-weight:600;cursor:pointer}
+    button:hover{background:#0ea371}
+    .result{margin-top:18px;padding:12px;border-radius:8px;background:#f9fafb}
+    .chat{margin-top:24px;border-top:1px solid #e5e7eb;padding-top:16px}
+    #chatBox{height:160px;overflow-y:auto;background:#f9fafb;border-radius:8px;
+      padding:8px;margin-bottom:8px;font-size:15px}
+    #chatInput{width:100%;padding:10px;border:1px solid #ccc;border-radius:8px}
+  </style>
 </head>
 <body>
-    <div class="container">
-        <h2>Hoş Geldiniz!</h2>
-        <p>Antropometrik Bilgilerinizi Girin</p>
-        <input type="number" id="age" placeholder="Yaş">
-        <input type="number" id="height" placeholder="Boy (cm)">
-        <input type="number" id="weight" placeholder="Kilo (kg)">
-        <button onclick="calculatePlan()">Hesapla ve Kaydet</button>
+  <div class="container">
+    <h1>🏋️‍♂️ Kişisel Panel</h1>
+    <p id="welcome"></p>
 
-        <div class="result" id="resultBox">Henüz bir bilgi girilmedi.</div>
+    <label>Yaş</label><input id="age" type="number" placeholder="örn. 25">
+    <label>Boy (cm)</label><input id="height" type="number" placeholder="örn. 175">
+    <label>Kilo (kg)</label><input id="weight" type="number" placeholder="örn. 70">
+    <label>Dinlenik Nabız (RHR)</label><input id="rhr" type="number" placeholder="örn. 65">
+    <label>Bel çevresi (cm)</label><input id="waist" type="number" placeholder="örn. 80">
+    <label>Boyun çevresi (cm)</label><input id="neck" type="number" placeholder="örn. 35">
+    <label>Kalça çevresi (cm, kadınlar için)</label><input id="hip" type="number" placeholder="örn. 90">
 
-        <button onclick="logout()">Çıkış Yap</button>
+    <button onclick="calc()">Hesapla 🔍</button>
+
+    <div class="result" id="res"></div>
+
+    <div class="chat">
+      <h3>💬 ChatGPT Mini Asistan (demo)</h3>
+      <div id="chatBox"></div>
+      <input id="chatInput" placeholder="Bir şey yaz... (örn. 'Kas geliştirmek istiyorum')" onkeydown="if(event.key==='Enter')chat()">
     </div>
+  </div>
 
-    <script>
-        function calculatePlan() {
-            const age = document.getElementById("age").value;
-            const height = document.getElementById("height").value;
-            const weight = document.getElementById("weight").value;
+  <script>
+    const userEmail = localStorage.getItem("currentUser");
+    const users = JSON.parse(localStorage.getItem("users_v1")||"[]");
+    const user = users.find(u=>u.email===userEmail);
+    if(user){ document.getElementById("welcome").textContent=`Merhaba, ${user.name}! 🎯 Hedefin: ${user.goal}` }
 
-            if (!age || !height || !weight) {
-                document.getElementById("resultBox").textContent = "Lütfen tüm alanları doldurun!";
-                return;
-            }
+    function calc(){
+      const age = +v("age"), h = +v("height"), w = +v("weight"), rhr = +v("rhr");
+      const waist = +v("waist"), neck = +v("neck"), hip = +v("hip");
+      if(!age||!h||!w||!rhr||!waist||!neck) return msg("Lütfen tüm temel ölçümleri doldur.");
 
-            const bmi = (weight / ((height / 100) ** 2)).toFixed(1);
-            let resultText = Yaş: ${age}, Boy: ${height} cm, Kilo: ${weight} kg\nVücut Kitle İndeksi (BMI): ${bmi}\n;
+      // BMI
+      const bmi = (w / ((h/100)**2)).toFixed(1);
+      // BMR (Mifflin-St Jeor)
+      const bmr = user.gender==="male"
+        ? (10*w + 6.25*h - 5*age + 5)
+        : (10*w + 6.25*h - 5*age - 161);
+      // HRmax ve Karvonen
+      const hrmax = 220 - age;
+      const karvLow = ((hrmax - rhr)*0.6 + rhr).toFixed(0);
+      const karvHigh = ((hrmax - rhr)*0.8 + rhr).toFixed(0);
+      // TDEE
+      const activityMap = {sedentary:1.2, light:1.375, moderate:1.55, very:1.725, athlete:1.9};
+      const tdee = (bmr * (activityMap[user.activity]||1.2)).toFixed(0);
+      // Yağ oranı (US Navy)
+      const bf = user.gender==="male"
+        ? (86.010*Math.log10(waist-neck) - 70.041*Math.log10(h) + 36.76).toFixed(1)
+        : (163.205*Math.log10(waist+hip-neck) - 97.684*Math.log10(h) - 78.387).toFixed(1);
 
-            if (bmi < 18.5) resultText += "Durum: Zayıf — Daha fazla besin alımı gerekebilir.";
-            else if (bmi < 25) resultText += "Durum: Normal — Formunuzu koruyun!";
-            else if (bmi < 30) resultText += "Durum: Fazla kilolu — Hafif egzersiz ve beslenme önerilir.";
-            else resultText += "Durum: Obez — Düzenli egzersiz ve diyet programı önerilir.";
+      document.getElementById("res").innerHTML = `
+        <b>BMI:</b> ${bmi} kg/m²<br>
+        <b>BMR:</b> ${bmr.toFixed(0)} kcal/gün<br>
+        <b>TDEE:</b> ${tdee} kcal/gün<br>
+        <b>Maks Nabız:</b> ${hrmax} bpm<br>
+        <b>Hedef Nabız Aralığı (60–80%):</b> ${karvLow}–${karvHigh} bpm<br>
+        <b>Vücut Yağ %:</b> ${bf}%<br><br>
+        <i>Bu değerlere göre sana özel antrenman planı hazırlanıyor...</i>
+      `;
+    }
 
-            document.getElementById("resultBox").textContent = resultText;
-            localStorage.setItem("bmiResult", resultText);
-        }
+    function v(id){return document.getElementById(id).value.trim()}
+    function msg(t){document.getElementById("res").innerHTML=t;}
 
-        function logout() {
-            localStorage.clear();
-            window.location.href = "signup.html";
-        }
-    </script>
+    function chat(){
+      const box = document.getElementById("chatBox");
+      const input = document.getElementById("chatInput");
+      const text = input.value.trim();
+      if(!text) return;
+      box.innerHTML += `<div><b>Sen:</b> ${text}</div>`;
+      input.value="";
+      const reply = demoAI(text.toLowerCase());
+      setTimeout(()=>box.innerHTML += `<div><b>AI:</b> ${reply}</div>`,500);
+      box.scrollTop = box.scrollHeight;
+    }
+
+    function demoAI(q){
+      if(q.includes("kas")) return "Kas geliştirmek için haftada en az 3 gün direnç antrenmanı öneririm 💪 Protein alımını ihmal etme!";
+      if(q.includes("yağ")) return "Yağ yakımı için nabzını 60-70% HRmax aralığında tut, düzenli kardiyo ekle 🏃‍♂️";
+      if(q.includes("motivasyon")) return "Bazen ilham değil disiplin işe yarar! Disiplinini koru 🔥";
+      return "Harika! Hedefini koru, azim seni zirveye taşır! 🚀";
+    }
+  </script>
 </body>
 </html>
