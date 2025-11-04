@@ -1,307 +1,356 @@
+<!-- dashboard.html (tam sayfa) -->
 <!DOCTYPE html>
 <html lang="tr">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Dashboard - Self Training</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Self Training • Panel</title>
   <style>
-    body{font-family:Arial, sans-serif;background:#f2f2f2;margin:0}
-    .card{max-width:640px;margin:40px auto;background:#fff;border:1px solid #ddd;border-radius:12px;box-shadow:0 6px 18px rgba(0,0,0,.06)}
-    .card h2{margin:0;padding:18px 20px;border-bottom:1px solid #eee}
-    .content{padding:20px}
-    label{display:block;margin:10px 0 6px;font-weight:600}
-    input,select{width:100%;padding:10px;border:1px solid #ccc;border-radius:8px}
+    :root{
+      --bg:#f4f6f8; --card:#ffffff; --ink:#1f2937; --muted:#6b7280;
+      --ok:#16a34a; --warn:#f59e0b; --danger:#ef4444; --line:#e5e7eb;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,-apple-system,Segoe UI,Roboto,Arial}
+    .wrap{max-width:980px;margin:32px auto;padding:12px}
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+    @media (max-width:900px){.grid{grid-template-columns:1fr}}
+    .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px;box-shadow:0 2px 12px rgba(0,0,0,.04)}
+    h1{font-size:22px;margin:0 0 8px}
+    h2{font-size:18px;margin:6px 0 12px}
+    label{display:block;font-weight:600;margin:10px 0 6px}
+    input,select,button,textarea{
+      width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:#fff;
+      font:inherit;outline:none
+    }
+    input:focus,select:focus,textarea:focus{border-color:#94a3b8;box-shadow:0 0 0 3px rgba(148,163,184,.25)}
     .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-    .row-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
-    .btn{display:inline-block;background:#22c55e;color:#fff;border:none;border-radius:10px;padding:12px 16px;margin-top:14px;cursor:pointer}
-    .btn.alt{background:#0ea5e9}
-    .btn.ghost{background:#fff;color:#ef4444;border:1px solid #ef4444}
-    .muted{color:#666;font-size:14px}
-    .pill{display:inline-block;padding:4px 10px;border-radius:999px;background:#f1f5f9;font-size:12px;margin-right:6px}
-    .grid{display:grid;gap:10px}
-    .box{background:#f8fafc;border:1px solid #e5e7eb;border-radius:10px;padding:12px}
-    .small{font-size:13px;color:#475569}
-    .ok{color:#16a34a;font-weight:700}
-    .warn{color:#f59e0b;font-weight:700}
-    .bad{color:#dc2626;font-weight:700}
-    .center{text-align:center}
+    .btn{cursor:pointer;background:var(--ok);color:#fff;border:none}
+    .btn.secondary{background:#374151}
+    .note{font-size:13px;color:var(--muted)}
+    .inline{display:flex;gap:8px;align-items:center}
+    .pill{display:inline-block;background:#eef2ff;color:#3730a3;padding:2px 8px;border-radius:999px;font-size:12px;margin-left:6px}
+    .good{color:var(--ok)} .warn{color:var(--warn)} .bad{color:var(--danger)}
+    .output p{margin:6px 0}
+    .kutu{background:#f8fafc;border:1px dashed var(--line);border-radius:10px;padding:12px}
+    details{margin-top:6px}
+    code{background:#f1f5f9;border:1px solid var(--line);padding:0 6px;border-radius:6px}
   </style>
 </head>
 <body>
-  <div class="card">
-    <h2>Hoş Geldiniz!</h2>
-    <div class="content">
+  <div class="wrap">
+    <h1>Hoş geldiniz <span id="helloName" class="pill"></span></h1>
 
-      <p class="muted">Aşağıdaki ölçümleri girin; BMI, BMR, Vücut Yağ Oranı, Karvonen hedef nabızları ve kişisel özet otomatik hesaplanır.</p>
+    <div class="grid">
+      <!-- SOL: Antropometri + Hedef -->
+      <section class="card">
+        <h2>Antropometrik Bilgiler ve Hedef</h2>
 
-      <!-- TEMEL BİLGİLER -->
-      <div class="row">
-        <div>
-          <label>Yaş</label>
-          <input id="age" type="number" min="8" max="100" placeholder="örn. 24" />
-        </div>
-        <div>
-          <label>Cinsiyet</label>
-          <select id="gender">
-            <option value="">Seçiniz</option>
-            <option value="male">Erkek</option>
-            <option value="female">Kadın</option>
-          </select>
-        </div>
-      </div>
-
-      <div class="row">
-        <div>
-          <label>Boy (cm)</label>
-          <input id="height" type="number" min="100" max="230" placeholder="örn. 178" />
-        </div>
-        <div>
-          <label>Kilo (kg)</label>
-          <input id="weight" type="number" min="20" max="250" step="0.1" placeholder="örn. 74.5" />
-        </div>
-      </div>
-
-      <!-- ÇEVRELER (US Navy yağ oranı) -->
-      <div class="row">
-        <div>
-          <label>Bel çevresi (cm)</label>
-          <input id="waist" type="number" min="40" max="200" step="0.1" placeholder="göbek hattı" />
-        </div>
-        <div>
-          <label>Boyun çevresi (cm)</label>
-          <input id="neck" type="number" min="20" max="60" step="0.1" placeholder="adam elması altı" />
-        </div>
-      </div>
-
-      <div class="row">
-        <div>
-          <label>Kalça çevresi (cm) <span class="small">(kadınlar için)</span></label>
-          <input id="hip" type="number" min="50" max="200" step="0.1" placeholder="kadın: zorunlu, erkek: boş bırak" />
-        </div>
-        <div>
-          <label>Dinlenik Nabız – RHR (dk⁻¹)</label>
-          <input id="rhr" type="number" min="30" max="120" placeholder="örn. 60" />
-        </div>
-      </div>
-
-      <!-- TİP & HEDEF -->
-      <div class="row">
-        <div>
-          <label>Vücut Tipi</label>
-          <select id="bodyType">
-            <option value="">Seçiniz</option>
-            <option value="ektomorf">Ektomorf</option>
-            <option value="mezomorf">Mezomorf</option>
-            <option value="endomorf">Endomorf</option>
-          </select>
-        </div>
-        <div>
-          <label>Hedef</label>
-          <select id="goal">
-            <option value="">Seçiniz</option>
-            <option value="kas">Kas kütlesi artırmak</option>
-            <option value="yağ">Yağ oranını düşürmek</option>
-            <option value="kondisyon">Kondisyon kazanmak</option>
-            <option value="esneklik">Esnekliği artırmak</option>
-          </select>
-        </div>
-      </div>
-
-      <button class="btn" id="calcBtn">Hesapla & Kaydet</button>
-      <button class="btn alt" id="fillBtn">Örnek değer doldur</button>
-      <button class="btn ghost" id="clearBtn">Tüm veriyi sil</button>
-
-      <hr/>
-
-      <!-- SONUÇLAR -->
-      <div class="grid">
-        <div class="box">
-          <div class="pill">BMI</div>
-          <div id="bmiText" class="small">–</div>
+        <div class="row">
+          <div>
+            <label for="age">Yaş</label>
+            <input id="age" type="number" min="5" max="100" placeholder="Örn. 24" />
+          </div>
+          <div>
+            <label for="sex">Cinsiyet</label>
+            <select id="sex">
+              <option value="">Seçiniz</option>
+              <option value="male">Erkek</option>
+              <option value="female">Kadın</option>
+            </select>
+          </div>
         </div>
 
-        <div class="box">
-          <div class="pill">BMR (Mifflin–St Jeor)</div>
-          <div id="bmrText" class="small">–</div>
+        <div class="row">
+          <div>
+            <label for="height">Boy (santimetre)</label>
+            <input id="height" type="number" min="90" max="250" placeholder="Örn. 178" />
+          </div>
+          <div>
+            <label for="weight">Kilo (kilogram)</label>
+            <input id="weight" type="number" min="20" max="300" step="0.1" placeholder="Örn. 76.5" />
+          </div>
         </div>
 
-        <div class="box">
-          <div class="pill">Vücut Yağ Oranı (US Navy)</div>
-          <div id="bfText" class="small">–</div>
-          <div id="lbmText" class="small">–</div>
+        <details>
+          <summary><strong>İsteğe bağlı ölçümler</strong> (Vücut yağ oranı ve nabız hesapları için)</summary>
+          <div class="row" style="margin-top:10px">
+            <div>
+              <label for="waist">Bel çevresi (cm)</label>
+              <input id="waist" type="number" min="40" max="200" placeholder="Göbek deliği hizası" />
+            </div>
+            <div>
+              <label for="hip">Kalça çevresi (cm)</label>
+              <input id="hip" type="number" min="50" max="220" placeholder="Kadınlarda gerekli" />
+            </div>
+          </div>
+          <div class="row">
+            <div>
+              <label for="neck">Boyun çevresi (cm)</label>
+              <input id="neck" type="number" min="20" max="70" placeholder="Gırtlak altı" />
+            </div>
+            <div>
+              <label for="rhr">Dinlenik nabız (dakikadaki atım)</label>
+              <input id="rhr" type="number" min="30" max="120" placeholder="Örn. 65" />
+            </div>
+          </div>
+          <p class="note">
+            <strong>Nasıl ölçülür?</strong> Bel: göbek deliği hizası; Kalça: en geniş nokta; Boyun: gırtlak altı. Mezurayı sıkmadan, aynanın karşısında ölçün.
+          </p>
+        </details>
+
+        <label for="goal" style="margin-top:12px">Hedef</label>
+        <select id="goal">
+          <option value="">Seçiniz</option>
+          <option value="hipertrofi">Kas kütlesi artırmak (hipertrofi)</option>
+          <option value="kuvvet">Maksimum kuvvet kazanmak</option>
+          <option value="guc">Patlayıcılık / güç geliştirmek</option>
+          <option value="yag">Vücut yağ oranını düşürmek</option>
+          <option value="kardiyo">Kardiyo / kondisyon artırmak</option>
+          <option value="esneklik">Esneklik ve mobilite geliştirmek</option>
+          <option value="postur">Postür / duruş düzeltmek</option>
+          <option value="saglik">Genel sağlık ve formda kalma</option>
+          <option value="rehab">Rehabilitasyon / hafif egzersiz</option>
+        </select>
+
+        <div class="inline" style="margin-top:14px">
+          <button id="calc" class="btn">Hesapla ve Kaydet</button>
+          <button id="clear" class="btn secondary" title="Tüm alanları temizler">Sıfırla</button>
         </div>
+        <p id="msg" class="note"></p>
+      </section>
 
-        <div class="box">
-          <div class="pill">Karvonen Hedef Nabızlar</div>
-          <div id="hrText" class="small">–</div>
+      <!-- SAĞ: Sonuçlar -->
+      <section class="card">
+        <h2>Özet ve Değerler</h2>
+        <div class="output">
+          <p><strong>Beden Kitle İndeksi (BMI)</strong>:
+            <span id="bmiVal">–</span> <span id="bmiClass" class="pill"></span>
+          </p>
+          <p><strong>Bazal Metabolizma Hızı</strong> (günde yakacağınız kalori, <em>BMR</em>):
+            <span id="bmrVal">–</span> kcal/gün
+          </p>
+          <div class="kutu">
+            <p><strong>Maksimum Kalp Atış Hızı</strong> (yaşa göre): <span id="mhrVal">–</span> atım/dk</p>
+            <p><strong>Kalp Atım Rezervi</strong> (HRR = Maksimum − Dinlenik): <span id="hrrVal">–</span></p>
+            <p><strong>Hedef Nabız Bölgeleri (Karvonen)</strong></p>
+            <ul id="zones" class="note" style="margin:6px 0 0 18px"></ul>
+          </div>
+          <p><strong>Tahmini Vücut Yağ Oranı</strong> (US Navy yöntemi): <span id="bfpVal">–</span></p>
         </div>
-
-        <div class="box">
-          <div class="pill">AI Koç Özeti</div>
-          <div id="coachText" class="small">–</div>
-        </div>
-      </div>
-
-      <p class="center small" style="margin-top:14px">
-        <a href="index.html">Kullanıcı değiştir / Ana sayfa</a>
-      </p>
-
+      </section>
     </div>
+
+    <!-- Alt grid: Antrenman & Beslenme -->
+    <div class="grid" style="margin-top:18px">
+      <section class="card">
+        <h2>Seçilen Hedefe Göre Antrenman Önerisi</h2>
+        <div id="plan" class="kutu note">Önce bilgileri kaydedin.</div>
+      </section>
+      <section class="card">
+        <h2>Kısa Beslenme İpucu</h2>
+        <div id="nutrition" class="kutu note">Hedef seçildiğinde burada görünecek.</div>
+      </section>
+    </div>
+
+    <p class="note" style="margin-top:10px">
+      Bu hesaplayıcı bilgilendirme amaçlıdır; sağlık durumunuz için hekim görüşü alınız.
+    </p>
   </div>
 
   <script>
-    const $ = id => document.getElementById(id);
+    // Yardımcılar
+    const byId = id => document.getElementById(id);
+    const round1 = n => Math.round(n*10)/10;
+    const clamp = (n, a, b) => Math.min(Math.max(n, a), b);
 
-    // localStorage anahtarları
-    const KEY = "selfUser";
-
-    // Sayfa açılışında verileri getir
-    (function init() {
-      const raw = localStorage.getItem(KEY);
-      if(!raw) return;
+    // Kullanıcı adını selamla (signup'tan geldiyse)
+    (function greet(){
       try{
-        const u = JSON.parse(raw);
-        for (const [k,v] of Object.entries(u)) {
-          if ($(k)) $(k).value = v;
-        }
-        computeAndRender();
-      }catch(e){}
+        const u = JSON.parse(localStorage.getItem("user")||"{}");
+        if(u && u.name){ byId("helloName").textContent = u.name; }
+      }catch(_){}
     })();
 
-    // Örnek doldur
-    $('fillBtn').onclick = () => {
-      $('age').value = 24;
-      $('gender').value = 'male';
-      $('height').value = 178;
-      $('weight').value = 74.5;
-      $('waist').value  = 82;
-      $('neck').value   = 38;
-      $('hip').value    = ''; // erkek
-      $('rhr').value    = 60;
-      $('bodyType').value = 'mezomorf';
-      $('goal').value   = 'kas';
-    };
+    // Kaydedilmiş profil varsa doldur
+    (function loadSaved(){
+      try{
+        const p = JSON.parse(localStorage.getItem("profile")||"{}");
+        for(const k of ["age","sex","height","weight","waist","hip","neck","rhr","goal"]){
+          if(p[k]!==undefined && byId(k)){ byId(k).value = p[k]; }
+        }
+      }catch(_){}
+    })();
 
-    // Temizle
-    $('clearBtn').onclick = () => {
-      localStorage.removeItem(KEY);
-      ['bmiText','bmrText','bfText','lbmText','hrText','coachText'].forEach(id=>$(id).textContent='–');
-      document.querySelectorAll('input,select').forEach(el=>el.value='');
-      alert('Veriler temizlendi.');
-    };
+    // BMI sınıfı
+    function bmiClass(bmi){
+      if(bmi < 18.5) return ["Zayıf","bad"];
+      if(bmi < 25)   return ["Normal","good"];
+      if(bmi < 30)   return ["Fazla kilolu","warn"];
+      return ["Obez","bad"];
+    }
 
-    // Hesapla & kaydet
-    $('calcBtn').onclick = () => {
-      const data = grabInputs();
-      const missing = validate(data);
-      if (missing.length){
-        alert('Lütfen şu alanları doldurun: ' + missing.join(', '));
+    // BMR (Mifflin-St Jeor)
+    function calcBMR(sex, kg, cm, age){
+      if(!sex||!kg||!cm||!age) return null;
+      return Math.round(sex==="male"
+        ? 10*kg + 6.25*cm - 5*age + 5
+        : 10*kg + 6.25*cm - 5*age - 161);
+    }
+
+    // US Navy vücut yağ oranı (cm)
+    function calcBFP(sex, height, neck, waist, hip){
+      if(!sex || !height || !neck || !waist) return null;
+      const log10 = Math.log10 || (x=>Math.log(x)/Math.LN10);
+      if(sex==="male"){
+        const v = 86.010*log10(waist - neck) - 70.041*log10(height) + 36.76;
+        return round1(v);
+      }else{
+        if(!hip) return null;
+        const v = 163.205*log10(waist + hip - neck) - 97.684*log10(height) - 78.387;
+        return round1(v);
+      }
+    }
+
+    // Karvonen bölgeleri
+    function karvonenZones(age, rhr){
+      if(!age) return null;
+      const mhr = 220 - Number(age);
+      const resting = rhr ? Number(rhr) : 70; // boşsa varsayılan
+      const hrr = mhr - resting;
+      const ranges = [
+        {name:"Bölge 1 (çok hafif) %50–60", lo:.50, hi:.60},
+        {name:"Bölge 2 (hafif) %60–70", lo:.60, hi:.70},
+        {name:"Bölge 3 (orta) %70–80", lo:.70, hi:.80},
+        {name:"Bölge 4 (yüksek) %80–90", lo:.80, hi:.90},
+        {name:"Bölge 5 (maks.) %90–100", lo:.90, hi:1.00},
+      ];
+      ranges.forEach(z=>{
+        z.from = Math.round(resting + z.lo*hrr);
+        z.to   = Math.round(resting + z.hi*hrr);
+      });
+      return {mhr, hrr, resting, ranges};
+    }
+
+    // Hedefe göre kısa plan ve beslenme
+    function goalTemplates(goal){
+      const data = {
+        hipertrofi:{
+          plan:"Haftada 3–5 gün. Bölgesel veya tüm vücut. Set x tekrar: 3–5 set × 8–12 tekrar. Dinlenme 60–90 sn. Tempo kontrollü (eksantrik 2–3 sn).",
+          nut :"Günlük protein ~1.6–2.2 g/kg, hafif kalori fazlası (+200–300 kcal). Öğün başına 25–40 g protein."
+        },
+        kuvvet:{
+          plan:"Haftada 3–4 gün. Çok eklemli hareketler (squat, deadlift, bench, overhead). 3–6 set × 1–5 tekrar, %80–95 1RM. Dinlenme 2–4 dk.",
+          nut :"Protein 1.8–2.2 g/kg; karbonhidrat antrenman günleri daha yüksek. Yeterli uyku (7–9 saat)."
+        },
+        guc:{
+          plan:"Haftada 2–4 gün. Plyometrik + balistik + halter varyasyonları. 3–5 set × 3–6 tekrar, tam patlayıcı. Dinlenme 90–180 sn.",
+          nut :"Antrenman öncesi kolay sindirilen karbonhidrat; kreatin düşün (doktor/uzman onayıyla)."
+        },
+        yag:{
+          plan:"Haftada 4–6 gün. Ağırlık + kardiyo kombinasyon. Ağırlık: 3–4 set × 10–15 tekrar, dinlenme 30–60 sn. Kardiyo: 25–40 dk, Bölge 2–3.",
+          nut :"Kalori açığı −300/−500 kcal. Protein 1.6–2.2 g/kg. Şekerli içecekleri ve sıvı kalorileri azalt."
+        },
+        kardiyo:{
+          plan:"Haftada 3–5 gün. 20–45 dk aralığında Bölge 2–3 dayanıklılık; haftada 1 gün 6–10 × (1 dk hızlı + 1–2 dk kolay).",
+          nut :"Karbonhidrat alımını antrenman etrafında planla; yeterli sıvı ve elektrolit."
+        },
+        esneklik:{
+          plan:"Her gün 10–20 dk. Dinamik ısınma + hareket açıklığı (kalça, omuz, torakal omurga). Antrenman sonrası 30–60 sn statik germe.",
+          nut :"Bağ dokusu sağlığı için yeterli protein ve omega-3; düzenli su tüketimi."
+        },
+        postur:{
+          plan:"Haftada 3–5 gün. Core stabilizasyon, sırt orta-alt aktivasyon, kalça ekstansörleri. Gün içi postür molaları (saatte 2–3 dk).",
+          nut :"Düşük inflamasyonlu beslenme; uzun süreli oturmada su molaları."
+        },
+        saglik:{
+          plan:"Haftada 3+ gün, 30–45 dk orta yoğunluk + 2 gün temel kuvvet. Günlük adım hedefi 7–10 bin.",
+          nut :"Sebze-meyve, tam tahıl, kaliteli protein. Su: günde ~30–35 ml/kg."
+        },
+        rehab:{
+          plan:"Uzman onayıyla. Ağrısız aralıkta izometrik / düşük yük. 2–4 set × 10–20 tekrar. Tempo yavaş ve kontrollü.",
+          nut :"Yeterli protein ve mikronutrient; iyileşme için uyku önceliklendirilir."
+        }
+      };
+      return data[goal] || {plan:"Önce hedef seçin.", nut:"—"};
+    }
+
+    // Hesapla ve yaz
+    function compute(){
+      const age = Number(byId("age").value);
+      const sex = byId("sex").value;
+      const height = Number(byId("height").value);
+      const weight = Number(byId("weight").value);
+      const waist = Number(byId("waist").value);
+      const hip = Number(byId("hip").value);
+      const neck = Number(byId("neck").value);
+      const rhr = Number(byId("rhr").value);
+      const goal = byId("goal").value;
+
+      if(!age || !sex || !height || !weight){
+        byId("msg").textContent = "Lütfen yaş, cinsiyet, boy ve kilo alanlarını doldurun.";
         return;
       }
-      localStorage.setItem(KEY, JSON.stringify(data));
-      computeAndRender();
-      // ufak motivasyon
-      alert('Kayıt başarılı. Aşağıdaki özet kişisel profiline göre üretildi. 👌');
-    };
 
-    function grabInputs(){
-      return {
-        age: +$('age').value,
-        gender: $('gender').value,
-        height: +$('height').value,
-        weight: +$('weight').value,
-        waist: +$('waist').value,
-        neck: +$('neck').value,
-        hip:  $('hip').value ? +$('hip').value : null,
-        rhr: +$('rhr').value,
-        bodyType: $('bodyType').value,
-        goal: $('goal').value
-      };
-    }
-
-    function validate(d){
-      const required = ['age','gender','height','weight','waist','neck','rhr','bodyType','goal'];
-      const miss = [];
-      for(const k of required){
-        if(d[k]===null || d[k]==='' || Number.isNaN(d[k])) miss.push(k);
-      }
-      if (d.gender==='female' && (!d.hip || Number.isNaN(d.hip))) miss.push('hip');
-      return miss;
-    }
-
-    // Hesaplamalar
-    function computeAndRender(){
-      const d = grabInputs();
+      // Kaydet
+      const profile = {age,sex,height,weight,waist,hip,neck,rhr,goal};
+      localStorage.setItem("profile", JSON.stringify(profile));
+      byId("msg").textContent = "Bilgiler kaydedildi ✅";
 
       // BMI
-      const h = d.height/100;
-      const bmi = d.weight / (h*h);
-      const bmiCat = bmi<18.5 ? 'zayıf' : bmi<25 ? 'normal' : bmi<30 ? 'fazla kilolu' : 'obez';
-      $('bmiText').innerHTML = `BMI: <b>${bmi.toFixed(1)}</b> → <span class="${bmiCat==='normal'?'ok':(bmiCat==='zayıf'?'warn':'bad')}">${bmiCat}</span>`;
+      const bmi = weight / Math.pow(height/100,2);
+      const [cls, tone] = bmiClass(bmi);
+      byId("bmiVal").textContent = round1(bmi);
+      const tag = byId("bmiClass");
+      tag.textContent = cls; tag.className = "pill " + (tone||"");
 
-      // BMR (Mifflin–St Jeor)
-      const bmr = (d.gender==='male')
-        ? (10*d.weight + 6.25*d.height - 5*d.age + 5)
-        : (10*d.weight + 6.25*d.height - 5*d.age - 161);
-      $('bmrText').innerHTML = `BMR: <b>${Math.round(bmr)}</b> kcal/gün <span class="small">(yaklaşık bazal enerji)</span>`;
+      // BMR
+      const bmr = calcBMR(sex, weight, height, age);
+      byId("bmrVal").textContent = bmr? bmr : "—";
 
-      // US Navy Body Fat %
-      const log10 = (x)=> Math.log(x)/Math.LN10;
-      let bf = null;
-      if (d.gender==='male'){
-        // bel - boyun cm, boy cm
-        if (d.waist>d.neck){
-          bf = 495/(1.0324 - 0.19077*log10(d.waist - d.neck) + 0.15456*log10(d.height)) - 450;
-        }
+      // Karvonen
+      const kz = karvonenZones(age, rhr);
+      const zonesEl = byId("zones"); zonesEl.innerHTML = "";
+      if(kz){
+        byId("mhrVal").textContent = kz.mhr;
+        byId("hrrVal").textContent = kz.hrr + " (Dinlenik: " + kz.resting + ")";
+        kz.ranges.forEach(z=>{
+          const li = document.createElement("li");
+          li.textContent = `${z.name}: ${z.from}–${z.to} atım/dk`;
+          zonesEl.appendChild(li);
+        });
       }else{
-        if (d.waist && d.hip && d.neck){
-          bf = 495/(1.29579 - 0.35004*log10(d.waist + d.hip - d.neck) + 0.22100*log10(d.height)) - 450;
-        }
-      }
-      if (bf!==null && isFinite(bf)){
-        const lbm = d.weight * (1 - bf/100);
-        $('bfText').innerHTML = `Vücut yağ oranı: <b>${bf.toFixed(1)}%</b>`;
-        $('lbmText').innerHTML = `Yağsız kütle (LBM): <b>${lbm.toFixed(1)} kg</b>`;
-      } else {
-        $('bfText').textContent = 'Vücut yağ oranı: hesaplanamadı (ölçüleri kontrol edin).';
-        $('lbmText').textContent = '—';
+        byId("mhrVal").textContent = "—"; byId("hrrVal").textContent = "—";
       }
 
-      // Karvonen hedef nabızlar
-      const hrmax = 220 - d.age;               // basit formül; ileride Tanaka opsiyonu eklenebilir
-      const hrr   = hrmax - d.rhr;
-      const zone  = (p)=> Math.round(d.rhr + hrr*p);
-      const z1 = `${zone(0.60)}–${zone(0.70)} bpm (Yağ yakım/tempo)`;
-      const z2 = `${zone(0.70)}–${zone(0.80)} bpm (Kardiyo/gelişim)`;
-      const z3 = `${zone(0.80)}–${zone(0.90)} bpm (Tepe/interval)`;
-      $('hrText').innerHTML = `HRmax ≈ <b>${hrmax}</b> • RHR: <b>${d.rhr}</b><br>Hedef zonlar: ${z1} • ${z2} • ${z3}`;
+      // BFP
+      const bfp = calcBFP(sex, height, neck, waist, hip);
+      byId("bfpVal").textContent = (bfp!==null && isFinite(bfp)) ? (bfp+" %") : "—";
 
-      // AI koç kısa özeti (hedef + vücut tipine göre)
-      $('coachText').innerHTML = buildCoachNote(d, bmi, bf, bmr, {z1,z2,z3});
+      // Plan + beslenme
+      const tpl = goalTemplates(goal);
+      byId("plan").textContent = tpl.plan;
+      byId("nutrition").textContent = tpl.nut;
     }
 
-    function buildCoachNote(d, bmi, bf, bmr, zones){
-      const t = d.bodyType, g = d.goal;
-      const tips = [];
-
-      // vücut tipine göre 1 cümle
-      if (t==='ektomorf') tips.push("Ektomorf: yoğun bileşik hareketler + yüksek kalori/karbonhidrat, haftada 3–4 tam vücut antrenmanı.");
-      if (t==='mezomorf') tips.push("Mezomorf: kuvvet + hipertrofi dengesi (6–12 tekrar), haftada 4 gün bölgesel plan verimli.");
-      if (t==='endomorf') tips.push("Endomorf: kalori kontrolü + daha yüksek NEAT + 3 gün kuvvet, 2–3 gün orta-üst seviye kardiyo.");
-
-      // hedefe göre 1 cümle
-      if (g==='kas') tips.push("Hedef kas: 1RM’in %65–80 aralığı, 6–12 tekrar, set arası 60–120 sn; günlük protein ~1.6–2.2 g/kg.");
-      if (g==='yağ') tips.push("Hedef yağ: haftalık %0.5–1 kilo kaybı hedefle; kuvveti koru, kardiyoda " + zones.z1 + " aralığını kullan.");
-      if (g==='kondisyon') tips.push("Hedef kondisyon: interval/tempo koşularını " + zones.z2 + " bandında planla; haftada 2 kuvvet ekle.");
-      if (g==='esneklik') tips.push("Hedef esneklik: her antrenman sonrası 10–15 dk statik germe + haftada 2 mobilite seansı.");
-
-      // güvenlik/özet
-      const bmiInfo = isFinite(bmi) ? `BMI ${bmi.toFixed(1)}` : 'BMI -';
-      const bfInfo  = (bf && isFinite(bf)) ? ` • Yağ % ${bf.toFixed(1)}` : '';
-      tips.push(`Özet: ${bmiInfo}${bfInfo} • BMR ≈ ${Math.round(bmr)} kcal • Nabız zonlarını kullan.`);
-
-      return tips.join(" ");
+    // Sıfırla
+    function clearAll(){
+      for(const id of ["age","sex","height","weight","waist","hip","neck","rhr","goal"]){
+        const el = byId(id); if(!el) continue;
+        if(el.tagName==="SELECT") el.selectedIndex = 0; else el.value = "";
+      }
+      ["bmiVal","bmiClass","bmrVal","mhrVal","hrrVal","bfpVal","plan","nutrition","msg"].forEach(id=>{
+        const el = byId(id);
+        if(id==="plan"||id==="nutrition") el.textContent="—";
+        else if(id==="bmiClass") { el.textContent=""; el.className="pill"; }
+        else el.textContent="—";
+      });
+      byId("zones").innerHTML="";
+      localStorage.removeItem("profile");
     }
+
+    byId("calc").addEventListener("click", compute);
+    byId("clear").addEventListener("click", clearAll);
   </script>
 </body>
 </html>
