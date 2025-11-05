@@ -36,14 +36,12 @@
 
       <h1>Self Training</h1>
 
-      <!-- Sekmeler -->
       <div class="tabs">
         <div id="tabLogin"  class="tab active">Giriş</div>
         <div id="tabSignup" class="tab">Kayıt</div>
       </div>
       <p class="note" id="formInfo">Girişte yalnızca e-posta ve şifre, kayıtta ad soyad da istenir.</p>
 
-      <!-- Ortak alanlar -->
       <div id="nameWrap" class="hide">
         <label for="name">Ad Soyad</label>
         <input id="name" type="text" placeholder="Örn. Ömer Özata" autocomplete="name" />
@@ -63,9 +61,9 @@
         </div>
       </div>
 
-      <!-- Butonlar -->
       <div id="loginBtns">
         <button id="loginBtn" class="btn blue">Giriş Yap</button>
+        <button id="resendBtn" class="btn light">Doğrulama linkini yeniden gönder</button>
       </div>
       <div id="signupBtns" class="hide">
         <button id="signupBtn" class="btn">Kayıt Ol</button>
@@ -79,15 +77,12 @@
     </div>
   </div>
 
-  <!-- Tek bir script, ESM -->
   <script type="module">
-    // UI yardımcıları
     const $ = id => document.getElementById(id);
     const show = (t, cls="") => { const m=$("msg"); m.className="note "+cls; m.textContent=t; };
-    const lock = (on)=>["signupBtn","loginBtn","googleBtn","resetBtn"].forEach(id=>{ const b=$(id); if(b) b.classList.toggle("disabled",on); });
+    const lock = (on)=>["signupBtn","loginBtn","googleBtn","resetBtn","resendBtn"].forEach(id=>{ const b=$(id); if(b) b.classList.toggle("disabled",on); });
 
-    // Sekme geçişleri
-    function setMode(mode){ // 'login' | 'signup'
+    function setMode(mode){
       const isSignup = mode === "signup";
       $("tabLogin").classList.toggle("active", !isSignup);
       $("tabSignup").classList.toggle("active", isSignup);
@@ -112,7 +107,6 @@
       GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult
     } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-auth.js";
 
-    // Hazır işareti
     $("ready").textContent = "Hazır ✅";
 
     const firebaseConfig = {
@@ -130,11 +124,10 @@
       await setPersistence(auth, browserLocalPersistence);
       const provider = new GoogleAuthProvider();
 
-      // Redirect sonucu (iOS’ta popup bloklanırsa)
       try {
-        const res = await getRedirectResult(auth);
-        if (res?.user) {
-          localStorage.setItem("user", JSON.stringify({ uid:res.user.uid, name:res.user.displayName||"", email:res.user.email }));
+        const r = await getRedirectResult(auth);
+        if (r?.user) {
+          localStorage.setItem("user", JSON.stringify({ uid:r.user.uid, name:r.user.displayName||"", email:r.user.email }));
           location.href = "dashboard.html";
           return;
         }
@@ -155,8 +148,7 @@
         try{
           const cred = await createUserWithEmailAndPassword(auth, email, pass);
           await updateProfile(cred.user, { displayName: name });
-          // ÖZEL URL kullanmıyoruz → Firebase varsayılan doğrulama sayfası
-          await sendEmailVerification(cred.user);
+          await sendEmailVerification(cred.user); // varsayılan doğrulama
           await signOut(auth);
           setMode("login");
           show("✅ Kayıt tamam. Doğrulama e-postası gönderildi. Maildeki linke tıklayıp sonra giriş yapın.","ok");
@@ -181,7 +173,7 @@
           const cred = await signInWithEmailAndPassword(auth, email, pass);
           if(!cred.user.emailVerified){
             await signOut(auth);
-            show("E-posta doğrulanmamış. Gelen kutusundaki doğrulama bağlantısına tıklayın.","err");
+            show("E-posta doğrulanmamış. 'Doğrulama linkini yeniden gönder' ile tekrar gönderebilirsiniz.","err");
             return;
           }
           localStorage.setItem("user", JSON.stringify({ uid:cred.user.uid, name:cred.user.displayName||"", email:cred.user.email }));
@@ -195,7 +187,29 @@
         } finally { lock(false); }
       });
 
-      // Google (popup; engellenirse redirect)
+      // Doğrulama linkini yeniden gönder
+      $("resendBtn").addEventListener("click", async () => {
+        const email= $("email").value.trim();
+        const pass = $("pass").value;
+        if(!email || !pass){ show("E-posta ve şifre yazın.","err"); return; }
+
+        lock(true);
+        try{
+          const cred = await signInWithEmailAndPassword(auth, email, pass);
+          if (cred.user.emailVerified){
+            show("E-posta zaten doğrulanmış. Giriş yapabilirsiniz.","ok");
+            await signOut(auth);
+            return;
+          }
+          await sendEmailVerification(cred.user);
+          await signOut(auth);
+          show("Doğrulama e-postası yeniden gönderildi. Gelen kutunuzu kontrol edin.","ok");
+        }catch(err){
+          show("Yeniden gönderilemedi: " + (err.code || err.message), "err");
+        } finally { lock(false); }
+      });
+
+      // Google
       $("googleBtn").addEventListener("click", async () => {
         lock(true);
         try{
