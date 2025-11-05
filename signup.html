@@ -1,3 +1,4 @@
+<!-- signup.html — Giriş/Kayıt sekmeli arayüz -->
 <!DOCTYPE html>
 <html lang="tr">
 <head>
@@ -6,8 +7,7 @@
   <title>Kayıt / Giriş • Self Training</title>
   <style>
     :root{--bg:#f4f6f8;--card:#fff;--ink:#111827;--muted:#6b7280;--ok:#16a34a;--info:#2563eb;--line:#e5e7eb}
-    *{box-sizing:border-box}
-    body{margin:0;background:var(--bg);font:15px/1.5 system-ui,-apple-system,Segoe UI,Roboto;color:var(--ink)}
+    *{box-sizing:border-box} body{margin:0;background:var(--bg);font:15px/1.5 system-ui,-apple-system,Segoe UI,Roboto;color:var(--ink)}
     .wrap{max-width:520px;margin:42px auto;padding:16px}
     .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px;box-shadow:0 2px 12px rgba(0,0,0,.04)}
     h1{margin:0 0 12px;font-size:22px}
@@ -18,9 +18,14 @@
     .btn{cursor:pointer;background:var(--ok);color:#fff;border:none;margin-top:12px}
     .btn.blue{background:var(--info)}
     .btn.light{background:#fff;color:#111;border:1px solid var(--line)}
-    .note{font-size:13px;color:#6b7280;margin-top:8px}
-    .err{color:#ef4444}.ok{color:#16a34a}
+    .note{font-size:13px;color:var(--muted);margin-top:8px}
+    .err{color:#ef4444}.ok{color:var(--ok)}
+    a{color:var(--info);text-decoration:none}
     .disabled{opacity:.6;pointer-events:none}
+    .tabs{display:flex;gap:8px;margin-bottom:12px}
+    .tab{flex:1;padding:10px;border:1px solid var(--line);border-radius:10px;background:#fff;cursor:pointer;text-align:center}
+    .tab.active{background:#eef2ff;border-color:#c7d2fe;font-weight:700}
+    .hidden{display:none}
     #ready{margin:8px 0 14px;font-weight:600}
   </style>
 </head>
@@ -30,10 +35,16 @@
       <div id="ready">Yükleniyor…</div>
 
       <h1>Self Training</h1>
-      <p class="note">Lütfen kayıt olun veya giriş yapın. (E-posta doğrulaması zorunlu.)</p>
+      <div class="tabs">
+        <button id="tabLogin"  class="tab active">Giriş</button>
+        <button id="tabSignup" class="tab">Kayıt</button>
+      </div>
+      <p class="note">Girişte yalnızca e-posta ve şifre, kayıtta ad soyad da istenir.</p>
 
-      <label for="name">Ad Soyad</label>
-      <input id="name" type="text" placeholder="Örn. Ömer Özata" autocomplete="name" />
+      <div id="nameWrap" class="hidden">
+        <label for="name">Ad Soyad</label>
+        <input id="name" type="text" placeholder="Örn. Ömer Özata" autocomplete="name" />
+      </div>
 
       <label for="email">E-posta</label>
       <input id="email" type="email" placeholder="ornek@mail.com" autocomplete="email" />
@@ -41,15 +52,15 @@
       <div class="row">
         <div>
           <label for="pass">Şifre</label>
-          <input id="pass" type="password" placeholder="En az 6 karakter" autocomplete="new-password" />
+          <input id="pass" type="password" placeholder="En az 6 karakter" autocomplete="current-password" />
         </div>
-        <div>
+        <div id="pass2Wrap" class="hidden">
           <label for="pass2">Şifre (tekrar)</label>
           <input id="pass2" type="password" placeholder="Tekrar girin" autocomplete="new-password" />
         </div>
       </div>
 
-      <button id="signupBtn" class="btn">Kayıt Ol</button>
+      <button id="signupBtn" class="btn hidden">Kayıt Ol</button>
       <button id="loginBtn" class="btn blue">Giriş Yap</button>
       <button id="googleBtn" class="btn light">Google ile devam et</button>
       <button id="resetBtn" class="btn light">Şifremi Unuttum</button>
@@ -59,7 +70,7 @@
     </div>
   </div>
 
-  <!-- Tek script: dış dosya -->
-  <script type="module" src="./signup.js"></script>
+  <!-- Dış JS (önbelleği kırmak için sürüm ver): -->
+  <script type="module" src="signup.js?v=12"></script>
 </body>
 </html>
