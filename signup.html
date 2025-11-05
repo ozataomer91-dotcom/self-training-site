@@ -1,4 +1,3 @@
-<!-- signup.html — Giriş/Kayıt sekmeli arayüz -->
 <!DOCTYPE html>
 <html lang="tr">
 <head>
@@ -23,10 +22,11 @@
     a{color:var(--info);text-decoration:none}
     .disabled{opacity:.6;pointer-events:none}
     .tabs{display:flex;gap:8px;margin-bottom:12px}
-    .tab{flex:1;padding:10px;border:1px solid var(--line);border-radius:10px;background:#fff;cursor:pointer;text-align:center}
+    .tab{flex:1;padding:10px;border:1px solid var(--line);border-radius:10px;background:#fff;cursor:pointer;text-align:center;position:relative;z-index:1}
     .tab.active{background:#eef2ff;border-color:#c7d2fe;font-weight:700}
     .hidden{display:none}
-    #ready{margin:8px 0 14px;font-weight:600}
+    #ready{margin:8px 0 6px;font-weight:600}
+    #modeBadge{font-size:12px;color:#4b5563;margin:0 0 12px}
   </style>
 </head>
 <body>
@@ -36,10 +36,10 @@
 
       <h1>Self Training</h1>
       <div class="tabs">
-        <button id="tabLogin"  class="tab active">Giriş</button>
-        <button id="tabSignup" class="tab">Kayıt</button>
+        <button type="button" id="tabLogin"  class="tab active">Giriş</button>
+        <button type="button" id="tabSignup" class="tab">Kayıt</button>
       </div>
-      <p class="note">Girişte yalnızca e-posta ve şifre, kayıtta ad soyad da istenir.</p>
+      <div id="modeBadge">Mod: Giriş (girişte sadece e-posta + şifre)</div>
 
       <div id="nameWrap" class="hidden">
         <label for="name">Ad Soyad</label>
@@ -60,17 +60,17 @@
         </div>
       </div>
 
-      <button id="signupBtn" class="btn hidden">Kayıt Ol</button>
-      <button id="loginBtn" class="btn blue">Giriş Yap</button>
-      <button id="googleBtn" class="btn light">Google ile devam et</button>
-      <button id="resetBtn" class="btn light">Şifremi Unuttum</button>
+      <button id="signupBtn" class="btn hidden" type="button">Kayıt Ol</button>
+      <button id="loginBtn" class="btn blue" type="button">Giriş Yap</button>
+      <button id="googleBtn" class="btn light" type="button">Google ile devam et</button>
+      <button id="resetBtn" class="btn light" type="button">Şifremi Unuttum</button>
 
       <p id="msg" class="note"></p>
       <p class="note"><a href="index.html">Ana sayfa</a></p>
     </div>
   </div>
 
-  <!-- Dış JS (önbelleği kırmak için sürüm ver): -->
-  <script type="module" src="signup.js?v=12"></script>
+  <!-- Dış JS (cache kırmak için sürüm ekledim) -->
+  <script type="module" src="signup.js?v=13"></script>
 </body>
 </html>
