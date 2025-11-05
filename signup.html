@@ -1,3 +1,4 @@
+<!-- signup.html — Giriş/Kayıt sekmeli; e-posta doğrulaması zorunlu -->
 <!DOCTYPE html>
 <html lang="tr">
 <head>
@@ -6,14 +7,14 @@
   <title>Kayıt / Giriş • Self Training</title>
   <style>
     :root{--bg:#f4f6f8;--card:#fff;--ink:#111827;--muted:#6b7280;--ok:#16a34a;--info:#2563eb;--line:#e5e7eb}
-    *{box-sizing:border-box} body{margin:0;background:var(--bg);font:15px/1.5 system-ui,-apple-system,Segoe UI,Roboto;color:var(--ink)}
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);font:15px/1.5 system-ui,-apple-system,Segoe UI,Roboto;color:var(--ink)}
     .wrap{max-width:520px;margin:42px auto;padding:16px}
     .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px;box-shadow:0 2px 12px rgba(0,0,0,.04)}
     h1{margin:0 0 12px;font-size:22px}
     label{display:block;margin:10px 0 6px;font-weight:600}
     input,button{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;font:inherit;outline:none;background:#fff}
     input:focus{border-color:#94a3b8;box-shadow:0 0 0 3px rgba(148,163,184,.25)}
-    .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
     .btn{cursor:pointer;background:var(--ok);color:#fff;border:none;margin-top:12px}
     .btn.blue{background:var(--info)}
     .btn.light{background:#fff;color:#111;border:1px solid var(--line)}
@@ -21,56 +22,72 @@
     .err{color:#ef4444}.ok{color:var(--ok)}
     a{color:var(--info);text-decoration:none}
     .disabled{opacity:.6;pointer-events:none}
-    .tabs{display:flex;gap:8px;margin-bottom:12px}
-    .tab{flex:1;padding:10px;border:1px solid var(--line);border-radius:10px;background:#fff;cursor:pointer;text-align:center;position:relative;z-index:1}
-    .tab.active{background:#eef2ff;border-color:#c7d2fe;font-weight:700}
-    .hidden{display:none}
-    #ready{margin:8px 0 6px;font-weight:600}
-    #modeBadge{font-size:12px;color:#4b5563;margin:0 0 12px}
+    #ready{margin:8px 0 14px;font-weight:600}
+
+    /* Sekmeler */
+    .tabs{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+    .tab{padding:10px;border:1px solid var(--line);border-radius:10px;background:#f8fafc;text-align:center;cursor:pointer}
+    .tab.on{background:#e0e7ff;border-color:#c7d2fe;font-weight:700}
+    .section{display:none}
+    .section.on{display:block}
   </style>
 </head>
 <body>
   <div class="wrap">
     <div class="card">
       <div id="ready">Yükleniyor…</div>
-
       <h1>Self Training</h1>
-      <div class="tabs">
-        <button type="button" id="tabLogin"  class="tab active">Giriş</button>
-        <button type="button" id="tabSignup" class="tab">Kayıt</button>
-      </div>
-      <div id="modeBadge">Mod: Giriş (girişte sadece e-posta + şifre)</div>
 
-      <div id="nameWrap" class="hidden">
+      <!-- Sekmeler -->
+      <div class="tabs">
+        <div id="tabLogin"  class="tab on">Giriş</div>
+        <div id="tabSignup" class="tab">Kayıt</div>
+      </div>
+
+      <!-- GİRİŞ -->
+      <div id="loginSection" class="section on">
+        <p class="note">Girişte sadece e-posta ve şifre, kayıtta ad soyad da istenir.</p>
+
+        <label for="loginEmail">E-posta</label>
+        <input id="loginEmail" type="email" placeholder="ornek@mail.com" autocomplete="email" />
+
+        <label for="loginPass">Şifre</label>
+        <input id="loginPass" type="password" placeholder="••••••••" autocomplete="current-password" />
+
+        <button id="loginBtn" class="btn blue">Giriş Yap</button>
+        <button id="googleBtn" class="btn light">Google ile devam et</button>
+        <button id="resendBtn" class="btn light">Doğrulama linkini tekrar gönder</button>
+        <button id="resetBtn" class="btn light">Şifremi Unuttum</button>
+      </div>
+
+      <!-- KAYIT -->
+      <div id="signupSection" class="section">
+        <p class="note">Lütfen kayıt olun. (E-posta doğrulaması zorunludur.)</p>
+
         <label for="name">Ad Soyad</label>
         <input id="name" type="text" placeholder="Örn. Ömer Özata" autocomplete="name" />
-      </div>
 
-      <label for="email">E-posta</label>
-      <input id="email" type="email" placeholder="ornek@mail.com" autocomplete="email" />
+        <label for="email">E-posta</label>
+        <input id="email" type="email" placeholder="ornek@mail.com" autocomplete="email" />
 
-      <div class="row">
         <div>
           <label for="pass">Şifre</label>
-          <input id="pass" type="password" placeholder="En az 6 karakter" autocomplete="current-password" />
+          <input id="pass" type="password" placeholder="En az 6 karakter" autocomplete="new-password" />
         </div>
-        <div id="pass2Wrap" class="hidden">
+        <div>
           <label for="pass2">Şifre (tekrar)</label>
           <input id="pass2" type="password" placeholder="Tekrar girin" autocomplete="new-password" />
         </div>
-      </div>
 
-      <button id="signupBtn" class="btn hidden" type="button">Kayıt Ol</button>
-      <button id="loginBtn" class="btn blue" type="button">Giriş Yap</button>
-      <button id="googleBtn" class="btn light" type="button">Google ile devam et</button>
-      <button id="resetBtn" class="btn light" type="button">Şifremi Unuttum</button>
+        <button id="signupBtn" class="btn">Kayıt Ol</button>
+      </div>
 
       <p id="msg" class="note"></p>
       <p class="note"><a href="index.html">Ana sayfa</a></p>
     </div>
   </div>
 
-  <!-- Dış JS (cache kırmak için sürüm ekledim) -->
-  <script type="module" src="signup.js?v=13"></script>
+  <!-- Modüler JS -->
+  <script type="module" src="signup.js"></script>
 </body>
 </html>
