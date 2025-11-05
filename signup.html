@@ -1,4 +1,4 @@
-<!-- signup.html — Self Training (Giriş & Kayıt) -->
+<!-- signup.html — Giriş/Kayıt + Google, doğrulama KAYIT tarafında; Firestore entegreli -->
 <!DOCTYPE html>
 <html lang="tr">
 <head>
@@ -6,60 +6,80 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Kayıt / Giriş • Self Training</title>
   <style>
-    :root{--bg:#f4f6f8;--card:#fff;--ink:#111827;--muted:#6b7280;--ok:#16a34a;--info:#2563eb;--line:#e5e7eb}
+    :root{--bg:#f6f7fb;--card:#fff;--ink:#111827;--muted:#6b7280;--ok:#16a34a;--info:#2563eb;--line:#e5e7eb}
     *{box-sizing:border-box}
     body{margin:0;background:var(--bg);font:15px/1.5 system-ui,-apple-system,Segoe UI,Roboto;color:var(--ink)}
     .wrap{max-width:520px;margin:42px auto;padding:16px}
-    .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px;box-shadow:0 2px 12px rgba(0,0,0,.04)}
+    .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px;box-shadow:0 2px 12px rgba(0,0,0,.05)}
     h1{margin:0 0 12px;font-size:22px}
     label{display:block;margin:10px 0 6px;font-weight:600}
     input,button{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;font:inherit;outline:none;background:#fff}
     input:focus{border-color:#94a3b8;box-shadow:0 0 0 3px rgba(148,163,184,.25)}
+    .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
     .btn{cursor:pointer;background:var(--ok);color:#fff;border:none;margin-top:12px}
     .btn.blue{background:var(--info)}
     .btn.light{background:#fff;color:#111;border:1px solid var(--line)}
     .note{font-size:13px;color:var(--muted);margin-top:8px}
-    .err{color:#ef4444}.ok{color:var(--ok)}
-    a{color:var(--info);text-decoration:none}
+    .err{color:#ef4444}.ok{color:var(--ok)} a{color:var(--info);text-decoration:none}
     .disabled{opacity:.6;pointer-events:none}
-    #ready{margin:8px 0 14px;font-weight:600}
+    .tabs{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:6px 0 6px}
+    .tabbtn{padding:10px;border:1px solid var(--line);border-radius:10px;background:#f3f4f6;cursor:pointer;text-align:center}
+    .tabbtn.active{background:#e8f0ff;border-color:#c7d2fe}
+    #ready{margin:0 0 14px;font-weight:600}
+    .hide{display:none}
   </style>
 </head>
 <body>
   <div class="wrap">
     <div class="card">
       <div id="ready">Yükleniyor…</div>
-
       <h1>Self Training</h1>
-      <p class="note">Girişte sadece e-posta ve şifre gerekir. Kayıt olurken ad soyad da istenir.</p>
 
-      <!-- Kayıt için: Ad Soyad -->
-      <label for="name">Ad Soyad (sadece kayıt için)</label>
-      <input id="name" type="text" placeholder="Örn. Ömer Özata" autocomplete="name" />
+      <div class="tabs">
+        <button id="tabLogin" class="tabbtn active">Giriş</button>
+        <button id="tabRegister" class="tabbtn">Kayıt</button>
+      </div>
 
-      <!-- Ortak alanlar -->
-      <label for="email">E-posta</label>
-      <input id="email" type="email" placeholder="ornek@mail.com" autocomplete="email" />
+      <p class="note" id="tabNoteLogin">Girişte yalnızca e-posta ve şifre, kayıtta ad soyad da istenir.</p>
+      <p class="note hide" id="tabNoteReg">Kayıttan sonra e-posta doğrulaması zorunludur.</p>
 
-      <label for="pass">Şifre</label>
-      <input id="pass" type="password" placeholder="En az 6 karakter" autocomplete="current-password" />
+      <!-- GİRİŞ FORMU -->
+      <div id="viewLogin">
+        <label for="l_email">E-posta</label>
+        <input id="l_email" type="email" placeholder="ornek@mail.com" autocomplete="email" />
+        <label for="l_pass">Şifre</label>
+        <input id="l_pass" type="password" placeholder="Şifre" autocomplete="current-password" />
+        <button id="loginBtn" class="btn blue">Giriş Yap</button>
+        <button id="googleBtn" class="btn light">Google ile devam et</button>
+        <button id="resetBtn" class="btn light">Şifremi Unuttum</button>
+      </div>
 
-      <!-- Kayıt için: Şifre tekrar -->
-      <label for="pass2">Şifre (tekrar - sadece kayıt için)</label>
-      <input id="pass2" type="password" placeholder="Tekrar girin" autocomplete="new-password" />
-
-      <!-- Butonlar -->
-      <button id="signupBtn" class="btn">Kayıt Ol</button>
-      <button id="loginBtn" class="btn blue">Giriş Yap</button>
-      <button id="googleBtn" class="btn light">Google ile devam et</button>
-      <button id="resetBtn" class="btn light">Şifremi Unuttum</button>
+      <!-- KAYIT FORMU -->
+      <div id="viewRegister" class="hide">
+        <label for="r_name">Ad Soyad</label>
+        <input id="r_name" type="text" placeholder="Örn. Ömer Özata" autocomplete="name" />
+        <label for="r_email">E-posta</label>
+        <input id="r_email" type="email" placeholder="ornek@mail.com" autocomplete="email" />
+        <div class="row">
+          <div>
+            <label for="r_pass">Şifre</label>
+            <input id="r_pass" type="password" placeholder="En az 6 karakter" autocomplete="new-password" />
+          </div>
+          <div>
+            <label for="r_pass2">Şifre (tekrar)</label>
+            <input id="r_pass2" type="password" placeholder="Tekrar girin" autocomplete="new-password" />
+          </div>
+        </div>
+        <button id="signupBtn" class="btn">Kayıt Ol</button>
+        <button id="resendBtn" class="btn light">Doğrulama linkini yeniden gönder</button>
+      </div>
 
       <p id="msg" class="note"></p>
       <p class="note"><a href="index.html">Ana sayfa</a></p>
     </div>
   </div>
 
-  <!-- Sadece bu satır: JS mantığı signup.js içindedir -->
-  <script type="module" src="signup.js"></script>
+  <!-- UYGULAMA JS -->
+  <script type="module" src="./signup.js"></script>
 </body>
 </html>
