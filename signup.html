@@ -6,7 +6,8 @@
   <title>Kayıt / Giriş • Self Training</title>
   <style>
     :root{--bg:#f4f6f8;--card:#fff;--ink:#111827;--muted:#6b7280;--ok:#16a34a;--info:#2563eb;--line:#e5e7eb}
-    *{box-sizing:border-box} body{margin:0;background:var(--bg);font:15px/1.5 system-ui,-apple-system,Segoe UI,Roboto;color:var(--ink)}
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);font:15px/1.5 system-ui,-apple-system,Segoe UI,Roboto;color:var(--ink)}
     .wrap{max-width:520px;margin:42px auto;padding:16px}
     .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px;box-shadow:0 2px 12px rgba(0,0,0,.04)}
     h1{margin:0 0 12px;font-size:22px}
@@ -17,13 +18,15 @@
     .btn{cursor:pointer;background:var(--ok);color:#fff;border:none;margin-top:12px}
     .btn.blue{background:var(--info)}
     .btn.light{background:#fff;color:#111;border:1px solid var(--line)}
-    .tabs{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
-    .tab{padding:10px;border:1px solid var(--line);border-radius:10px;text-align:center;background:#fff;cursor:pointer}
-    .tab.active{background:#e8f0fe;border-color:#c7d2fe}
     .note{font-size:13px;color:var(--muted);margin-top:8px}
-    .err{color:#ef4444}.ok{color:#16a34a}
-    .hidden{display:none}
+    .err{color:#ef4444}.ok{color:var(--ok)}
+    a{color:var(--info);text-decoration:none}
+    .disabled{opacity:.6;pointer-events:none}
     #ready{margin:8px 0 14px;font-weight:600}
+    .tabs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
+    .tab{padding:8px 10px;border:1px solid var(--line);border-radius:10px;text-align:center;cursor:pointer;background:#fff}
+    .tab.active{background:#eef2ff;border-color:#c7d2fe}
+    .hide{display:none}
   </style>
 </head>
 <body>
@@ -33,41 +36,195 @@
 
       <h1>Self Training</h1>
 
+      <!-- Sekmeler -->
       <div class="tabs">
-        <div id="tabLogin" class="tab active">Giriş</div>
+        <div id="tabLogin"  class="tab active">Giriş</div>
         <div id="tabSignup" class="tab">Kayıt</div>
       </div>
+      <p class="note" id="formInfo">Girişte yalnızca e-posta ve şifre, kayıtta ad soyad da istenir.</p>
 
-      <p id="hint" class="note">Girişte yalnızca e-posta ve şifre, kayıtta ad soyad da istenir.</p>
-
-      <label id="labName" class="hidden" for="name">Ad Soyad</label>
-      <input id="name" class="hidden" type="text" placeholder="Örn. Ömer Özata" autocomplete="name"/>
+      <!-- Ortak alanlar -->
+      <div id="nameWrap" class="hide">
+        <label for="name">Ad Soyad</label>
+        <input id="name" type="text" placeholder="Örn. Ömer Özata" autocomplete="name" />
+      </div>
 
       <label for="email">E-posta</label>
-      <input id="email" type="email" placeholder="ornek@mail.com" autocomplete="email"/>
+      <input id="email" type="email" placeholder="ornek@mail.com" autocomplete="email" />
 
-      <div class="row">
+      <div class="row" id="passRow">
         <div>
           <label for="pass">Şifre</label>
-          <input id="pass" type="password" placeholder="En az 6 karakter" autocomplete="current-password"/>
+          <input id="pass" type="password" placeholder="En az 6 karakter" autocomplete="current-password" />
         </div>
-        <div id="boxPass2" class="hidden">
+        <div id="pass2Wrap" class="hide">
           <label for="pass2">Şifre (tekrar)</label>
-          <input id="pass2" type="password" placeholder="Tekrar girin" autocomplete="new-password"/>
+          <input id="pass2" type="password" placeholder="Tekrar girin" autocomplete="new-password" />
         </div>
       </div>
 
-      <button id="loginBtn" class="btn blue">Giriş Yap</button>
-      <button id="signupBtn" class="btn hidden">Kayıt Ol</button>
+      <!-- Butonlar -->
+      <div id="loginBtns">
+        <button id="loginBtn" class="btn blue">Giriş Yap</button>
+      </div>
+      <div id="signupBtns" class="hide">
+        <button id="signupBtn" class="btn">Kayıt Ol</button>
+      </div>
+
       <button id="googleBtn" class="btn light">Google ile devam et</button>
-      <button id="resetBtn" class="btn light">Şifremi Unuttum</button>
-      <button id="resendBtn" class="btn light hidden">Doğrulama linkini tekrar gönder</button>
+      <button id="resetBtn"  class="btn light">Şifremi Unuttum</button>
 
       <p id="msg" class="note"></p>
       <p class="note"><a href="index.html">Ana sayfa</a></p>
     </div>
   </div>
 
-  <script type="module" src="signup.js"></script>
+  <!-- Tek bir script, ESM -->
+  <script type="module">
+    // UI yardımcıları
+    const $ = id => document.getElementById(id);
+    const show = (t, cls="") => { const m=$("msg"); m.className="note "+cls; m.textContent=t; };
+    const lock = (on)=>["signupBtn","loginBtn","googleBtn","resetBtn"].forEach(id=>{ const b=$(id); if(b) b.classList.toggle("disabled",on); });
+
+    // Sekme geçişleri
+    function setMode(mode){ // 'login' | 'signup'
+      const isSignup = mode === "signup";
+      $("tabLogin").classList.toggle("active", !isSignup);
+      $("tabSignup").classList.toggle("active", isSignup);
+      $("nameWrap").classList.toggle("hide", !isSignup);
+      $("pass2Wrap").classList.toggle("hide", !isSignup);
+      $("signupBtns").classList.toggle("hide", !isSignup);
+      $("loginBtns").classList.toggle("hide", isSignup);
+      $("formInfo").textContent = isSignup
+        ? "Kayıtta ad-soyad + e-posta + şifre (tekrar) istenir."
+        : "Girişte yalnızca e-posta ve şifre istenir.";
+      show("");
+    }
+    $("tabLogin").onclick  = ()=> setMode("login");
+    $("tabSignup").onclick = ()=> setMode("signup");
+
+    // Firebase
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js";
+    import {
+      getAuth, setPersistence, browserLocalPersistence,
+      createUserWithEmailAndPassword, signInWithEmailAndPassword,
+      sendEmailVerification, updateProfile, signOut, sendPasswordResetEmail,
+      GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult
+    } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-auth.js";
+
+    // Hazır işareti
+    $("ready").textContent = "Hazır ✅";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAnMzCWonT_zLi0EnChIDYANBhDiiwmur4",
+      authDomain: "self-training-128b5.firebaseapp.com",
+      projectId: "self-training-128b5",
+      storageBucket: "self-training-128b5.firebasestorage.app",
+      messagingSenderId: "61732879565",
+      appId: "1:61732879565:web:5a446fb76fa88f1103bd84"
+    };
+
+    (async function main(){
+      const app  = initializeApp(firebaseConfig);
+      const auth = getAuth(app);
+      await setPersistence(auth, browserLocalPersistence);
+      const provider = new GoogleAuthProvider();
+
+      // Redirect sonucu (iOS’ta popup bloklanırsa)
+      try {
+        const res = await getRedirectResult(auth);
+        if (res?.user) {
+          localStorage.setItem("user", JSON.stringify({ uid:res.user.uid, name:res.user.displayName||"", email:res.user.email }));
+          location.href = "dashboard.html";
+          return;
+        }
+      } catch {}
+
+      // Kayıt
+      $("signupBtn").addEventListener("click", async () => {
+        const name = $("name").value.trim();
+        const email= $("email").value.trim();
+        const pass = $("pass").value;
+        const pass2= $("pass2").value;
+
+        if(!name || !email || !pass || !pass2){ show("Lütfen tüm alanları doldurun.","err"); return; }
+        if(pass !== pass2){ show("Şifreler eşleşmiyor.","err"); return; }
+        if(pass.length < 6){ show("Şifre en az 6 karakter olmalı.","err"); return; }
+
+        lock(true);
+        try{
+          const cred = await createUserWithEmailAndPassword(auth, email, pass);
+          await updateProfile(cred.user, { displayName: name });
+          // ÖZEL URL kullanmıyoruz → Firebase varsayılan doğrulama sayfası
+          await sendEmailVerification(cred.user);
+          await signOut(auth);
+          setMode("login");
+          show("✅ Kayıt tamam. Doğrulama e-postası gönderildi. Maildeki linke tıklayıp sonra giriş yapın.","ok");
+        }catch(err){
+          const map = {
+            "auth/email-already-in-use":"Bu e-posta zaten kayıtlı. 'Giriş Yap' veya 'Şifremi Unuttum' deneyin.",
+            "auth/invalid-email":"E-posta adresi geçersiz.",
+            "auth/weak-password":"Şifre zayıf (en az 6 karakter)."
+          };
+          show(map[err.code] || ("Hata: "+err.code), "err");
+        } finally { lock(false); }
+      });
+
+      // Giriş
+      $("loginBtn").addEventListener("click", async () => {
+        const email= $("email").value.trim();
+        const pass = $("pass").value;
+        if(!email || !pass){ show("E-posta ve şifre girin.","err"); return; }
+
+        lock(true);
+        try{
+          const cred = await signInWithEmailAndPassword(auth, email, pass);
+          if(!cred.user.emailVerified){
+            await signOut(auth);
+            show("E-posta doğrulanmamış. Gelen kutusundaki doğrulama bağlantısına tıklayın.","err");
+            return;
+          }
+          localStorage.setItem("user", JSON.stringify({ uid:cred.user.uid, name:cred.user.displayName||"", email:cred.user.email }));
+          location.href = "dashboard.html";
+        }catch(err){
+          const map = {
+            "auth/invalid-credential":"E-posta/şifre hatalı.",
+            "auth/too-many-requests":"Çok deneme yapıldı. Bir süre sonra tekrar deneyin."
+          };
+          show(map[err.code] || ("Hata: "+err.code), "err");
+        } finally { lock(false); }
+      });
+
+      // Google (popup; engellenirse redirect)
+      $("googleBtn").addEventListener("click", async () => {
+        lock(true);
+        try{
+          try {
+            const cred = await signInWithPopup(auth, provider);
+            localStorage.setItem("user", JSON.stringify({ uid:cred.user.uid, name:cred.user.displayName||"", email:cred.user.email }));
+            location.href = "dashboard.html";
+          } catch {
+            await signInWithRedirect(auth, provider);
+          }
+        }catch(err){
+          show("Google ile giriş iptal edildi veya hata: " + err.code, "err");
+        } finally { lock(false); }
+      });
+
+      // Şifre sıfırlama
+      $("resetBtn").addEventListener("click", async () => {
+        const email= $("email").value.trim();
+        if(!email){ show("Şifre sıfırlamak için e-posta yazın.","err"); return; }
+        lock(true);
+        try{
+          await sendPasswordResetEmail(auth, email);
+          show("Şifre sıfırlama e-postası gönderildi. Gelen kutusunu kontrol edin.","ok");
+        }catch(err){
+          show("Şifre sıfırlama hatası: " + err.code, "err");
+        } finally { lock(false); }
+      });
+
+    })();
+  </script>
 </body>
 </html>
