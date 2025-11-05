@@ -1,4 +1,4 @@
-<!-- signup.html -->
+<!-- signup.html — Self Training (Giriş & Kayıt) -->
 <!DOCTYPE html>
 <html lang="tr">
 <head>
@@ -21,64 +21,45 @@
     .note{font-size:13px;color:var(--muted);margin-top:8px}
     .err{color:#ef4444}.ok{color:var(--ok)}
     a{color:var(--info);text-decoration:none}
-    .hide{display:none}
-    /* Sekmeler */
-    .tabs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0 6px}
-    .tab{padding:10px;border:1px solid var(--line);background:#fff;border-radius:10px;cursor:pointer;text-align:center}
-    .tab.active{background:#eef2ff;border-color:#c7d2fe;font-weight:700}
-    #ready{margin:6px 0 10px;font-weight:600}
+    .disabled{opacity:.6;pointer-events:none}
+    #ready{margin:8px 0 14px;font-weight:600}
   </style>
 </head>
 <body>
   <div class="wrap">
     <div class="card">
       <div id="ready">Yükleniyor…</div>
+
       <h1>Self Training</h1>
+      <p class="note">Girişte sadece e-posta ve şifre gerekir. Kayıt olurken ad soyad da istenir.</p>
 
-      <div class="tabs">
-        <button id="tabLogin" class="tab active">Giriş</button>
-        <button id="tabRegister" class="tab">Kayıt</button>
-      </div>
+      <!-- Kayıt için: Ad Soyad -->
+      <label for="name">Ad Soyad (sadece kayıt için)</label>
+      <input id="name" type="text" placeholder="Örn. Ömer Özata" autocomplete="name" />
 
-      <!-- GİRİŞ -->
-      <form id="loginForm">
-        <p class="note">Girişte yalnızca e-posta ve şifre, kayıt ekranında ad soyad da istenir.</p>
-        <label for="loginEmail">E-posta</label>
-        <input id="loginEmail" type="email" placeholder="ornek@mail.com" autocomplete="email" />
-        <label for="loginPass">Şifre</label>
-        <input id="loginPass" type="password" placeholder="Şifre" autocomplete="current-password" />
-        <button id="loginBtn" type="button" class="btn blue">Giriş Yap</button>
-        <button id="googleBtn" type="button" class="btn light">Google ile devam et</button>
-        <button id="resetBtn" type="button" class="btn light">Şifremi Unuttum</button>
-      </form>
+      <!-- Ortak alanlar -->
+      <label for="email">E-posta</label>
+      <input id="email" type="email" placeholder="ornek@mail.com" autocomplete="email" />
 
-      <!-- KAYIT -->
-      <form id="registerForm" class="hide">
-        <label for="regName">Ad Soyad</label>
-        <input id="regName" type="text" placeholder="Örn. Ömer Özata" autocomplete="name" />
-        <label for="regEmail">E-posta</label>
-        <input id="regEmail" type="email" placeholder="ornek@mail.com" autocomplete="email" />
-        <label for="regPass">Şifre</label>
-        <input id="regPass" type="password" placeholder="En az 6 karakter" autocomplete="new-password" />
-        <label for="regPass2">Şifre (tekrar)</label>
-        <input id="regPass2" type="password" placeholder="Tekrar girin" autocomplete="new-password" />
-        <button id="signupBtn" type="button" class="btn">Kayıt Ol</button>
+      <label for="pass">Şifre</label>
+      <input id="pass" type="password" placeholder="En az 6 karakter" autocomplete="current-password" />
 
-        <!-- SADECE KAYIT SEKMEDE GÖRÜNÜR -->
-        <div id="resendRow" class="note hide" style="margin-top:10px">
-          Doğrulama e-postası gelmedi mi?
-          <button id="resendBtn" type="button" class="btn light" style="margin-top:6px">
-            Doğrulama bağlantısını tekrar gönder
-          </button>
-        </div>
-      </form>
+      <!-- Kayıt için: Şifre tekrar -->
+      <label for="pass2">Şifre (tekrar - sadece kayıt için)</label>
+      <input id="pass2" type="password" placeholder="Tekrar girin" autocomplete="new-password" />
+
+      <!-- Butonlar -->
+      <button id="signupBtn" class="btn">Kayıt Ol</button>
+      <button id="loginBtn" class="btn blue">Giriş Yap</button>
+      <button id="googleBtn" class="btn light">Google ile devam et</button>
+      <button id="resetBtn" class="btn light">Şifremi Unuttum</button>
 
       <p id="msg" class="note"></p>
       <p class="note"><a href="index.html">Ana sayfa</a></p>
     </div>
   </div>
 
-  <!-- dış JS -->
-  <script type="module" src="./signup.js"></script>
+  <!-- Sadece bu satır: JS mantığı signup.js içindedir -->
+  <script type="module" src="signup.js"></script>
 </body>
 </html>
