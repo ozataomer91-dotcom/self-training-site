@@ -1,4 +1,4 @@
-<!-- signup.html (E-posta/Şifre + Google; e-posta doğrulama ZORUNLU) -->
+<!-- signup.html (E-posta/Şifre + Google; e-posta doğrulaması ZORUNLU) -->
 <!DOCTYPE html>
 <html lang="tr">
 <head>
@@ -58,16 +58,17 @@
     </div>
   </div>
 
-  <!-- Firebase ESM CDN -->
+  <!-- Firebase (ESM) -->
   <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js";
-  import {
-    getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword,
-    sendEmailVerification, updateProfile, signOut, sendPasswordResetEmail,
-    GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult
-  } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-auth.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js";
+    import {
+      getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword,
+      sendEmailVerification, updateProfile, signOut, sendPasswordResetEmail,
+      GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult,
+      setPersistence, browserLocalPersistence
+    } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-auth.js";
 
-    // 🔐 Firebase config (API key kısıtlı; konsolda domain ve API kısıtları zaten verildi)
+    // --- Firebase config
     const firebaseConfig = {
       apiKey: "AIzaSyAnMzCWonT_zLi0EnChIDYANBhDiiwmur4",
       authDomain: "self-training-128b5.firebaseapp.com",
@@ -77,120 +78,127 @@
       appId: "1:61732879565:web:5a446fb76fa88f1103bd84"
     };
 
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    // Oturumu tarayıcıda kalıcı tut
-    await setPersistence(auth, browserLocalPersistence);
-
-    const provider = new GoogleAuthProvider();
-
-    const $ = id => document.getElementById(id);
+    // Util
+    const $ = (id) => document.getElementById(id);
     const show = (t, cls="") => { const m=$("msg"); m.className="note "+cls; m.textContent=t; };
-    const lock = (on) => {
-      ["signupBtn","loginBtn","googleBtn","resetBtn"].forEach(id=>{
-        const b=$(id); b.classList.toggle("disabled", on);
+    const lock = (on) => ["signupBtn","loginBtn","googleBtn","resetBtn"].forEach(id=>$(id).classList.toggle("disabled", on));
+
+    // Tek dosya içinde asenkron akış
+    (async () => {
+      const app = initializeApp(firebaseConfig);
+      const auth = getAuth(app);
+
+      // Session kalıcı olsun
+      await setPersistence(auth, browserLocalPersistence);
+
+      // Google provider
+      const provider = new GoogleAuthProvider();
+      provider.setCustomParameters({ prompt: "select_account" });
+
+      // E-posta doğrulama dönüş adresi
+      const actionCodeSettings = {
+        url: "https://ozataomer91-dotcom.github.io/self-training-site/signup.html",
+        handleCodeInApp: false
+      };
+
+      // Redirect dönüşünü yakala (mobil/popup engeli)
+      try {
+        const r = await getRedirectResult(auth);
+        if (r && r.user) return afterLogin(r.user);
+      } catch (e) {
+        if (e?.code) show("Redirect hatası: " + e.code, "err");
+      }
+
+      // Kayıt
+      $("signupBtn").addEventListener("click", async () => {
+        const name = $("name").value.trim();
+        const email = $("email").value.trim();
+        const pass = $("pass").value;
+        const pass2 = $("pass2").value;
+
+        if(!name || !email || !pass || !pass2) return show("Lütfen tüm alanları doldurun.","err");
+        if(pass !== pass2) return show("Şifreler eşleşmiyor.","err");
+        if(pass.length < 6) return show("Şifre en az 6 karakter olmalı.","err");
+
+        lock(true);
+        try{
+          const cred = await createUserWithEmailAndPassword(auth, email, pass);
+          await updateProfile(cred.user, { displayName: name });
+          await sendEmailVerification(cred.user, actionCodeSettings);
+          await signOut(auth); // doğrulanmadan giriş yok
+          show("✅ Kayıt tamam. Doğrulama e-postası gönderildi. Maildeki linke tıklayıp sonra giriş yapın.","ok");
+        }catch(err){
+          const map = {
+            "auth/email-already-in-use":"Bu e-posta zaten kayıtlı. 'Giriş Yap' veya 'Şifremi Unuttum' deneyin.",
+            "auth/invalid-email":"E-posta adresi geçersiz.",
+            "auth/weak-password":"Şifre zayıf (en az 6 karakter)."
+          };
+          show(map[err.code] || ("Hata: "+err.code), "err");
+        } finally { lock(false); }
       });
-    };
 
-    // 📩 e-posta doğrulama linkinde dönüş adresi
-    const actionCodeSettings = {
-      url: "https://ozataomer91-dotcom.github.io/self-training-site/signup.html",
-      handleCodeInApp: false
-    };
+      // Giriş
+      $("loginBtn").addEventListener("click", async () => {
+        const email = $("email").value.trim();
+        const pass = $("pass").value;
+        if(!email || !pass) return show("E-posta ve şifre girin.","err");
 
-    // ▶ Geri dönüşten gelen Google redirect sonucunu yakala (mobilde popup engellenirse)
-    try {
-      const r = await getRedirectResult(auth);
-      if (r && r.user) {
-        localStorage.setItem("user", JSON.stringify({ uid:r.user.uid, name:r.user.displayName||"", email:r.user.email }));
+        lock(true);
+        try{
+          const cred = await signInWithEmailAndPassword(auth, email, pass);
+          if(!cred.user.emailVerified){
+            await sendEmailVerification(cred.user, actionCodeSettings);
+            await signOut(auth);
+            return show("E-posta doğrulanmadı. Maildeki linke tıklayın, sonra tekrar giriş yapın.","err");
+          }
+          afterLogin(cred.user);
+        }catch(err){
+          const map = {
+            "auth/invalid-credential":"E-posta/şifre hatalı.",
+            "auth/user-not-found":"Hesap bulunamadı. Önce 'Kayıt Ol' yapın.",
+            "auth/too-many-requests":"Çok deneme yapıldı. 1-2 dk sonra deneyin."
+          };
+          show(map[err.code] || ("Hata: "+err.code), "err");
+        } finally { lock(false); }
+      });
+
+      // Google ile devam (popup; olmazsa redirect)
+      $("googleBtn").addEventListener("click", async () => {
+        lock(true);
+        try{
+          try{
+            const res = await signInWithPopup(auth, provider);
+            afterLogin(res.user);
+          }catch(e){
+            // popup kapalı/engelli/unauthorized-domain → redirect
+            await signInWithRedirect(auth, provider);
+          }
+        }catch(err){
+          show("Google ile giriş hatası: " + err.code, "err");
+        } finally { lock(false); }
+      });
+
+      // Şifre sıfırlama
+      $("resetBtn").addEventListener("click", async () => {
+        const email = $("email").value.trim();
+        if(!email) return show("Şifre sıfırlamak için e-posta yazın.","err");
+        lock(true);
+        try{
+          await sendPasswordResetEmail(auth, email);
+          show("Şifre sıfırlama e-postası gönderildi.","ok");
+        }catch(err){
+          show("Şifre sıfırlama hatası: " + err.code, "err");
+        } finally { lock(false); }
+      });
+
+      // Ortak → giriş sonrası
+      function afterLogin(user){
+        localStorage.setItem("user", JSON.stringify({
+          uid: user.uid, name: user.displayName || "", email: user.email || ""
+        }));
         location.href = "dashboard.html";
       }
-    } catch(_) {}
-
-    // 🟢 Kayıt
-    $("signupBtn").addEventListener("click", async () => {
-      const name = $("name").value.trim();
-      const email = $("email").value.trim();
-      const pass = $("pass").value;
-      const pass2 = $("pass2").value;
-
-      if(!name || !email || !pass || !pass2){ show("Lütfen tüm alanları doldurun.","err"); return; }
-      if(pass !== pass2){ show("Şifreler eşleşmiyor.","err"); return; }
-      if(pass.length < 6){ show("Şifre en az 6 karakter olmalı.","err"); return; }
-
-      lock(true);
-      try{
-        const cred = await createUserWithEmailAndPassword(auth, email, pass);
-        await updateProfile(cred.user, { displayName: name });
-        await sendEmailVerification(cred.user, actionCodeSettings);
-        // Kullanıcıyı çıkışa alıyoruz → doğrulamadan giriş yok
-        await signOut(auth);
-        show("✅ Kayıt tamam. Doğrulama e-postası gönderildi. Maildeki linke tıklayıp sonra giriş yapın.","ok");
-      }catch(err){
-        const map = {
-          "auth/email-already-in-use":"Bu e-posta zaten kayıtlı. 'Giriş Yap' veya 'Şifremi Unuttum' deneyin.",
-          "auth/invalid-email":"E-posta adresi geçersiz.",
-          "auth/weak-password":"Şifre zayıf (en az 6 karakter)."
-        };
-        show(map[err.code] || ("Hata: "+err.code), "err");
-      } finally { lock(false); }
-    });
-
-    // 🔵 Giriş
-    $("loginBtn").addEventListener("click", async () => {
-      const email = $("email").value.trim();
-      const pass = $("pass").value;
-      if(!email || !pass){ show("E-posta ve şifre girin.","err"); return; }
-
-      lock(true);
-      try{
-        const cred = await signInWithEmailAndPassword(auth, email, pass);
-        if(!cred.user.emailVerified){
-          await sendEmailVerification(cred.user, actionCodeSettings);
-          await signOut(auth);
-          show("E-posta doğrulanmadı. Gelen kutusundaki linke tıklayın ve tekrar giriş yapın.","err");
-          return;
-        }
-        localStorage.setItem("user", JSON.stringify({ uid: cred.user.uid, name: cred.user.displayName || "", email }));
-        location.href = "dashboard.html";
-      }catch(err){
-        const map = {
-          "auth/invalid-credential":"E-posta/şifre hatalı.",
-          "auth/too-many-requests":"Çok deneme yapıldı. Bir süre sonra tekrar deneyin."
-        };
-        show(map[err.code] || ("Hata: "+err.code), "err");
-      } finally { lock(false); }
-    });
-
-    // 🟡 Google ile devam (popup olmazsa redirect'e düşer)
-    $("googleBtn").addEventListener("click", async () => {
-      lock(true);
-      try{
-        try {
-          const cred = await signInWithPopup(auth, provider);
-          localStorage.setItem("user", JSON.stringify({ uid:cred.user.uid, name:cred.user.displayName||"", email:cred.user.email }));
-          location.href = "dashboard.html";
-        } catch (e) {
-          // Popup engellendiyse redirect dene
-          await signInWithRedirect(auth, provider);
-        }
-      }catch(err){
-        show("Google ile giriş iptal edildi veya hata: " + err.code, "err");
-      } finally { lock(false); }
-    });
-
-    // 📨 Şifre sıfırlama
-    $("resetBtn").addEventListener("click", async () => {
-      const email = $("email").value.trim();
-      if(!email){ show("Şifre sıfırlamak için e-posta yazın.","err"); return; }
-      lock(true);
-      try{
-        await sendPasswordResetEmail(auth, email);
-        show("Şifre sıfırlama e-postası gönderildi. Gelen kutusunu kontrol edin.","ok");
-      }catch(err){
-        show("Şifre sıfırlama hatası: " + err.code, "err");
-      } finally { lock(false); }
-    });
+    })();
   </script>
 </body>
 </html>
