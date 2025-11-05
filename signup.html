@@ -60,13 +60,12 @@
 
   <!-- Firebase ESM CDN -->
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js";
-    import {
-      getAuth, setPersistence, browserLocalPersistence,
-      createUserWithEmailAndPassword, signInWithEmailAndPassword,
-      sendEmailVerification, updateProfile, signOut, sendPasswordResetEmail,
-      GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult
-    } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-auth.js";
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js";
+  import {
+    getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword,
+    sendEmailVerification, updateProfile, signOut, sendPasswordResetEmail,
+    GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult
+  } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-auth.js";
 
     // 🔐 Firebase config (API key kısıtlı; konsolda domain ve API kısıtları zaten verildi)
     const firebaseConfig = {
