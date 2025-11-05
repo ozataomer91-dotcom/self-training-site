@@ -1,162 +1,93 @@
-// signup.js v13 — Sekmeli (Giriş/Kayıt) + güvenli bağlayıcılar
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js";
-import {
-  getAuth,
-  setPersistence, browserLocalPersistence,
-  createUserWithEmailAndPassword, signInWithEmailAndPassword,
-  sendEmailVerification, updateProfile, signOut, sendPasswordResetEmail,
-  GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult
-} from "https://www.gstatic.com/firebasejs/10.13.1/firebase-auth.js";
+<!-- signup.html — Giriş/Kayıt sekmeli; e-posta doğrulaması zorunlu -->
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Kayıt / Giriş • Self Training</title>
+  <style>
+    :root{--bg:#f4f6f8;--card:#fff;--ink:#111827;--muted:#6b7280;--ok:#16a34a;--info:#2563eb;--line:#e5e7eb}
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);font:15px/1.5 system-ui,-apple-system,Segoe UI,Roboto;color:var(--ink)}
+    .wrap{max-width:520px;margin:42px auto;padding:16px}
+    .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px;box-shadow:0 2px 12px rgba(0,0,0,.04)}
+    h1{margin:0 0 12px;font-size:22px}
+    label{display:block;margin:10px 0 6px;font-weight:600}
+    input,button{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;font:inherit;outline:none;background:#fff}
+    input:focus{border-color:#94a3b8;box-shadow:0 0 0 3px rgba(148,163,184,.25)}
+    .btn{cursor:pointer;background:var(--ok);color:#fff;border:none;margin-top:12px}
+    .btn.blue{background:var(--info)}
+    .btn.light{background:#fff;color:#111;border:1px solid var(--line)}
+    .note{font-size:13px;color:var(--muted);margin-top:8px}
+    .err{color:#ef4444}.ok{color:var(--ok)}
+    a{color:var(--info);text-decoration:none}
+    .disabled{opacity:.6;pointer-events:none}
+    #ready{margin:8px 0 14px;font-weight:600}
 
-const $ = id => document.getElementById(id);
-const show = (t, cls="") => { const m=$("msg"); if(m){ m.className="note "+cls; m.textContent=t; } };
-const lock = on => ["signupBtn","loginBtn","googleBtn","resetBtn"].forEach(id=>{ const b=$(id); if(b) b.classList.toggle("disabled",on); });
+    /* Sekmeler */
+    .tabs{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+    .tab{padding:10px;border:1px solid var(--line);border-radius:10px;background:#f8fafc;text-align:center;cursor:pointer}
+    .tab.on{background:#e0e7ff;border-color:#c7d2fe;font-weight:700}
+    .section{display:none}
+    .section.on{display:block}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <div id="ready">Yükleniyor…</div>
+      <h1>Self Training</h1>
 
-let mode = "login";
-function applyMode() {
-  const isSignup = mode === "signup";
-  $("tabLogin").classList.toggle("active", !isSignup);
-  $("tabSignup").classList.toggle("active", isSignup);
-  $("nameWrap").classList.toggle("hidden", !isSignup);
-  $("pass2Wrap").classList.toggle("hidden", !isSignup);
-  $("signupBtn").classList.toggle("hidden", !isSignup);
-  $("loginBtn").classList.toggle("hidden", isSignup);
-  $("pass").setAttribute("autocomplete", isSignup ? "new-password" : "current-password");
-  const badge = $("modeBadge"); if (badge) badge.textContent = "Mod: " + (isSignup ? "Kayıt" : "Giriş");
-}
-function bindTabs(){
-  $("tabLogin").addEventListener("click", ()=>{ mode="login"; applyMode(); });
-  $("tabSignup").addEventListener("click", ()=>{ mode="signup"; applyMode(); });
-}
-// Fallback: global erişim (olur da modül yüklenir ama listener bağlanmazsa)
-window.__setMode = m => { mode = m; applyMode(); };
+      <!-- Sekmeler -->
+      <div class="tabs">
+        <div id="tabLogin"  class="tab on">Giriş</div>
+        <div id="tabSignup" class="tab">Kayıt</div>
+      </div>
 
-applyMode();
-bindTabs();
-const ready = $("ready"); if (ready) ready.textContent = "Hazır ✅";
+      <!-- GİRİŞ -->
+      <div id="loginSection" class="section on">
+        <p class="note">Girişte sadece e-posta ve şifre, kayıtta ad soyad da istenir.</p>
 
-// ---- Firebase ----
-const firebaseConfig = {
-  apiKey: "AIzaSyAnMzCWonT_zLi0EnChIDYANBhDiiwmur4",
-  authDomain: "self-training-128b5.firebaseapp.com",
-  projectId: "self-training-128b5",
-  storageBucket: "self-training-128b5.firebasestorage.app",
-  messagingSenderId: "61732879565",
-  appId: "1:61732879565:web:5a446fb76fa88f1103bd84"
-};
+        <label for="loginEmail">E-posta</label>
+        <input id="loginEmail" type="email" placeholder="ornek@mail.com" autocomplete="email" />
 
-(async function main(){
-  try{
-    const app  = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    await setPersistence(auth, browserLocalPersistence);
+        <label for="loginPass">Şifre</label>
+        <input id="loginPass" type="password" placeholder="••••••••" autocomplete="current-password" />
 
-    const provider = new GoogleAuthProvider();
-    provider.setCustomParameters({ prompt: "select_account" });
+        <button id="loginBtn" class="btn blue">Giriş Yap</button>
+        <button id="googleBtn" class="btn light">Google ile devam et</button>
+        <button id="resendBtn" class="btn light">Doğrulama linkini tekrar gönder</button>
+        <button id="resetBtn" class="btn light">Şifremi Unuttum</button>
+      </div>
 
-    const actionCodeSettings = {
-      url: "https://ozataomer91-dotcom.github.io/self-training-site/signup.html",
-      handleCodeInApp: false
-    };
+      <!-- KAYIT -->
+      <div id="signupSection" class="section">
+        <p class="note">Lütfen kayıt olun. (E-posta doğrulaması zorunludur.)</p>
 
-    // Redirect dönüşü
-    try {
-      const r = await getRedirectResult(auth);
-      if (r && r.user) {
-        localStorage.setItem("user", JSON.stringify({ uid:r.user.uid, name:r.user.displayName||"", email:r.user.email }));
-        location.href = "dashboard.html";
-        return;
-      }
-    } catch(e) { console.debug("getRedirectResult:", e?.code || e); }
+        <label for="name">Ad Soyad</label>
+        <input id="name" type="text" placeholder="Örn. Ömer Özata" autocomplete="name" />
 
-    // --- Kayıt ---
-    $("signupBtn").addEventListener("click", async () => {
-      const name = $("name").value.trim();
-      const email= $("email").value.trim();
-      const pass = $("pass").value;
-      const pass2= $("pass2").value;
+        <label for="email">E-posta</label>
+        <input id="email" type="email" placeholder="ornek@mail.com" autocomplete="email" />
 
-      if(!name || !email || !pass || !pass2){ show("Lütfen tüm alanları doldurun.","err"); return; }
-      if(pass !== pass2){ show("Şifreler eşleşmiyor.","err"); return; }
-      if(pass.length < 6){ show("Şifre en az 6 karakter olmalı.","err"); return; }
+        <div>
+          <label for="pass">Şifre</label>
+          <input id="pass" type="password" placeholder="En az 6 karakter" autocomplete="new-password" />
+        </div>
+        <div>
+          <label for="pass2">Şifre (tekrar)</label>
+          <input id="pass2" type="password" placeholder="Tekrar girin" autocomplete="new-password" />
+        </div>
 
-      lock(true);
-      try{
-        const cred = await createUserWithEmailAndPassword(auth, email, pass);
-        await updateProfile(cred.user, { displayName: name });
-        await sendEmailVerification(cred.user, actionCodeSettings);
-        await signOut(auth);
-        show("✅ Kayıt tamam. Doğrulama e-postası gönderildi. Maildeki linke tıklayıp sonra giriş yapın.","ok");
-        mode = "login"; applyMode();
-      }catch(err){
-        const map = {
-          "auth/email-already-in-use":"Bu e-posta zaten kayıtlı. 'Giriş Yap' veya 'Şifremi Unuttum' deneyin.",
-          "auth/invalid-email":"E-posta adresi geçersiz.",
-          "auth/weak-password":"Şifre zayıf (en az 6 karakter)."
-        };
-        show(map[err.code] || ("Hata: "+err.code), "err");
-      } finally { lock(false); }
-    });
+        <button id="signupBtn" class="btn">Kayıt Ol</button>
+      </div>
 
-    // --- Giriş ---
-    $("loginBtn").addEventListener("click", async () => {
-      const email= $("email").value.trim();
-      const pass = $("pass").value;
-      if(!email || !pass){ show("E-posta ve şifre girin.","err"); return; }
+      <p id="msg" class="note"></p>
+      <p class="note"><a href="index.html">Ana sayfa</a></p>
+    </div>
+  </div>
 
-      lock(true);
-      try{
-        const cred = await signInWithEmailAndPassword(auth, email, pass);
-        if(!cred.user.emailVerified){
-          await sendEmailVerification(cred.user, actionCodeSettings);
-          await signOut(auth);
-          show("E-posta doğrulanmadı. Gelen kutusundaki linke tıklayın ve tekrar giriş yapın.","err");
-          return;
-        }
-        localStorage.setItem("user", JSON.stringify({ uid: cred.user.uid, name: cred.user.displayName || "", email }));
-        location.href = "dashboard.html";
-      }catch(err){
-        const map = {
-          "auth/invalid-credential":"E-posta/şifre hatalı.",
-          "auth/too-many-requests":"Çok deneme yapıldı. Bir süre sonra tekrar deneyin.",
-          "auth/invalid-email":"E-posta adresi geçersiz."
-        };
-        show(map[err.code] || ("Hata: "+err.code), "err");
-      } finally { lock(false); }
-    });
-
-    // --- Google ---
-    $("googleBtn").addEventListener("click", async () => {
-      lock(true);
-      try{
-        try { await signInWithPopup(auth, provider); }
-        catch { await signInWithRedirect(auth, provider); return; }
-        const u = auth.currentUser;
-        if (u) {
-          localStorage.setItem("user", JSON.stringify({ uid:u.uid, name:u.displayName||"", email:u.email }));
-          location.href = "dashboard.html";
-        }
-      }catch(err){
-        show("Google ile giriş hatası: " + err.code, "err");
-        console.debug("Google error:", err);
-      } finally { lock(false); }
-    });
-
-    // --- Şifre sıfırlama ---
-    $("resetBtn").addEventListener("click", async () => {
-      const email= $("email").value.trim();
-      if(!email){ show("Şifre sıfırlamak için e-posta yazın.","err"); return; }
-      lock(true);
-      try{
-        await sendPasswordResetEmail(auth, email);
-        show("Şifre sıfırlama e-postası gönderildi. Gelen kutusunu kontrol edin.","ok");
-      }catch(err){
-        show("Şifre sıfırlama hatası: " + err.code, "err");
-      } finally { lock(false); }
-    });
-
-  } catch(e){
-    show("Başlatma hatası: " + (e?.message || e), "err");
-    console.error(e);
-  }
-})();
+  <!-- Modüler JS -->
+  <script type="module" src="signup.js"></script>
+</body>
+</html>
