@@ -9,7 +9,8 @@
     *{box-sizing:border-box}
     body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg)}
     .wrap{min-height:100dvh;display:grid;place-items:center;padding:24px}
-    .card{width:100%;max-width:520px;background:var(--card);border-radius:16px;box-shadow:0 8px 28px rgba(0,0,0,.08);padding:20px 20px 24px}
+    .card{width:100%;max-width:520px;background:var(--card);border-radius:16px;box-shadow:0 8px 28px rgba(0,0,0,.08);padding:20px 20px 24px;
+      position:relative; z-index:2147483000; pointer-events:auto}
     h1{margin:4px 0 14px;font-size:24px;text-align:center;color:#1b1b1b}
     .tabs{display:flex;gap:8px;margin-bottom:12px}
     .tab{flex:1;border:1px solid #d0d4e0;background:#eef1ff;color:#243b80;height:38px;border-radius:10px;cursor:pointer}
@@ -21,7 +22,8 @@
     .link{background:none;border:none;color:#243b80;text-decoration:underline;cursor:pointer;padding:0;margin:0;font-size:14px}
     .msg{min-height:22px;margin-top:10px;font-size:14px}
     .err{color:var(--err)} .ok{color:var(--ok)} .hide{display:none}
-    /* ——— Eklenti katmanlarını etkisizleştir ——— */
+
+    /* Eklenti katmanlarını KAPAT */
     #monica-content-root,.monica-widget,[id*="monica"],[class*="monica"],
     [class*="grammarly"],[id*="grammarly"],[class*="glasp"],[id*="glasp"]{
       display:none!important; pointer-events:none!important; z-index:-1!important;
@@ -30,7 +32,7 @@
 </head>
 <body>
   <div class="wrap">
-    <div class="card">
+    <div class="card" id="appCard">
       <h1>Self Training</h1>
 
       <div class="tabs">
@@ -60,12 +62,33 @@
     </div>
   </div>
 
-  <!-- Firebase compat (module kullanmıyoruz) -->
+  <!-- Firebase compat -->
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
 
   <script>
-    /* —— Config —— */
+    /********** AGRESİF KALKAN – eklenti katmanlarını ve "contentEditable" modunu sürekli kapat **********/
+    (function guard(){
+      try{
+        document.body.contentEditable = "false";
+        document.designMode = "off";
+        const kill = k => document.querySelectorAll([id*="${k}"],[class*="${k}"]).forEach(el=>{ el.remove(); });
+        ["monica","grammarly","glasp","notion","scribe","quill"].forEach(kill);
+        // Tam ekran, yüksek z-indexli örtüler:
+        document.querySelectorAll('body *').forEach(el=>{
+          const s=getComputedStyle(el);
+          const big = (parseInt(s.width)>=innerWidth*0.9)&&(parseInt(s.height)>=innerHeight*0.9);
+          const overlay = (s.position==="fixed"||s.position==="absolute") && ( (+s.zIndex||0) > 9999 );
+          if(overlay && big){ el.style.display="none"; el.style.pointerEvents="none"; }
+        });
+        // Uygulama kartına tıklamalar doğrudan geçsin:
+        const card=document.getElementById("appCard");
+        if(card){ card.addEventListener("click", e=>e.stopPropagation(), true); card.style.pointerEvents="auto"; }
+      }catch(_){}
+      setTimeout(guard, 700);
+    })();
+
+    /********** Firebase **********/
     const firebaseConfig = {
       apiKey: "AIzaSyAnMzcWonT_zL0EhcNlDIYANBhDiivmur4",
       authDomain: "self-training-128b5.firebaseapp.com",
@@ -77,39 +100,27 @@
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
 
-    /* —— Yardımcılar —— */
+    /********** UI yardımcıları **********/
     const $=(id)=>document.getElementById(id);
     const show=(id)=>$(id).classList.remove("hide");
     const hide=(id)=>$(id).classList.add("hide");
     const msg=(t,ok)=>{const m=$("globalMsg");m.className="msg "+(ok?"ok":"err");m.textContent=t;}
     const clr=()=>{const m=$("globalMsg");m.className="msg";m.textContent="";}
 
-    /* —— Eklenti katmanını periyodik söndür —— */
-    const killOverlays = () => {
-      const suspects = Array.from(document.querySelectorAll('*')).filter(el=>{
-        const id=(el.id||'').toLowerCase(), cl=(el.className||'').toLowerCase();
-        const bad = ['monica','grammarly','glasp'];
-        return bad.some(k=>id.includes(k)||cl.includes(k)) || +getComputedStyle(el).zIndex>9999;
-      });
-      suspects.forEach(el=>{ el.style.display='none'; el.style.pointerEvents='none'; el.style.zIndex='-1'; });
-    };
-    killOverlays(); setInterval(killOverlays, 800);
-
-    /* —— Hata çevirisi —— */
     const tr=(c)=>({
       "auth/invalid-email":"Geçersiz e-posta.","auth/missing-password":"Şifre gerekli.",
       "auth/wrong-password":"E-posta/şifre hatalı.","auth/user-not-found":"Kullanıcı bulunamadı.",
       "auth/email-already-in-use":"Bu e-posta zaten kayıtlı.","auth/weak-password":"Şifre çok zayıf.",
-      "auth/network-request-failed":"Ağ hatası.","auth/too-many-requests":"Çok fazla deneme. Biraz bekleyin.",
+      "auth/network-request-failed":"Ağ hatası.","auth/too-many-requests":"Çok fazla deneme.",
       "auth/api-key-not-valid.please-pass-a-valid-api-key.":"API anahtarı geçersiz."
     }[c]||İşlem başarısız (${c}).);
 
-    /* —— Sekmeler —— */
-    $("tabLogin").onclick = ()=>{clr();$("tabLogin").classList.add("active");$("tabSignup").classList.remove("active");show("loginView");hide("signupView");};
-    $("tabSignup").onclick= ()=>{clr();$("tabSignup").classList.add("active");$("tabLogin").classList.remove("active");show("signupView");hide("loginView");};
+    /********** Sekmeler **********/
+    $("tabLogin").addEventListener("click", ()=>{clr();$("tabLogin").classList.add("active");$("tabSignup").classList.remove("active");show("loginView");hide("signupView");});
+    $("tabSignup").addEventListener("click",()=>{clr();$("tabSignup").classList.add("active");$("tabLogin").classList.remove("active");show("signupView");hide("loginView");});
 
-    /* —— Giriş —— */
-    $("btnLogin").onclick = async ()=>{
+    /********** Giriş **********/
+    $("btnLogin").addEventListener("click", async ()=>{
       clr();
       const email=$("loginEmail").value.trim(), pass=$("loginPassword").value;
       if(!email||!pass){msg("E-posta ve şifre gerekli.");return;}
@@ -118,16 +129,17 @@
         if(!cred.user.emailVerified){msg("E-posta doğrulanmamış. Maildeki linke tıklayıp tekrar giriş yap.");await auth.signOut();return;}
         msg("Giriş başarılı. Yönlendiriliyor…",true); location.href="./dashboard.html";
       }catch(e){msg(tr(e.code));}
-    };
+    });
 
-    /* —— Şifre sıfırlama —— */
-    $("btnForgot").onclick = async ()=>{
-      clr(); const email=$("loginEmail").value.trim(); if(!email){msg("Lütfen e-posta yaz.");return;}
+    /********** Şifre sıfırlama **********/
+    $("btnForgot").addEventListener("click", async ()=>{
+      clr();
+      const email=$("loginEmail").value.trim(); if(!email){msg("Lütfen e-posta yaz.");return;}
       try{ await auth.sendPasswordResetEmail(email); msg("Sıfırlama e-postası gönderildi (Gelen/Spam).",true);}catch(e){msg(tr(e.code));}
-    };
+    });
 
-    /* —— Kayıt —— */
-    $("btnSignup").onclick = async ()=>{
+    /********** Kayıt **********/
+    $("btnSignup").addEventListener("click", async ()=>{
       clr();
       const name=$("signupName").value.trim(), email=$("signupEmail").value.trim();
       const p1=$("signupPassword").value, p2=$("signupPassword2").value;
@@ -142,7 +154,7 @@
         msg("Kayıt tamam. Doğrulama maili gönderildi. Onaylayıp giriş yap.",true);
         $("tabLogin").click(); $("loginEmail").value=email;
       }catch(e){msg(tr(e.code));}
-    };
+    });
   </script>
 </body>
 </html>
