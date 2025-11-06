@@ -1,4 +1,3 @@
-<!-- signup.html -->
 <!doctype html>
 <html lang="tr">
 <head>
@@ -55,7 +54,16 @@
     <div id="globalMsg" class="msg"></div>
   </div>
 
-  <!-- DİKKAT: göreli yol! -->
-  <script type="module" src="./signup.js"></script>
-</body>
-</html>
+  <!-- TEK DOSYALIK MODULE SCRIPT -->
+  <script type="module">
+    // Firebase CDN importları
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
+    import {
+      getAuth, onAuthStateChanged, signInWithEmailAndPassword,
+      createUserWithEmailAndPassword, sendEmailVerification,
+      sendPasswordResetEmail, updateProfile, signOut
+    } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";
+
+    // Projendeki gerçek anahtarlar (senin proje ekranındaki değerler)
+    const firebaseConfig = {
+      apiKey: "AIzaSyAnMzcWonT_z
