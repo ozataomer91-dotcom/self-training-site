@@ -1,213 +1,65 @@
-// Basit koruma: bazı overlay/eklenti katmanlarını periyodik gizle
-(function guard(){
-  try{
-    document.body.contentEditable = "false";
-    document.designMode = "off";
-    const kill = (k)=>document
-      .querySelectorAll([id*="${k}"],[class*="${k}"])
-      .forEach(el=>el.remove());// Küçük koruma: bazı overlay eklentilerini periyodik gizle (düzeltildi)
-(function guard(){
-  try {
-    document.body.contentEditable = "false"; 
-    document.designMode = "off";
-    const kill = (k) =>
-      document.querySelectorAll([id*="${k}"],[class*="${k}"])
-        .forEach(el => el.remove());
-    ["monica","grammarly","glasp"].forEach(kill);
-  } catch(e) {}
-  setTimeout(guard, 800);
-})();
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Kayıt / Giriş • Self Training</title>
+  <style>
+    :root{--bg:#f6f7fb;--card:#fff;--pri:#1f55ff;--err:#c62828;--ok:#237a3b}
+    *{box-sizing:border-box} body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg)}
+    .wrap{min-height:100dvh;display:grid;place-items:center;padding:24px}
+    .card{width:100%;max-width:520px;background:var(--card);border-radius:16px;box-shadow:0 8px 28px rgba(0,0,0,.08);padding:20px 20px 24px}
+    h1{margin:4px 0 14px;font-size:24px;text-align:center}
+    .tabs{display:flex;gap:8px;margin-bottom:12px}
+    .tab{flex:1;border:1px solid #d0d4e0;background:#eef1ff;color:#243b80;height:38px;border-radius:10px;cursor:pointer}
+    .tab.active{background:var(--pri);color:#fff;border-color:var(--pri)}
+    .row{display:flex;flex-direction:column;gap:6px;margin:10px 0}
+    label{font-size:13px;color:#4a4f63}
+    input{height:40px;border:1px solid #cfd4e3;border-radius:10px;padding:0 12px;font-size:15px;background:#fff}
+    .btn{height:42px;border:none;background:var(--pri);color:#fff;border-radius:10px;font-weight:600;cursor:pointer}
+    .link{background:none;border:none;color:#243b80;text-decoration:underline;cursor:pointer;padding:0;margin:0;font-size:14px}
+    .msg{min-height:22px;margin-top:10px;font-size:14px}
+    .err{color:var(--err)} .ok{color:var(--ok)} .hide{display:none}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h1>Self Training</h1>
 
-firebase.initializeApp(window.firebaseConfig);
-const auth = firebase.auth();
+      <div class="tabs">
+        <button id="tabLogin"  class="tab active" type="button">Giriş</button>
+        <button id="tabSignup" class="tab"         type="button">Kayıt</button>
+      </div>
 
-// Kısayollar
-const $ = (id)=>document.getElementById(id);
-const show=(id)=>$(id).classList.remove("hide");
-const hide=(id)=>$(id).classList.add("hide");
-const msg=(t,ok)=>{const m=$("globalMsg");m.className="msg "+(ok?"ok":"err");m.textContent=t}
-const clr=()=>{const m=$("globalMsg");m.className="msg";m.textContent=""}
+      <section id="loginView">
+        <p style="color:#6b7084;font-size:12px">Girişte yalnızca e-posta ve şifre gerekir.</p>
+        <div class="row"><label for="loginEmail">E-posta</label><input id="loginEmail" type="email" autocomplete="email"></div>
+        <div class="row"><label for="loginPassword">Şifre</label><input id="loginPassword" type="password" autocomplete="current-password"></div>
+        <div class="row" style="gap:8px">
+          <button id="btnLogin" class="btn" type="button">Giriş Yap</button>
+          <button id="btnForgot" class="link" type="button">Şifremi Unuttum</button>
+        </div>
+      </section>
 
-// Hata çevirici (düzeltildi)
-const t = (c) => ({
-  "auth/invalid-email":"Geçersiz e-posta.",
-  "auth/missing-password":"Şifre gerekli.",
-  "auth/wrong-password":"E-posta/şifre hatalı.",
-  "auth/user-not-found":"Kullanıcı bulunamadı.",
-  "auth/email-already-in-use":"Bu e-posta zaten kayıtlı.",
-  "auth/weak-password":"Şifre çok zayıf.",
-  "auth/network-request-failed":"Ağ hatası.",
-  "auth/too-many-requests":"Çok fazla deneme yaptın. Biraz bekle.",
-  "auth/api-key-not-valid.please-pass-a-valid-api-key.":"API anahtarı geçersiz (config.js kontrol)."
-}[c] || İşlem başarısız (${c}).);
+      <section id="signupView" class="hide">
+        <div class="row"><label for="signupName">Ad Soyad (zorunlu)</label><input id="signupName" type="text" autocomplete="name"></div>
+        <div class="row"><label for="signupEmail">E-posta</label><input id="signupEmail" type="email" autocomplete="email"></div>
+        <div class="row"><label for="signupPassword">Şifre</label><input id="signupPassword" type="password" autocomplete="new-password"></div>
+        <div class="row"><label for="signupPassword2">Şifre (tekrar)</label><input id="signupPassword2" type="password" autocomplete="new-password"></div>
+        <div class="row"><button id="btnSignup" class="btn" type="button">Kayıt Ol</button></div>
+      </section>
 
-// Sekmeler
-$("tabLogin").addEventListener("click", ()=>{
-  clr(); $("tabLogin").classList.add("active"); $("tabSignup").classList.remove("active");
-  show("loginView"); hide("signupView");
-});
-$("tabSignup").addEventListener("click",()=>{
-  clr(); $("tabSignup").classList.add("active"); $("tabLogin").classList.remove("active");
-  show("signupView"); hide("loginView");
-});
+      <div id="globalMsg" class="msg"></div>
+    </div>
+  </div>
 
-// ENTER ile gönder
-window.addEventListener("keydown", (e)=>{
-  if(e.key==="Enter"){
-    const onSignup = !$("signupView").classList.contains("hide");
-    if(onSignup) $("btnSignup").click(); else $("btnLogin").click();
-  }
-}, true);
+  <!-- Firebase compat -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
 
-// Giriş — e-posta doğrulaması ZORUNLU DEĞİL
-$("btnLogin").addEventListener("click", async ()=>{
-  clr();
-  const email = $("loginEmail").value.trim();
-  const pass  = $("loginPassword").value;
-  if(!email || !pass){ msg("E-posta ve şifre gerekli."); return; }
-  try{
-    await auth.signInWithEmailAndPassword(email, pass);
-    msg("Giriş başarılı. Yönlendiriliyor…", true);
-    location.href = "./dashboard.html";
-  }catch(e){ msg(t(e.code)); }
-});
-
-// Şifre sıfırlama — mail gönderir
-$("btnForgot").addEventListener("click", async ()=>{
-  clr();
-  const email = $("loginEmail").value.trim();
-  if(!email){ msg("Lütfen e-posta yaz."); return; }
-  try{
-    await auth.sendPasswordResetEmail(email);
-    msg("Sıfırlama maili gönderildi (Gelen/Spam).", true);
-  }catch(e){ msg(t(e.code)); }
-});
-
-// Kayıt — SADECE burada doğrulama maili gönder
-$("btnSignup").addEventListener("click", async ()=>{
-  clr();
-  const name = $("signupName").value.trim();
-  const email= $("signupEmail").value.trim();
-  const p1   = $("signupPassword").value;
-  const p2   = $("signupPassword2").value;
-
-  if(!name){ msg("Ad Soyad zorunlu."); return; }
-  if(!email){ msg("E-posta zorunlu."); return; }
-  if((p1||"").length < 6){ msg("Şifre en az 6 karakter."); return; }
-  if(p1 !== p2){ msg("Şifreler aynı değil."); return; }
-
-  try{
-    const cred = await auth.createUserWithEmailAndPassword(email, p1);
-    await cred.user.updateProfile({ displayName: name });
-    // Doğrulama maili (isteğe bağlı continueUrl ekleyebilirsin)
-    await cred.user.sendEmailVerification();
-    msg("Kayıt tamam. Doğrulama maili gönderildi. Onaylayıp giriş yap.", true);
-    $("tabLogin").click();
-    $("loginEmail").value = email;
-  }catch(e){ msg(t(e.code)); }
-});
-    ["monica","grammarly","glasp"].forEach(kill);
-  }catch(_){}
-  setTimeout(guard, 800);
-})();
-
-// Firebase'i hazırla
-firebase.initializeApp(window.firebaseConfig);
-const auth = firebase.auth();
-
-// Kısa yardımcılar
-const $   = (id)=>document.getElementById(id);
-const show= (id)=>$(id).classList.remove("hide");
-const hide= (id)=>$(id).classList.add("hide");
-const msg = (t, ok)=>{
-  const m = $("globalMsg");
-  m.className = "msg " + (ok ? "ok" : "err");
-  m.textContent = t;
-};
-const clr = ()=>{
-  const m = $("globalMsg");
-  m.className = "msg";
-  m.textContent = "";
-};
-
-// Hata çevirileri
-const t = (c)=>({
-  "auth/invalid-email":"Geçersiz e-posta.",
-  "auth/missing-password":"Şifre gerekli.",
-  "auth/wrong-password":"E-posta/şifre hatalı.",
-  "auth/user-not-found":"Kullanıcı bulunamadı.",
-  "auth/email-already-in-use":"Bu e-posta zaten kayıtlı.",
-  "auth/weak-password":"Şifre çok zayıf.",
-  "auth/network-request-failed":"Ağ hatası.",
-  "auth/too-many-requests":"Çok fazla deneme. Biraz bekle.",
-  "auth/api-key-not-valid.please-pass-a-valid-api-key.":"API anahtarı geçersiz (config.js'i kontrol et)."
-}[c] || İşlem başarısız (${c}).); // <-- BURASI ARTIK BACKTICK İÇİNDE
-
-// Sekmeler
-$("tabLogin").addEventListener("click", ()=>{
-  clr(); $("tabLogin").classList.add("active"); $("tabSignup").classList.remove("active");
-  show("loginView"); hide("signupView");
-});
-$("tabSignup").addEventListener("click", ()=>{
-  clr(); $("tabSignup").classList.add("active"); $("tabLogin").classList.remove("active");
-  show("signupView"); hide("loginView");
-});
-
-// ENTER ile gönder
-window.addEventListener("keydown",(e)=>{
-  if(e.key === "Enter"){
-    const onSignup = !$("signupView").classList.contains("hide");
-    if(onSignup) $("btnSignup").click(); else $("btnLogin").click();
-  }
-}, true);
-
-// GİRİŞ
-$("btnLogin").addEventListener("click", async ()=>{
-  clr();
-  const email = $("loginEmail").value.trim();
-  const pass  = $("loginPassword").value;
-  if(!email || !pass){ msg("E-posta ve şifre gerekli."); return; }
-  try{
-    const cred = await auth.signInWithEmailAndPassword(email, pass);
-    if(!cred.user.emailVerified){
-      msg("E-posta doğrulanmamış. Maildeki linke tıkla, sonra tekrar giriş yap.");
-      await auth.signOut(); return;
-    }
-    msg("Giriş başarılı. Yönlendiriliyor…", true);
-    location.href = "./dashboard.html";
-  }catch(e){ msg(t(e.code)); }
-});
-
-// ŞİFRE SIFIRLAMA
-$("btnForgot").addEventListener("click", async ()=>{
-  clr();
-  const email = $("loginEmail").value.trim();
-  if(!email){ msg("Lütfen e-posta yaz."); return; }
-  try{
-    await auth.sendPasswordResetEmail(email);
-    msg("Sıfırlama maili gönderildi (Gelen/Spam).", true);
-  }catch(e){ msg(t(e.code)); }
-});
-
-// KAYIT
-$("btnSignup").addEventListener("click", async ()=>{
-  clr();
-  const name  = $("signupName").value.trim();
-  const email = $("signupEmail").value.trim();
-  const p1    = $("signupPassword").value;
-  const p2    = $("signupPassword2").value;
-
-  if(!name){ msg("Ad Soyad zorunlu."); return; }
-  if(!email){ msg("E-posta zorunlu."); return; }
-  if((p1||"").length < 6){ msg("Şifre en az 6 karakter."); return; }
-  if(p1 !== p2){ msg("Şifreler aynı değil."); return; }
-
-  try{
-    const cred = await auth.createUserWithEmailAndPassword(email, p1);
-    await cred.user.updateProfile({ displayName: name });
-    await cred.user.sendEmailVerification();
-    msg("Kayıt tamam. Doğrulama maili gönderildi. Onaylayıp giriş yap.", true);
-    $("tabLogin").click();
-    $("loginEmail").value = email;
-  }catch(e){ msg(t(e.code)); }
-});
+  <!-- Bizim dosyalar (cache kırmak için ?v=3) -->
+  <script src="./config.js?v=3"></script>
+  <script src="./signup.js?v=3"></script>
+</body>
+</html>
