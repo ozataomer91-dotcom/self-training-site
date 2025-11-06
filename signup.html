@@ -1,157 +1,75 @@
-// signup.js (kopyala / yapıştır)
-// ------------------------------------------------------------------
-// 1) Firebase importları (CDN modül yolu - sürüm güncellemelerine dikkat)
-import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
-import {
-  getAuth,
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-  sendEmailVerification,
-  sendPasswordResetEmail,
-  signOut,
-  onAuthStateChanged
-} from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";
-
-// ------------------------------------------------------------------
-// 2) BURAYA firebaseConfig koy!! (firebase console -> proje ayarları)
-const firebaseConfig = {
-  apiKey: "REPLACE_API_KEY",
-  authDomain: "REPLACE_PROJECT.firebaseapp.com",
-  projectId: "REPLACE_PROJECT_ID",
-  // diğer alanlar (optional): storageBucket, messagingSenderId, appId
-};
-
-// ------------------------------------------------------------------
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-
-// ------------------------------------------------------------------
-// DOM elemanları
-const tabLogin = document.getElementById('tabLogin');
-const tabSignup = document.getElementById('tabSignup');
-
-const loginView = document.getElementById('loginView');
-const signupView = document.getElementById('signupView');
-
-const loginEmail = document.getElementById('loginEmail');
-const loginPassword = document.getElementById('loginPassword');
-const btnLogin = document.getElementById('btnLogin');
-const loginMsg = document.getElementById('loginMsg');
-
-const signupName = document.getElementById('signupName');
-const signupEmail = document.getElementById('signupEmail');
-const signupPassword = document.getElementById('signupPassword');
-const btnSignup = document.getElementById('btnSignup');
-const signupMsg = document.getElementById('signupMsg');
-
-const forgot = document.getElementById('forgot');
-const globalMsg = document.getElementById('globalMsg');
-
-// ------------------------------------------------------------------
-// Basit tab geçişleri
-tabLogin.addEventListener('click', () => {
-  tabLogin.classList.add('active'); tabSignup.classList.remove('active');
-  loginView.style.display = ''; signupView.style.display = 'none';
-  clearMessages();
-});
-tabSignup.addEventListener('click', () => {
-  tabSignup.classList.add('active'); tabLogin.classList.remove('active');
-  signupView.style.display = ''; loginView.style.display = 'none';
-  clearMessages();
-});
-
-function clearMessages(){
-  loginMsg.textContent = ''; signupMsg.textContent = ''; globalMsg.textContent = '';
-}
-
-// ------------------------------------------------------------------
-// Kayıt: e-posta + şifre
-btnSignup.addEventListener('click', async () => {
-  clearMessages();
-  const name = signupName.value.trim();
-  const email = signupEmail.value.trim();
-  const pass = signupPassword.value;
-
-  if(!email || !pass){
-    signupMsg.textContent = "E-posta ve şifre gerekli.";
-    return;
-  }
-  if(pass.length < 6){
-    signupMsg.textContent = "Şifre en az 6 karakter olmalı.";
-    return;
-  }
-
-  try{
-    const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
-    // opsiyonel: kullanıcı profiline ad eklemek istersen burada updateProfile kullanılır (isteğe bağlı)
-    await sendEmailVerification(userCredential.user);
-    signupMsg.style.color = 'green';
-    signupMsg.textContent = "Kayıt başarılı. Doğrulama e-postası gönderildi. (Spam klasörünü kontrol et.)";
-  }catch(err){
-    signupMsg.style.color = 'red';
-    signupMsg.textContent = "Kayıt hatası: " + (err.message || err.code);
-  }
-});
-
-// ------------------------------------------------------------------
-// Giriş: e-posta + şifre
-btnLogin.addEventListener('click', async () => {
-  clearMessages();
-  const email = loginEmail.value.trim();
-  const pass = loginPassword.value;
-  if(!email || !pass){
-    loginMsg.textContent = "E-posta ve şifre gerekli.";
-    return;
-  }
-
-  try{
-    const userCredential = await signInWithEmailAndPassword(auth, email, pass);
-    const user = userCredential.user;
-    // isEmailVerified kontrolü istersen:
-    if(!user.emailVerified){
-      loginMsg.textContent = "E-posta doğrulanmamış. Lütfen e-postayı kontrol edin.";
-      return;
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Self Training | Giriş & Kayıt</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f5f6fa;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
     }
-    loginMsg.style.color = 'green';
-    loginMsg.textContent = "Giriş başarılı! Yönlendiriliyorsunuz...";
-    // sayfa yönlendirmesi:
-    // window.location.href = "/dashboard.html"; // istersen buraya yönlendirme ekle
-  }catch(err){
-    loginMsg.style.color = 'red';
-    loginMsg.textContent = "Giriş hatası: " + (err.message || err.code);
-  }
-});
+    .container {
+      background: #fff;
+      padding: 40px;
+      border-radius: 12px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      width: 350px;
+      text-align: center;
+    }
+    h1 { color: #2563eb; }
+    input {
+      width: 90%;
+      padding: 10px;
+      margin: 8px 0;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+    button {
+      width: 95%;
+      padding: 10px;
+      background: #2563eb;
+      border: none;
+      color: white;
+      border-radius: 6px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+    button:hover { background: #1e4fd8; }
+    .link { color:#2563eb; cursor:pointer; font-size:14px; }
+    .error { color:red; font-size:14px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Self Training</h1>
+    <div id="loginView">
+      <h3>Giriş</h3>
+      <input type="email" id="loginEmail" placeholder="E-posta" />
+      <input type="password" id="loginPassword" placeholder="Şifre" />
+      <button id="loginBtn">Giriş Yap</button>
+      <p class="link" id="showSignup">Hesabın yok mu? Kayıt ol</p>
+      <p class="link" id="forgotPass">Şifremi Unuttum</p>
+      <p class="error" id="loginMsg"></p>
+    </div>
 
-// ------------------------------------------------------------------
-// Şifremi unuttum
-forgot.addEventListener('click', async () => {
-  clearMessages();
-  const email = prompt("Şifresini sıfırlamak istediğiniz e-posta adresini girin:");
-  if(!email) return;
-  try{
-    await sendPasswordResetEmail(auth, email);
-    globalMsg.style.color = 'green';
-    globalMsg.textContent = "Şifre sıfırlama e-postası gönderildi. (Spam klasörünü kontrol edin.)";
-  }catch(err){
-    globalMsg.style.color = 'red';
-    globalMsg.textContent = "Hata: " + (err.message || err.code);
-  }
-});
+    <div id="signupView" style="display:none;">
+      <h3>Kayıt</h3>
+      <input type="text" id="signupName" placeholder="Ad Soyad" />
+      <input type="email" id="signupEmail" placeholder="E-posta" />
+      <input type="password" id="signupPassword" placeholder="Şifre" />
+      <button id="signupBtn">Kayıt Ol</button>
+      <p class="link" id="showLogin">Zaten hesabın var mı? Giriş yap</p>
+      <p class="error" id="signupMsg"></p>
+    </div>
+  </div>
 
-// ------------------------------------------------------------------
-// Oturum değişikliklerini dinle (isteğe bağlı)
-onAuthStateChanged(auth, (user) => {
-  if(user){
-    // kullanıcı oturum açtıysa (isteğe bağlı) burada işlem yapabilirsin
-    console.log("User signed in:", user.email, "verified:", user.emailVerified);
-  } else {
-    console.log("User signed out");
-  }
-});
-
-// ------------------------------------------------------------------
-// Güvenlik hatırlatması
-// - firebaseConfig itemlerini doldur. (apiKey, authDomain, projectId vs.)
-// - Firebase Console -> Authentication -> Sign-in method: sadece "Email/Password" Enabled olsun.
-// - Yetkili domain: projenin domainini Authorized domains'e eklediğinden emin ol (ör: ozataomer91-dotcom.github.io)
-// ------------------------------------------------------------------
+  <!-- 🔥 Firebase bağlantısı -->
+  <script type="module" src="signup.js"></script>
+</body>
+</html>
