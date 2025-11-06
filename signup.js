@@ -1,139 +1,104 @@
-// v9 modular CDN
-import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
+// signup.js
+import { firebaseConfig } from "./firebase-config.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
 import {
-  getAuth, setPersistence, browserLocalPersistence,
-  createUserWithEmailAndPassword, updateProfile, sendEmailVerification,
-  signInWithEmailAndPassword, sendPasswordResetEmail,
-  onAuthStateChanged, signOut
-} from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";
-
-// *** KESİN KONFİG (projene göre) ***
-const firebaseConfig = {
-  apiKey: "AIzaSyAnMzCWonT_zL0EnChlIDYANBhDiiwmur4",
-  authDomain: "self-training-128b5.firebaseapp.com",
-  projectId: "self-training-128b5",
-  storageBucket: "self-training-128b5.appspot.com",
-  messagingSenderId: "61732879565",
-  appId: "1:61732879565:web:5a446fb76a88f1103bd84",
-};
+  getAuth, onAuthStateChanged, signInWithEmailAndPassword,
+  createUserWithEmailAndPassword, sendEmailVerification,
+  sendPasswordResetEmail, signOut, updateProfile
+} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
-await setPersistence(auth, browserLocalPersistence);
 
-// ------------- UI elems
-const tabLogin  = document.getElementById("tabLogin");
-const tabSignup = document.getElementById("tabSignup");
-const loginView = document.getElementById("loginView");
-const signupView= document.getElementById("signupView");
+// ---- UI helpers
+const $ = (id) => document.getElementById(id);
+const msg = $("msg");
+const say = (t, ok=false) => {
+  msg.textContent = t;
+  msg.className = "alert " + (ok ? "ok" : "err");
+  msg.classList.remove("hidden");
+};
+const clearMsg = () => { msg.className = "alert hidden"; msg.textContent = ""; };
 
-const loginEmail    = document.getElementById("loginEmail");
-const loginPassword = document.getElementById("loginPassword");
-const loginMsg      = document.getElementById("loginMsg");
+const loginView = $("loginView");
+const signupView = $("signupView");
+const tabLogin = $("tabLogin");
+const tabSignup = $("tabSignup");
+const status = $("status");
 
-const signupName      = document.getElementById("signupName");
-const signupEmail     = document.getElementById("signupEmail");
-const signupPassword  = document.getElementById("signupPassword");
-const signupPassword2 = document.getElementById("signupPassword2");
-const signupMsg       = document.getElementById("signupMsg");
+// ---- Tabs
+tabLogin.onclick = () => { clearMsg(); tabLogin.classList.add("active"); tabSignup.classList.remove("active"); loginView.classList.remove("hidden"); signupView.classList.add("hidden"); };
+tabSignup.onclick = () => { clearMsg(); tabSignup.classList.add("active"); tabLogin.classList.remove("active"); signupView.classList.remove("hidden"); loginView.classList.add("hidden"); };
 
-const btnLogin   = document.getElementById("btnLogin");
-const btnSignup  = document.getElementById("btnSignup");
-const btnForgot  = document.getElementById("btnForgot");
-const globalMsg  = document.getElementById("globalMsg");
+// ---- GİRİŞ
+$("btnLogin").onclick = async () => {
+  clearMsg();
+  const email = $("loginEmail").value.trim();
+  const pass  = $("loginPass").value;
+  if (!email || !pass) return say("E-posta ve şifre gerekli.");
 
-// ------------- helpers
-function showMsg(el, text, ok=false){
-  el.classList.remove("err","ok");
-  el.classList.add(ok ? "ok":"err");
-  el.textContent = text;
-}
-function clearAll(){ loginMsg.textContent=""; signupMsg.textContent=""; globalMsg.textContent=""; }
-
-// ------------- tabs
-tabLogin.addEventListener("click", ()=>{
-  tabLogin.classList.add("active"); tabSignup.classList.remove("active");
-  loginView.classList.remove("hidden"); signupView.classList.add("hidden"); clearAll();
-});
-tabSignup.addEventListener("click", ()=>{
-  tabSignup.classList.add("active"); tabLogin.classList.remove("active");
-  signupView.classList.remove("hidden"); loginView.classList.add("hidden"); clearAll();
-});
-
-// ------------- Auth watcher: verified ise dashboard
-onAuthStateChanged(auth, (user)=>{
-  if (user && user.emailVerified) {
-    window.location.href = "./dashboard.html";
-  }
-});
-
-// ------------- Giriş
-btnLogin.addEventListener("click", async ()=>{
-  clearAll();
-  const email = loginEmail.value.trim();
-  const pass  = loginPassword.value;
-  if(!email || !pass){ showMsg(loginMsg,"E-posta/şifre gerekli."); return; }
-  try{
-    const cred = await signInWithEmailAndPassword(auth, email, pass);
-    if(!cred.user.emailVerified){
-      await sendEmailVerification(cred.user);
-      await signOut(auth);
-      showMsg(loginMsg,"E-posta doğrulanmamış. Doğrulama maili tekrar gönderildi. Lütfen mailden onaylayın.", false);
+  try {
+    const { user } = await signInWithEmailAndPassword(auth, email, pass);
+    if (!user.emailVerified) {
+      say("E-posta doğrulanmamış. Gelen kutusu/Spam klasörünü kontrol edin, doğruladıktan sonra tekrar giriş yapın.");
       return;
     }
-    // verified ise watcher yönlendirir
-  }catch(err){
-    const map = {
-      "auth/invalid-email":"Geçersiz e-posta.",
-      "auth/user-not-found":"Bu e-posta kayıtlı değil.",
-      "auth/wrong-password":"Şifre hatalı.",
-      "auth/invalid-credential":"E-posta/şifre hatalı.",
-      "auth/too-many-requests":"Çok fazla deneme. Bir süre sonra tekrar deneyin."
-    };
-    showMsg(loginMsg, map[err.code] || ("İşlem başarısız: "+err.code));
+    window.location.href = "./dashboard.html";
+  } catch (e) {
+    if (e.code === "auth/invalid-api-key" || e.message?.includes("api-key-not-valid")) {
+      say("Firebase API anahtarı geçersiz. firebase-config.js içindeki değerleri eksiksiz girin.");
+    } else if (e.code === "auth/invalid-credential" || e.code === "auth/wrong-password") {
+      say("E-posta/şifre hatalı.");
+    } else if (e.code === "auth/user-not-found") {
+      say("Bu e-posta ile kullanıcı bulunamadı.");
+    } else {
+      say("İşlem başarısız: " + (e.code || e.message));
+    }
   }
-});
+};
 
-// ------------- Şifre sıfırla
-btnForgot.addEventListener("click", async ()=>{
-  clearAll();
-  const email = loginEmail.value.trim();
-  if(!email){ showMsg(loginMsg,"Önce e-posta yaz."); return; }
-  try{
+// ---- ŞİFREMİ UNUTTUM
+$("forgot").onclick = async () => {
+  clearMsg();
+  const email = $("loginEmail").value.trim();
+  if (!email) return say("Lütfen e-posta girin.");
+  try {
     await sendPasswordResetEmail(auth, email);
-    showMsg(loginMsg,"Şifre sıfırlama linki e-postana gönderildi.", true);
-  }catch(err){
-    showMsg(loginMsg, "Gönderilemedi: "+err.code);
+    say("Şifre sıfırlama bağlantısı gönderildi. Gelen kutusu ve Spam klasörüne bakın.", true);
+  } catch (e) {
+    say("Gönderilemedi: " + (e.code || e.message));
   }
-});
+};
 
-// ------------- Kayıt
-btnSignup.addEventListener("click", async ()=>{
-  clearAll();
-  const name = signupName.value.trim();
-  const email= signupEmail.value.trim();
-  const p1   = signupPassword.value;
-  const p2   = signupPassword2.value;
+// ---- KAYIT
+$("btnSignup").onclick = async () => {
+  clearMsg();
+  const name  = $("fullName").value.trim();
+  const email = $("suEmail").value.trim();
+  const pass  = $("suPass").value;
+  const pass2 = $("suPass2").value;
 
-  if(!email || !p1 || !p2){ showMsg(signupMsg,"Tüm alanları doldur."); return; }
-  if(p1.length < 6){ showMsg(signupMsg,"Şifre en az 6 karakter olmalı."); return; }
-  if(p1 !== p2){ showMsg(signupMsg,"Şifreler uyuşmuyor."); return; }
+  if (!name)  return say("Ad Soyad zorunludur.");
+  if (!email) return say("E-posta gerekli.");
+  if (pass.length < 6) return say("Şifre en az 6 karakter olmalı.");
+  if (pass !== pass2)  return say("Şifreler eşleşmiyor.");
 
-  try{
-    const cred = await createUserWithEmailAndPassword(auth, email, p1);
-    if(name){ await updateProfile(cred.user, { displayName:name }); }
-    await sendEmailVerification(cred.user);
-    await signOut(auth);
-    showMsg(signupMsg,"Kayıt tamam. Doğrulama e-postası gönderildi. Lütfen maile gidip onaylayın, sonra giriş yapın.", true);
-    // Giriş sekmesine geç
+  try {
+    const { user } = await createUserWithEmailAndPassword(auth, email, pass);
+    await updateProfile(user, { displayName: name });
+    await sendEmailVerification(user);
+    say("Kayıt tamam. E-posta doğrulaması gönderildi. Doğrulayıp giriş yapın.", true);
     tabLogin.click();
-    loginEmail.value = email;
-  }catch(err){
-    const map = {
-      "auth/email-already-in-use":"Bu e-posta zaten kayıtlı.",
-      "auth/invalid-email":"Geçersiz e-posta.",
-      "auth/weak-password":"Şifre zayıf (min 6 karakter)."
-    };
-    showMsg(signupMsg, map[err.code] || ("Kayıt başarısız: "+err.code));
+    $("loginEmail").value = email;
+  } catch (e) {
+    say("Kayıt başarısız: " + (e.code || e.message));
   }
+};
+
+// ---- Oturum dinleyicisi (durum etiketi)
+onAuthStateChanged(auth, (user) => {
+  status.textContent = user ? "Giriş yapıldı ✓" : "Hazır ✅";
 });
+
+// ---- ÇIKIŞ (dashboard'tan da çağrılacak)
+window._logout = () => signOut(auth).catch(()=>{});
