@@ -31,16 +31,17 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
   <!-- Config -->
-  <script src="./config.js?v=3"></script>
+  <script src="/self-training-site/config.js?v=6"></script>
 
   <script>
+    console.log("DASH BOOT");
     firebase.initializeApp(window.firebaseConfig);
     const auth = firebase.auth();
     const $ = (id)=>document.getElementById(id);
 
     // Oturum kontrolü — emailVerified şart değil
     auth.onAuthStateChanged((u)=>{
-      if(!u){ location.href="./signup.html"; return; }
+      if(!u){ location.href="/self-training-site/signup.html"; return; }
       $("status").style.display="none";
       $("userBox").style.display="block";
       $("who").textContent = u.displayName || u.email || "Kullanıcı";
@@ -48,7 +49,7 @@
 
     $("logout").addEventListener("click", async ()=>{
       await auth.signOut();
-      location.href="./signup.html";
+      location.href="/self-training-site/signup.html";
     });
   </script>
 </body>
