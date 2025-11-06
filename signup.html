@@ -19,7 +19,7 @@
     .tab{flex:1;padding:8px;border:1px solid var(--line);border-radius:10px;text-align:center;cursor:pointer;background:#fff}
     .tab.active{background:#eef2ff;border-color:#c7d2fe}
     .note{font-size:13px;color:var(--muted);margin-top:8px}
-    .err{color:#ef4444}.ok{color:var(--ok)} a{color:var(--info);text-decoration:none}
+    .err{color:#ef4444}.ok{color:var(--ok)} a{color:#2563eb;text-decoration:none}
     .disabled{opacity:.6;pointer-events:none}
   </style>
 </head>
@@ -34,7 +34,7 @@
         <div id="tabSignup" class="tab">Kayıt</div>
       </div>
 
-      <!-- GİRİŞ ALANI (sadece e-posta + şifre) -->
+      <!-- GİRİŞ -->
       <div id="areaLogin">
         <p class="note">Girişte yalnızca e-posta ve şifre gerekir.</p>
         <label for="loginEmail">E-posta</label>
@@ -48,7 +48,7 @@
         <button id="resetBtn" class="btn light">Şifremi Unuttum</button>
       </div>
 
-      <!-- KAYIT ALANI (ad-soyad + e-posta + şifre/tekrar) -->
+      <!-- KAYIT -->
       <div id="areaSign" style="display:none">
         <p class="note">Kayıtta ad-soyad ve şifre tekrarı istenir.</p>
         <label for="name">Ad Soyad</label>
@@ -74,15 +74,3 @@
   <script type="module" src="signup.js"></script>
 </body>
 </html>
-<!DOCTYPE html><meta charset="utf-8"><title>Google Debug</title>
-<button id="g">Google ile giriş</button>
-<pre id="log"></pre>
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js";
-import { getAuth, GoogleAuthProvider, signInWithRedirect, getRedirectResult } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-auth.js";
-const app = initializeApp({apiKey:"AIzaSyAnMzCWonT_zLi0EnChIDYANBhDiiwmur4",authDomain:"self-training-128b5.firebaseapp.com",projectId:"self-training-128b5"});
-const auth = getAuth(app); auth.languageCode="tr";
-const provider = new GoogleAuthProvider();
-document.getElementById("g").onclick = ()=>signInWithRedirect(auth, provider);
-getRedirectResult(auth).then(r=>{ if(r?.user) location.href="dashboard.html"; }).catch(e=>{ document.getElementById("log").textContent = e.code+" "+e.message; });
-</script>
