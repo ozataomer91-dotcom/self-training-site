@@ -21,7 +21,7 @@
     .link{background:none;border:none;color:#243b80;text-decoration:underline;cursor:pointer;padding:0;margin:0;font-size:14px}
     .msg{min-height:22px;margin-top:10px;font-size:14px}
     .err{color:var(--err)} .ok{color:var(--ok)} .hide{display:none}
-    /* Pop-up/eklenti katmanlarını gizle */
+    /* Bazı eklenti katmanlarını gizle (engelleme) */
     #monica-content-root,.monica-widget,[id*="monica"],[class*="monica"],
     [class*="grammarly"],[id*="grammarly"]{display:none!important;pointer-events:none!important}
   </style>
@@ -58,11 +58,11 @@
     </div>
   </div>
 
-  <!-- *** EN ALTA: module olmayan scriptler, BU SIRAYLA *** -->
+  <!-- Firebase compat (MODÜL DEĞİL — type="module" YOK) -->
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
 
-  <!-- Senin dosyaların (aynı klasörde olmalı) -->
+  <!-- Bizim dosyalar (aynı klasörde) -->
   <script src="./config.js"></script>
   <script src="./signup.js"></script>
 </body>
