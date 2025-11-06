@@ -42,12 +42,12 @@
     // Oturum kontrolü — emailVerified şart değil
     auth.onAuthStateChanged((u)=>{
       if(!u){ location.href="/self-training-site/signup.html"; return; }
-      $("status").style.display="none";
-      $("userBox").style.display="block";
-      $("who").textContent = u.displayName || u.email || "Kullanıcı";
+      document.getElementById("status").style.display="none";
+      document.getElementById("userBox").style.display="block";
+      document.getElementById("who").textContent = u.displayName || u.email || "Kullanıcı";
     });
 
-    $("logout").addEventListener("click", async ()=>{
+    document.getElementById("logout").addEventListener("click", async ()=>{
       await auth.signOut();
       location.href="/self-training-site/signup.html";
     });
