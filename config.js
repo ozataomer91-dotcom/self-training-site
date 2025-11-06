@@ -1,13 +1,9 @@
-// firebase-config.js
-// Bunu OLDUĞU GİBİ bırak, sadece AŞAĞIDAKİ nesnenin değerlerini
-// Firebase Console → Project settings → Your apps (</>) → "firebaseConfig"
-// bölümünden KENDİ GERÇEK değerlerinle doldur.
-
+// config.js
 export const firebaseConfig = {
-  apiKey: "BURAYA_KENDİ_API_KEY",
+  apiKey: "AIzaSyAnMzcWonT_zLioEhcNlDYANBhDiivmur4",
   authDomain: "self-training-128b5.firebaseapp.com",
   projectId: "self-training-128b5",
   storageBucket: "self-training-128b5.appspot.com",
   messagingSenderId: "61732879565",
-  appId: "1:61732879565:web:XXXXXXXXXXXXXXX"
+  appId: "1:61732879565:web:5a446fb76a88f1103bd8d4",
 };
