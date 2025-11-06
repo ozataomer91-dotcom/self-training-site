@@ -3,30 +3,32 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Self Training – Giriş/Kayıt</title>
+  <title>Kayıt / Giriş • Self Training</title>
   <style>
-    :root { font-family: system-ui, Arial, sans-serif; }
-    body { background:#f6f7fb; margin:0; display:grid; place-items:center; min-height:100vh; }
-    .card { width: min(92vw, 420px); background:#fff; padding:28px; border-radius:16px; box-shadow:0 8px 26px rgba(0,0,0,.08); }
-    .tabs { display:flex; gap:8px; margin-bottom:16px; }
-    .tab { flex:1; padding:10px 12px; border:1px solid #dfe3ea; background:#f2f5f9; border-radius:10px; cursor:pointer; text-align:center; }
-    .tab.active { background:#e8f0ff; border-color:#a9c2ff; color:#1f4eff; font-weight:600; }
-    .group { display:flex; flex-direction:column; gap:6px; margin:10px 0; }
-    input { height:40px; padding:0 12px; border:1px solid #d7dbe3; border-radius:10px; outline:none; }
-    input:focus { border-color:#4f7cff; box-shadow:0 0 0 3px #4f7cff22; }
-    .btn { height:42px; border:0; border-radius:12px; background:#306cff; color:#fff; font-weight:600; cursor:pointer; }
-    .btn:disabled { opacity:.6; cursor:not-allowed; }
-    .muted { color:#6b7280; font-size:13px; text-align:center; }
-    .link { color:#1f4eff; cursor:pointer; text-decoration:underline; }
-    #msg { margin-top:8px; min-height:18px; font-size:14px; text-align:center; }
-    .ok { color:#0a7a2e; } .err { color:#b00020; }
-    .hide { display:none; }
+    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:#f6f7fb;margin:0;padding:40px}
+    .card{max-width:440px;margin:0 auto;background:#fff;border-radius:14px;box-shadow:0 10px 35px rgba(0,0,0,.07);padding:24px}
+    .brand{font-weight:800;font-size:24px;color:#2a4cff;margin:4px 0 12px}
+    .tabs{display:flex;gap:6px;margin-bottom:14px}
+    .tab{flex:1;padding:10px 12px;border:1px solid #e5e7ef;border-radius:10px;background:#f3f5ff;
+         cursor:pointer;text-align:center;font-weight:600}
+    .tab.active{background:#2a4cff;color:#fff;border-color:#2a4cff}
+    .row{display:flex;gap:10px}
+    .input{width:100%;padding:12px 14px;border:1px solid #e5e7ef;border-radius:10px;font-size:15px;outline:none}
+    .btn{width:100%;padding:12px 14px;border:0;border-radius:10px;font-weight:700;cursor:pointer}
+    .primary{background:#2a4cff;color:#fff}
+    .ghost{background:#eef0ff;color:#2a4cff}
+    .hint{color:#6b7280;font-size:12px;margin:8px 2px 14px}
+    .msg{margin-top:10px;font-size:14px}
+    .msg.err{color:#d90429}
+    .msg.ok{color:#0f9d58}
+    .center{display:flex;align-items:center;justify-content:center}
+    .link{color:#2a4cff;cursor:pointer;font-size:14px}
+    .hidden{display:none}
   </style>
 </head>
 <body>
   <div class="card">
-    <h2 style="margin:0 0 8px">Self Training</h2>
-    <div class="muted">Girişte sadece e-posta ve şifre istenir. Kayıtta ad soyad da alırız.</div>
+    <div class="brand">Self Training</div>
 
     <div class="tabs">
       <button id="tabLogin"  class="tab active">Giriş</button>
@@ -35,45 +37,30 @@
 
     <!-- Giriş -->
     <div id="loginView">
-      <div class="group">
-        <label for="loginEmail">E-posta</label>
-        <input id="loginEmail" type="email" autocomplete="email" />
+      <div class="hint">Girişte yalnızca e-posta ve şifre gerekir.</div>
+      <input id="loginEmail"    class="input" type="email" placeholder="E-posta" autocomplete="email" />
+      <input id="loginPassword" class="input" type="password" placeholder="Şifre" autocomplete="current-password" />
+      <button id="btnLogin" class="btn primary">Giriş Yap</button>
+      <div style="margin-top:10px">
+        <span id="btnForgot" class="link">Şifremi Unuttum</span>
       </div>
-      <div class="group">
-        <label for="loginPassword">Şifre</label>
-        <input id="loginPassword" type="password" autocomplete="current-password" />
-      </div>
-      <button id="btnLogin" class="btn">Giriş Yap</button>
-      <div class="muted" style="margin-top:12px">
-        <span id="forgot" class="link">Şifremi Unuttum</span>
-      </div>
-      <div class="muted" style="margin-top:6px">
-        Doğrulama maili gelmediyse <span id="resend" class="link">tekrar gönder</span>.
-      </div>
+      <div id="loginMsg" class="msg"></div>
     </div>
 
     <!-- Kayıt -->
-    <div id="signupView" class="hide">
-      <div class="group">
-        <label for="signupName">Ad Soyad (opsiyonel)</label>
-        <input id="signupName" type="text" autocomplete="name" />
+    <div id="signupView" class="hidden">
+      <div class="row">
+        <input id="signupName"      class="input" placeholder="Ad Soyad (isteğe bağlı)"/>
       </div>
-      <div class="group">
-        <label for="signupEmail">E-posta</label>
-        <input id="signupEmail" type="email" autocomplete="email" />
-      </div>
-      <div class="group">
-        <label for="signupPassword">Şifre</label>
-        <input id="signupPassword" type="password" autocomplete="new-password" />
-      </div>
-      <div class="group">
-        <label for="signupPassword2">Şifre (tekrar)</label>
-        <input id="signupPassword2" type="password" autocomplete="new-password" />
-      </div>
-      <button id="btnSignup" class="btn">Kayıt Ol</button>
+      <input id="signupEmail"    class="input" type="email"    placeholder="E-posta" autocomplete="email" />
+      <input id="signupPassword" class="input" type="password" placeholder="Şifre (min 6 karakter)" autocomplete="new-password" />
+      <input id="signupPassword2"class="input" type="password" placeholder="Şifre (tekrar)" autocomplete="new-password" />
+      <button id="btnSignup" class="btn primary">Kayıt Ol</button>
+      <div class="hint">Kayıttan sonra e-posta doğrulaması zorunludur.</div>
+      <div id="signupMsg" class="msg"></div>
     </div>
 
-    <div id="msg"></div>
+    <div id="globalMsg" class="msg center"></div>
   </div>
 
   <script type="module" src="./signup.js"></script>
