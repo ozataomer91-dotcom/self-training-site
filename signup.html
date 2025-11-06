@@ -20,8 +20,6 @@
     .link{background:none;border:none;color:#243b80;text-decoration:underline;cursor:pointer;padding:0;margin:0;font-size:14px}
     .msg{min-height:22px;margin-top:10px;font-size:14px}
     .err{color:var(--err)} .ok{color:var(--ok)} .hide{display:none}
-    #monica-content-root,.monica-widget,[id*="monica"],[class*="monica"],
-    [class*="grammarly"],[id*="grammarly"]{display:none!important;pointer-events:none!important}
   </style>
 </head>
 <body>
@@ -60,8 +58,8 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
 
-  <!-- Bizim dosyalar -->
-  <script src="./config.js"></script>
-  <script src="./signup.js"></script>
+  <!-- Bizim dosyalar (cache kırmak için ?v=3) -->
+  <script src="./config.js?v=3"></script>
+  <script src="./signup.js?v=3"></script>
 </body>
 </html>
