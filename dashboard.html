@@ -5,13 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Panel • Self Training</title>
   <style>
-    :root { --bg:#f6f7fb; --card:#fff; --pri:#1f55ff; }
-    body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg);}
+    :root{--bg:#f6f7fb;--card:#fff;--pri:#1f55ff}
+    body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg)}
     .wrap{min-height:100dvh;display:grid;place-items:center}
     .card{width:100%;max-width:520px;background:var(--card);border-radius:16px;box-shadow:0 8px 28px rgba(0,0,0,.08);padding:28px;text-align:center}
     h1{margin:0 0 8px}
     #status{color:#6b7084;margin:6px 0 16px}
     .btn{height:42px;border:none;background:var(--pri);color:#fff;border-radius:10px;font-weight:600;cursor:pointer;padding:0 16px}
+    /* >>> Eklenti katmanlarını etkisizleştir <<< */
+    #monica-content-root,.monica-widget,[id^="monica-"],[class^="monica-"]{display:none!important;pointer-events:none!important}
   </style>
 </head>
 <body>
@@ -26,37 +28,18 @@
     </div>
   </div>
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
-    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyAnMzcWonT_zL0EhcNlDIYANBhDiivmur4",
-      authDomain: "self-training-128b5.firebaseapp.com",
-      projectId: "self-training-128b5",
-      storageBucket: "self-training-128b5.firebasestorage.app",
-      messagingSenderId: "61732879565",
-      appId: "1:61732879565:web:5a446fb76a88f1103bd84"
-    };
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-
-    const $ = id => document.getElementById(id);
-    onAuthStateChanged(auth, (u)=>{
-      if(!u){
-        location.href="./signup.html";
-        return;
-      }
-      if (!u.emailVerified){
-        $("status").textContent = "E-posta doğrulanmamış. Lütfen maildeki linke tıklayıp tekrar giriş yap.";
-        return;
-      }
-      $("status").style.display="none";
-      $("userBox").style.display="block";
-      $("who").textContent = u.displayName || u.email || "Kullanıcı";
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script>
+    const firebaseConfig={apiKey:"AIzaSyAnMzcWonT_zL0EhcNlDIYANBhDiivmur4",authDomain:"self-training-128b5.firebaseapp.com",projectId:"self-training-128b5",storageBucket:"self-training-128b5.firebasestorage.app",messagingSenderId:"61732879565",appId:"1:61732879565:web:5a446fb76a88f1103bd84"};
+    firebase.initializeApp(firebaseConfig);
+    const auth=firebase.auth(); const $=(id)=>document.getElementById(id);
+    auth.onAuthStateChanged((u)=>{
+      if(!u){location.href="./signup.html";return;}
+      if(!u.emailVerified){$("status").textContent="E-posta doğrulanmamış. Maildeki linke tıklayıp tekrar giriş yap.";return;}
+      $("status").style.display="none"; $("userBox").style.display="block"; $("who").textContent=u.displayName||u.email||"Kullanıcı";
     });
-
-    $("logout").onclick = async ()=>{ await signOut(auth); location.href="./signup.html"; };
+    $("logout").onclick=async()=>{await auth.signOut();location.href="./signup.html";}
   </script>
 </body>
 </html>
