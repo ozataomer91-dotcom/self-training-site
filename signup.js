@@ -1,104 +1,76 @@
-// signup.js
-import { firebaseConfig } from "./firebase-config.js";
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
-import {
-  getAuth, onAuthStateChanged, signInWithEmailAndPassword,
-  createUserWithEmailAndPassword, sendEmailVerification,
-  sendPasswordResetEmail, signOut, updateProfile
-} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Kayıt / Giriş • Self Training</title>
+  <style>
+    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;background:#f6f7fb;margin:0}
+    .card{max-width:560px;margin:48px auto;padding:24px;border-radius:16px;background:#fff;
+          box-shadow:0 10px 30px rgba(0,0,0,.06)}
+    .tabs{display:flex;gap:8px;margin-bottom:16px}
+    .tab{flex:1;padding:10px 12px;border-radius:10px;border:1px solid #e6e8ef;background:#f1f4fb;
+         cursor:pointer;text-align:center;font-weight:600}
+    .tab.active{background:#1f4cff;color:#fff;border-color:#1f4cff}
+    .row{display:flex;flex-direction:column;gap:6px;margin:10px 0}
+    input{padding:12px;border:1px solid #dfe3ee;border-radius:10px;font-size:15px}
+    button{padding:12px 14px;border:0;border-radius:10px;background:#1f4cff;color:#fff;
+           font-weight:700;cursor:pointer}
+    .link{color:#1f4cff;text-decoration:none;font-weight:600;font-size:14px}
+    .muted{color:#6b7280;font-size:13px}
+    #msg{margin-top:10px;font-size:14px}
+    .ok{color:#0a7a3f} .err{color:#c62828}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2>Self Training</h2>
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
+    <div class="tabs">
+      <button id="tabLogin"  class="tab active">Giriş</button>
+      <button id="tabSignup" class="tab">Kayıt</button>
+    </div>
 
-// ---- UI helpers
-const $ = (id) => document.getElementById(id);
-const msg = $("msg");
-const say = (t, ok=false) => {
-  msg.textContent = t;
-  msg.className = "alert " + (ok ? "ok" : "err");
-  msg.classList.remove("hidden");
-};
-const clearMsg = () => { msg.className = "alert hidden"; msg.textContent = ""; };
+    <!-- Giriş -->
+    <div id="loginView">
+      <p class="muted">Girişte yalnızca e-posta ve şifre gerekir.</p>
+      <div class="row">
+        <label>E-posta</label>
+        <input id="loginEmail" type="email" autocomplete="email" required />
+      </div>
+      <div class="row">
+        <label>Şifre</label>
+        <input id="loginPassword" type="password" autocomplete="current-password" required />
+      </div>
+      <button id="btnLogin">Giriş Yap</button>
+      <p><a id="btnForgot" class="link" href="#">Şifremi Unuttum</a></p>
+    </div>
 
-const loginView = $("loginView");
-const signupView = $("signupView");
-const tabLogin = $("tabLogin");
-const tabSignup = $("tabSignup");
-const status = $("status");
+    <!-- Kayıt -->
+    <div id="signupView" style="display:none">
+      <div class="row">
+        <label>Ad Soyad</label>
+        <input id="signupName" type="text" autocomplete="name" required />
+      </div>
+      <div class="row">
+        <label>E-posta</label>
+        <input id="signupEmail" type="email" autocomplete="email" required />
+      </div>
+      <div class="row">
+        <label>Şifre</label>
+        <input id="signupPassword" type="password" autocomplete="new-password" required />
+      </div>
+      <div class="row">
+        <label>Şifre (tekrar)</label>
+        <input id="signupPassword2" type="password" autocomplete="new-password" required />
+      </div>
+      <button id="btnSignup">Kayıt Ol</button>
+      <p class="muted">Kayıttan sonra e-posta doğrulaması zorunludur.</p>
+    </div>
 
-// ---- Tabs
-tabLogin.onclick = () => { clearMsg(); tabLogin.classList.add("active"); tabSignup.classList.remove("active"); loginView.classList.remove("hidden"); signupView.classList.add("hidden"); };
-tabSignup.onclick = () => { clearMsg(); tabSignup.classList.add("active"); tabLogin.classList.remove("active"); signupView.classList.remove("hidden"); loginView.classList.add("hidden"); };
+    <div id="msg"></div>
+  </div>
 
-// ---- GİRİŞ
-$("btnLogin").onclick = async () => {
-  clearMsg();
-  const email = $("loginEmail").value.trim();
-  const pass  = $("loginPass").value;
-  if (!email || !pass) return say("E-posta ve şifre gerekli.");
-
-  try {
-    const { user } = await signInWithEmailAndPassword(auth, email, pass);
-    if (!user.emailVerified) {
-      say("E-posta doğrulanmamış. Gelen kutusu/Spam klasörünü kontrol edin, doğruladıktan sonra tekrar giriş yapın.");
-      return;
-    }
-    window.location.href = "./dashboard.html";
-  } catch (e) {
-    if (e.code === "auth/invalid-api-key" || e.message?.includes("api-key-not-valid")) {
-      say("Firebase API anahtarı geçersiz. firebase-config.js içindeki değerleri eksiksiz girin.");
-    } else if (e.code === "auth/invalid-credential" || e.code === "auth/wrong-password") {
-      say("E-posta/şifre hatalı.");
-    } else if (e.code === "auth/user-not-found") {
-      say("Bu e-posta ile kullanıcı bulunamadı.");
-    } else {
-      say("İşlem başarısız: " + (e.code || e.message));
-    }
-  }
-};
-
-// ---- ŞİFREMİ UNUTTUM
-$("forgot").onclick = async () => {
-  clearMsg();
-  const email = $("loginEmail").value.trim();
-  if (!email) return say("Lütfen e-posta girin.");
-  try {
-    await sendPasswordResetEmail(auth, email);
-    say("Şifre sıfırlama bağlantısı gönderildi. Gelen kutusu ve Spam klasörüne bakın.", true);
-  } catch (e) {
-    say("Gönderilemedi: " + (e.code || e.message));
-  }
-};
-
-// ---- KAYIT
-$("btnSignup").onclick = async () => {
-  clearMsg();
-  const name  = $("fullName").value.trim();
-  const email = $("suEmail").value.trim();
-  const pass  = $("suPass").value;
-  const pass2 = $("suPass2").value;
-
-  if (!name)  return say("Ad Soyad zorunludur.");
-  if (!email) return say("E-posta gerekli.");
-  if (pass.length < 6) return say("Şifre en az 6 karakter olmalı.");
-  if (pass !== pass2)  return say("Şifreler eşleşmiyor.");
-
-  try {
-    const { user } = await createUserWithEmailAndPassword(auth, email, pass);
-    await updateProfile(user, { displayName: name });
-    await sendEmailVerification(user);
-    say("Kayıt tamam. E-posta doğrulaması gönderildi. Doğrulayıp giriş yapın.", true);
-    tabLogin.click();
-    $("loginEmail").value = email;
-  } catch (e) {
-    say("Kayıt başarısız: " + (e.code || e.message));
-  }
-};
-
-// ---- Oturum dinleyicisi (durum etiketi)
-onAuthStateChanged(auth, (user) => {
-  status.textContent = user ? "Giriş yapıldı ✓" : "Hazır ✅";
-});
-
-// ---- ÇIKIŞ (dashboard'tan da çağrılacak)
-window._logout = () => signOut(auth).catch(()=>{});
+  <script type="module" src="./signup.js"></script>
+</body>
+</html>
