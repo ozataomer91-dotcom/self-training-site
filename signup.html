@@ -74,3 +74,15 @@
   <script type="module" src="signup.js"></script>
 </body>
 </html>
+<!DOCTYPE html><meta charset="utf-8"><title>Google Debug</title>
+<button id="g">Google ile giriş</button>
+<pre id="log"></pre>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js";
+import { getAuth, GoogleAuthProvider, signInWithRedirect, getRedirectResult } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-auth.js";
+const app = initializeApp({apiKey:"AIzaSyAnMzCWonT_zLi0EnChIDYANBhDiiwmur4",authDomain:"self-training-128b5.firebaseapp.com",projectId:"self-training-128b5"});
+const auth = getAuth(app); auth.languageCode="tr";
+const provider = new GoogleAuthProvider();
+document.getElementById("g").onclick = ()=>signInWithRedirect(auth, provider);
+getRedirectResult(auth).then(r=>{ if(r?.user) location.href="dashboard.html"; }).catch(e=>{ document.getElementById("log").textContent = e.code+" "+e.message; });
+</script>
