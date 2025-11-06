@@ -1,131 +1,59 @@
-// Firebase v10 (modüler CDN)
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import {
-  getAuth, onAuthStateChanged,
-  signInWithEmailAndPassword, createUserWithEmailAndPassword,
-  sendEmailVerification, sendPasswordResetEmail, updateProfile
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Panel • Self Training</title>
+  <style>
+    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:#f6f7fb;margin:0;padding:40px}
+    .card{max-width:460px;margin:0 auto;background:#fff;border-radius:14px;box-shadow:0 10px 35px rgba(0,0,0,.07);padding:24px;text-align:center}
+    .brand{font-weight:800;font-size:26px;color:#2a4cff;margin-bottom:6px}
+    .muted{color:#6b7280}
+    .btn{padding:10px 14px;border:0;border-radius:10px;background:#2a4cff;color:#fff;cursor:pointer;font-weight:700}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="brand">Self Training</div>
+    <div id="status" class="muted">Yükleniyor…</div>
+    <h3 id="welcome" style="margin:12px 0 22px"></h3>
+    <button id="logoutBtn" class="btn">Çıkış Yap</button>
+  </div>
 
-// === PROJE AYARLARIN (Firebase Console > Project settings > Web app) ===
-const firebaseConfig = {
-  apiKey: "AIzaSyAnMzCWonT_zL0EnChlIDYANBhDiiwmur4",
-  authDomain: "self-training-128b5.firebaseapp.com",
-  projectId: "self-training-128b5",
-  storageBucket: "self-training-128b5.firebasestorage.app",
-  messagingSenderId: "61732879565",
-  appId: "1:61732879565:web:5a446fb76a88f1103bd084"
-};
-// =====================================================================
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";
 
-initializeApp(firebaseConfig);
-const auth = getAuth();
+    const firebaseConfig = {
+      apiKey: "AIzaSyAnMzCWonT_zL0EnChlIDYANBhDiiwmur4",
+      authDomain: "self-training-128b5.firebaseapp.com",
+      projectId: "self-training-128b5",
+      storageBucket: "self-training-128b5.appspot.com",
+      messagingSenderId: "61732879565",
+      appId: "1:61732879565:web:5a446fb76a88f1103bd84",
+    };
 
-// ---- UI elemanları
-const tabLogin  = document.getElementById("tabLogin");
-const tabSignup = document.getElementById("tabSignup");
-const loginView  = document.getElementById("loginView");
-const signupView = document.getElementById("signupView");
-const msg = document.getElementById("msg");
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
 
-// Tabs
-function setTab(which) {
-  const login = which === "login";
-  tabLogin.classList.toggle("active", login);
-  tabSignup.classList.toggle("active", !login);
-  loginView.classList.toggle("hide", !login);
-  signupView.classList.toggle("hide", login);
-  msg.textContent = "";
-  msg.className = "";
-}
-tabLogin.onclick  = () => setTab("login");
-tabSignup.onclick = () => setTab("signup");
+    const status = document.getElementById("status");
+    const welcome = document.getElementById("welcome");
+    const logoutBtn = document.getElementById("logoutBtn");
 
-// ---- GİRİŞ
-document.getElementById("btnLogin").onclick = async () => {
-  const email = document.getElementById("loginEmail").value.trim();
-  const pass  = document.getElementById("loginPassword").value;
-  msg.textContent = ""; msg.className = "";
-  if (!email || !pass) return showErr("E-posta ve şifre gerekli.");
+    onAuthStateChanged(auth, (user)=>{
+      if(!user){ window.location.href="./signup.html"; return; }
+      if(!user.emailVerified){
+        status.textContent = "E-posta doğrulanmamış. Lütfen onaylayıp tekrar giriş yapın.";
+        return;
+      }
+      status.textContent = "Oturum aktif";
+      welcome.textContent = "Hoş geldin " + (user.displayName || user.email || "");
+    });
 
-  try {
-    const { user } = await signInWithEmailAndPassword(auth, email, pass);
-    if (!user.emailVerified) {
-      showErr("E-posta doğrulanmamış. Lütfen maildeki linke tıkla veya 'tekrar gönder'e bas.");
-      return;
-    }
-    // Başarılı giriş → dashboard
-    window.location.href = "dashboard.html";
-  } catch (e) {
-    showErr(humanizeAuthError(e.code));
-  }
-};
-
-// ---- KAYIT
-document.getElementById("btnSignup").onclick = async () => {
-  const name = document.getElementById("signupName").value.trim();
-  const email = document.getElementById("signupEmail").value.trim();
-  const p1 = document.getElementById("signupPassword").value;
-  const p2 = document.getElementById("signupPassword2").value;
-
-  msg.textContent = ""; msg.className = "";
-  if (!email || !p1) return showErr("E-posta ve şifre gerekli.");
-  if (p1.length < 6)  return showErr("Şifre en az 6 karakter olmalı.");
-  if (p1 !== p2)     return showErr("Şifreler eşleşmiyor.");
-
-  try {
-    const { user } = await createUserWithEmailAndPassword(auth, email, p1);
-    if (name) { try { await updateProfile(user, { displayName: name }); } catch {} }
-    await sendEmailVerification(user);
-    showOk("Kayıt başarılı. Doğrulama e-postası gönderildi. Maildeki linke tıkladıktan sonra giriş yapabilirsin.");
-    setTab("login");
-  } catch (e) {
-    showErr(humanizeAuthError(e.code));
-  }
-};
-
-// ---- Şifre sıfırlama
-document.getElementById("forgot").onclick = async () => {
-  const email = document.getElementById("loginEmail").value.trim();
-  if (!email) return showErr("Sıfırlama için e-posta yaz.");
-  try { await sendPasswordResetEmail(auth, email); showOk("Sıfırlama e-postası gönderildi."); }
-  catch (e) { showErr(humanizeAuthError(e.code)); }
-};
-
-// ---- Doğrulama mailini tekrar gönder
-document.getElementById("resend").onclick = async () => {
-  const email = document.getElementById("loginEmail").value.trim();
-  const pass  = document.getElementById("loginPassword").value;
-  if (!email || !pass) return showErr("Önce e-posta ve şifreyi yaz, sonra tekrar gönder.");
-  try {
-    const { user } = await signInWithEmailAndPassword(auth, email, pass);
-    await sendEmailVerification(user);
-    showOk("Doğrulama e-postası tekrar gönderildi.");
-  } catch (e) {
-    showErr(humanizeAuthError(e.code));
-  }
-};
-
-// ---- Oturum açık + doğrulanmışsa direkt dashboard'a
-onAuthStateChanged(auth, (user) => {
-  if (user && user.emailVerified) {
-    // zaten doğrulanmış kullanıcı → direkt dashboard
-    window.location.href = "dashboard.html";
-  }
-});
-
-// ---- yardımcılar
-function showOk(t)  { msg.textContent = t; msg.className = "ok"; }
-function showErr(t) { msg.textContent = t; msg.className = "err"; }
-
-function humanizeAuthError(code) {
-  switch (code) {
-    case "auth/invalid-credential":
-    case "auth/wrong-password":
-    case "auth/user-not-found": return "E-posta/şifre hatalı.";
-    case "auth/too-many-requests": return "Çok fazla deneme. Biraz sonra tekrar dene.";
-    case "auth/email-already-in-use": return "Bu e-posta zaten kayıtlı.";
-    case "auth/invalid-email": return "Geçersiz e-posta.";
-    case "auth/weak-password": return "Zayıf şifre (en az 6 karakter).";
-    default: return "İşlem başarısız: " + code;
-  }
-}
+    logoutBtn.addEventListener("click", async ()=>{
+      await signOut(auth);
+      window.location.href="./signup.html";
+    });
+  </script>
+</body>
+</html>
