@@ -9,18 +9,16 @@
     *{box-sizing:border-box}
     body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg)}
     .wrap{min-height:100dvh;display:grid;place-items:center}
-    .card{width:100%;max-width:520px;background:var(--card);border-radius:16px;box-shadow:0 8px 28px rgba(0,0,0,.08);padding:28px;text-align:center}
+    .card{width:100%;max-width:520px;background:var(--card);border-radius:16px;box-shadow:0 8px 28px rgba(0,0,0,.08);padding:28px;text-align:center;
+      position:relative; z-index:2147483000; pointer-events:auto}
     h1{margin:0 0 8px}
     #status{color:#6b7084;margin:6px 0 16px}
     .btn{height:42px;border:none;background:var(--pri);color:#fff;border-radius:10px;font-weight:600;cursor:pointer;padding:0 16px}
-    /* eklenti katmanlarını kapat */
-    #monica-content-root,.monica-widget,[id*="monica"],[class*="monica"],
-    [class*="grammarly"],[id*="grammarly"],[class*="glasp"],[id*="glasp"]{display:none!important;pointer-events:none!important}
   </style>
 </head>
 <body>
   <div class="wrap">
-    <div class="card">
+    <div class="card" id="panelCard">
       <h1>Self Training</h1>
       <div id="status">Yükleniyor…</div>
       <div id="userBox" style="display:none">
@@ -33,19 +31,30 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
   <script>
+    (function guard(){
+      try{
+        document.body.contentEditable="false"; document.designMode="off";
+        const kill=k=>document.querySelectorAll([id*="${k}"],[class*="${k}"]).forEach(el=>{el.remove()});
+        ["monica","grammarly","glasp","notion","scribe","quill"].forEach(kill);
+        document.querySelectorAll('body *').forEach(el=>{
+          const s=getComputedStyle(el); const big=(parseInt(s.width)>=innerWidth*0.9)&&(parseInt(s.height)>=innerHeight*0.9);
+          const overlay=(s.position==="fixed"||s.position==="absolute") && ((+s.zIndex||0)>9999); if(overlay&&big){el.style.display="none";el.style.pointerEvents="none";}
+        });
+        const card=document.getElementById("panelCard"); if(card){card.addEventListener("click",e=>e.stopPropagation(),true)}
+      }catch(_){}
+      setTimeout(guard,700);
+    })();
+
     const firebaseConfig={apiKey:"AIzaSyAnMzcWonT_zL0EhcNlDIYANBhDiivmur4",authDomain:"self-training-128b5.firebaseapp.com",projectId:"self-training-128b5",storageBucket:"self-training-128b5.firebasestorage.app",messagingSenderId:"61732879565",appId:"1:61732879565:web:5a446fb76a88f1103bd84"};
     firebase.initializeApp(firebaseConfig);
     const auth=firebase.auth(); const $=(id)=>document.getElementById(id);
-
-    const killOverlays=()=>{document.querySelectorAll('[id*="monica"],[class*="monica"],[id*="grammarly"],[class*="grammarly"],[id*="glasp"],[class*="glasp"]').forEach(el=>{el.style.display='none';el.style.pointerEvents='none'});}
-    killOverlays(); setInterval(killOverlays,800);
 
     auth.onAuthStateChanged((u)=>{
       if(!u){location.href="./signup.html";return;}
       if(!u.emailVerified){$("status").textContent="E-posta doğrulanmamış. Maildeki linke tıklayıp tekrar giriş yap.";return;}
       $("status").style.display="none"; $("userBox").style.display="block"; $("who").textContent=u.displayName||u.email||"Kullanıcı";
     });
-    $("logout").onclick=async()=>{await auth.signOut();location.href="./signup.html";}
+    $("logout").addEventListener("click", async()=>{await auth.signOut();location.href="./signup.html";});
   </script>
 </body>
 </html>
