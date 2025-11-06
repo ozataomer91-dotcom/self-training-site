@@ -58,8 +58,8 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
 
-  <!-- Bizim dosyalar (cache kırmak için ?v=3) -->
-  <script src="./config.js?v=3"></script>
-  <script src="./signup.js?v=3"></script>
+  <!-- Bizim dosyalar: MUTLAK YOL (repo köküne göre) -->
+  <script src="/self-training-site/config.js?v=6"></script>
+  <script src="/self-training-site/signup.js?v=6"></script>
 </body>
 </html>
