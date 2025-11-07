@@ -25,27 +25,22 @@
     .msg{min-height:22px;margin-top:10px;font-size:14px}
     .ok{color:var(--ok)} .err{color:var(--err)}
     .btn{height:44px;border:none;background:var(--pri);color:#fff;border-radius:10px;font-weight:600;cursor:pointer;padding:0 18px}
-    .topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
     .muted{color:#6b7084;font-size:13px}
-    /* en alttaki aksiyon alanı (sadece Kaydet) */
-    .footerActions{display:flex;justify-content:flex-end;margin-top:16px}
-    /* tablo ufak stiller */
     .zones{width:100%;border-collapse:collapse;margin-top:8px;font-size:14px}
     .zones th,.zones td{border:1px solid #e2e6f3;padding:8px;text-align:left}
     .zones th{background:#f3f5ff}
+    .footerActions{display:flex;justify-content:center;gap:12px;margin-top:16px}
+    @media (max-width:480px){
+      .footerActions{flex-direction:column;align-items:stretch}
+      .footerActions .btn{width:100%}
+    }
   </style>
 </head>
 <body>
   <div class="wrap">
     <div class="card">
-      <!-- ÜSTTE: başlık + ÇIKIŞ -->
-      <div class="topbar">
-        <div>
-          <h1>Self Training</h1>
-          <p class="sub" id="hello">Yükleniyor…</p>
-        </div>
-        <button id="btnLogout" class="btn" style="background:#444">Çıkış</button>
-      </div>
+      <h1>Self Training</h1>
+      <p class="sub" id="hello">Yükleniyor…</p>
 
       <fieldset>
         <legend>Hedefini Seç (en fazla 3)</legend>
@@ -84,18 +79,34 @@
       <fieldset>
         <legend>Ölçümler</legend>
         <div class="row">
-          <div class="col"><label>Yaş (yıl)</label><input id="ageYears" type="number" step="1" min="5" max="100" placeholder="Örn: 22"></div>
-          <div class="col"><label>Dinlenik Nabız (BPM)</label><input id="restHr" type="number" step="1" placeholder="Sabah uyanınca ölç"></div>
+          <div class="col">
+            <label>Yaş (yıl)</label>
+            <input id="ageYears" type="number" step="1" min="5" max="100" placeholder="Örn: 22">
+            <p class="muted">Yaş: Nüfus cüzdanınızdaki tam yıl.</p>
+          </div>
+          <div class="col">
+            <label>Dinlenik Nabız (BPM)</label>
+            <input id="restHr" type="number" step="1" placeholder="Sabah uyanınca 60 sn sayın">
+            <p class="muted">Dinlenik nabız: Sabah uyanınca, 60 sn boyunca sayın.</p>
+          </div>
           <div class="col"><label>Boy (cm)</label><input id="heightCm" type="number" step="0.1" placeholder="Örn: 178"></div>
           <div class="col"><label>Kilo (kg)</label><input id="weightKg" type="number" step="0.1" placeholder="Örn: 74.5"></div>
           <div class="col"><label>Bel (cm)</label><input id="waistCm" type="number" step="0.1" placeholder="Göbek deliği hizası"></div>
           <div class="col"><label>Kalça (cm)</label><input id="hipCm" type="number" step="0.1" placeholder="Kalçanın en geniş yeri"></div>
           <div class="col"><label>Boyun (cm)</label><input id="neckCm" type="number" step="0.1" placeholder="Adem elması altı"></div>
         </div>
-        <p class="muted" style="margin-top:8px">Nabız rehberi: <b>HRmax = 220 − yaş</b>; <b>HRR = HRmax − Dinlenik Nabız</b>.</p>
+
+        <div class="row" style="margin-top:8px">
+          <button id="btnCompute" class="btn" type="button" style="background:#5865f2">Hesapla</button>
+        </div>
+
+        <p class="muted" style="margin-top:8px">
+          Rehber: <b>HR MAX = 220 − Yaş</b> (maksimum atabileceğiniz kalp atım hızınız),
+          <b>HRR (Karvonen) = HR MAX − Dinlenik Nabız</b>.
+        </p>
 
         <div id="hrBox">
-          <p id="hrSummary" class="muted">HRmax ve bölgeler için yaş & dinlenik nabız gir.</p>
+          <p id="hrSummary" class="muted">HR MAX ve bölgeleri görmek için yaş & dinlenik nabız girip <b>Hesapla</b>’ya tıkla (ya da alanlara yazarken otomatik hesaplanır).</p>
           <table class="zones" id="zonesTable" style="display:none">
             <thead><tr><th>Bölge</th><th>Aralık (BPM)</th><th>Açıklama</th></tr></thead>
             <tbody id="zonesBody"></tbody>
@@ -103,8 +114,9 @@
         </div>
       </fieldset>
 
-      <!-- EN ALTA: sadece KAYDET -->
+      <!-- EN ALTA: Çıkış ve Kaydet, ortada yanyana -->
       <div class="footerActions">
+        <button id="btnLogout" class="btn" style="background:#444">Çıkış</button>
         <button id="btnSave" class="btn">Kaydet</button>
       </div>
 
@@ -118,7 +130,7 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
 
   <!-- Proje config ve sayfa JS -->
-  <script src="./config.js?v=23"></script>
-  <script src="./dashboard.js?v=2"></script>
+  <script src="./config.js?v=25"></script>
+  <script src="./dashboard.js?v=3"></script>
 </body>
 </html>
