@@ -8,7 +8,7 @@
     :root{--bg:#f6f7fb;--card:#fff;--pri:#1f55ff;--err:#c62828;--ok:#237a3b}
     *{box-sizing:border-box} body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg)}
     .wrap{min-height:100dvh;display:grid;place-items:center;padding:24px}
-    .card{width:100%;max-width:520px;background:var(--card);border-radius:16px;box-shadow:0 8px 28px rgba(0,0,0,.08);padding:20px 20px 24px}
+    .card{width:100%;max-width:520px;background:#fff;border-radius:16px;box-shadow:0 8px 28px rgba(0,0,0,.08);padding:20px 20px 24px}
     h1{margin:4px 0 14px;font-size:24px;text-align:center}
     .tabs{display:flex;gap:8px;margin-bottom:12px}
     .tab{flex:1;border:1px solid #d0d4e0;background:#eef1ff;color:#243b80;height:38px;border-radius:10px;cursor:pointer}
@@ -54,12 +54,12 @@
     </div>
   </div>
 
-  <!-- Firebase compat -->
+  <!-- Firebase compat (sırayla yüklenecek) -->
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
 
-  <!-- Bizim dosyalar: RELATIVE + defer (doğru yüklenir) -->
-  <script src="./config.js?v=10" defer></script>
-  <script src="./signup.js?v=10" defer></script>
+  <!-- Bizim dosyalar (MUTLAK YOL, defer YOK) -->
+  <script src="/self-training-site/config.js?v=12"></script>
+  <script src="/self-training-site/signup.js?v=12"></script>
 </body>
 </html>
