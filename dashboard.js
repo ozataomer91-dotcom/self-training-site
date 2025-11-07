@@ -1,122 +1,196 @@
-<!doctype html>
-<html lang="tr">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Self Training • Panel / Hedef & Bilgi</title>
-  <style>
-    :root{--bg:#f6f7fb;--card:#fff;--pri:#1f55ff;--ok:#237a3b;--err:#c62828}
-    *{box-sizing:border-box}
-    body{margin:0;font-family:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;background:var(--bg)}
-    .wrap{min-height:100dvh;display:grid;place-items:center;padding:22px}
-    .card{width:100%;max-width:880px;background:var(--card);border-radius:16px;
-          box-shadow:0 8px 28px rgba(0,0,0,.08);padding:22px 22px 28px}
-    h1{margin:0 0 4px}
-    .sub{color:#6b7084;margin:0 0 14px;font-size:14px}
-    fieldset{border:1px solid #e2e6f3;border-radius:12px;margin:14px 0;padding:14px}
-    legend{font-weight:600;color:#243b80;padding:0 6px}
-    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
-    .chip{display:flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid #cfd4e3;border-radius:10px;background:#fff;cursor:pointer}
-    .chip input{accent-color:#1f55ff;transform:scale(1.2)}
-    .row{display:flex;gap:12px;flex-wrap:wrap}
-    label{font-size:13px;color:#4a4f63}
-    input[type="number"], input[type="text"]{height:40px;border:1px solid #cfd4e3;border-radius:10px;padding:0 12px;font-size:15px;background:#fff;width:100%}
-    .col{flex:1 1 160px;min-width:160px}
-    .msg{min-height:22px;margin-top:10px;font-size:14px}
-    .ok{color:var(--ok)} .err{color:var(--err)}
-    .btn{height:44px;border:none;background:var(--pri);color:#fff;border-radius:10px;font-weight:600;cursor:pointer;padding:0 18px}
-    .topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
-    .muted{color:#6b7084;font-size:13px}
-    .footerActions{display:flex;justify-content:flex-end;margin-top:16px}
-    .zones{width:100%;border-collapse:collapse;margin-top:8px;font-size:14px}
-    .zones th,.zones td{border:1px solid #e2e6f3;padding:8px;text-align:left}
-    .zones th{background:#f3f5ff}
-  </style>
-</head>
-<body>
-  <div class="wrap">
-    <div class="card">
-      <div class="topbar">
-        <div>
-          <h1>Self Training</h1>
-          <p class="sub" id="hello">Yükleniyor…</p>
-        </div>
-        <div class="row">
-          <button id="btnLogout" class="btn" style="background:#444">Çıkış</button>
-        </div>
-      </div>
+// dashboard.js v3 — HR MAX metinleri + Hesapla butonu
+console.log("DASHBOARD v3 BOOT");
 
-      <fieldset>
-        <legend>Hedefini Seç (en fazla 3)</legend>
-        <div class="grid" id="goalsBox"></div>
-        <p class="muted">En fazla 3 hedef seçebilirsin. Seçimler antrenman önerilerini kişiselleştirir.</p>
-      </fieldset>
+(function(){
+  if (!window.firebase) { alert("Firebase yüklenemedi."); return; }
+  if (!firebase.apps.length) {
+    try { firebase.initializeApp(window.firebaseConfig); } catch(e) {}
+  }
+  const auth = firebase.auth();
+  const db   = firebase.firestore ? firebase.firestore() : null;
 
-      <fieldset>
-        <legend>Sağlık / Sakatlık</legend>
-        <div class="grid" id="healthBox"></div>
-        <div class="row" style="margin-top:10px">
-          <div class="col">
-            <label for="notes">Ek bilgi (opsiyonel)</label>
-            <input id="notes" type="text" placeholder="Örn: Sağ diz ACL öyküsü, bel fıtığı, doktor onayı var…">
-          </div>
-        </div>
-        <p class="muted">Not: Ciddi rahatsızlıklarda mutlaka doktor onayı ile ilerleyin.</p>
-      </fieldset>
+  const $ = (id)=>document.getElementById(id);
+  const msg=(t,ok=false)=>{ const m=$("globalMsg"); m.className="msg "+(ok?"ok":"err"); m.textContent=t; };
 
-      <fieldset>
-        <legend>Spor Geçmişi & Seviye</legend>
-        <div class="grid" id="sportsBox"></div>
-        <div class="row" style="margin-top:10px">
-          <div class="col">
-            <label for="level">Seviye</label>
-            <select id="level" style="height:40px;border:1px solid #cfd4e3;border-radius:10px;padding:0 10px">
-              <option value="">Seçiniz</option>
-              <option>Başlangıç</option>
-              <option>Orta</option>
-              <option>İleri</option>
-            </select>
-          </div>
-        </div>
-      </fieldset>
+  const GOALS = [
+    "Yağ Yakma (Kilo Verme)","Kas Kazanımı (Hipertrofi)","Kuvvet Artışı",
+    "Kardiyo Dayanıklılığı (Koşu/Bisiklet)","Esneklik & Mobilite",
+    "Genel Sağlık / Formda Kalma","Evde Ekipmansız Egzersiz","Postür & Sırt Sağlığı",
+    "Rehabilitasyon / Spora Dönüş","Koşu Performansı (Tempo/Interval)",
+    "HIIT / Metabolik","Fonksiyonel Antrenman","Tenis Odaklı","Yüzme Kondisyonu"
+  ];
+  const HEALTH = [
+    "Bel ağrısı","Diz ağrısı / Menisküs","Omuz sıkışma / Rotator cuff","Boyun ağrısı",
+    "Kalp / Hipertansiyon","Astım","Diyabet","Tiroid","Obezite","Diğer"
+  ];
+  const SPORTS = [
+    "Koşu","Yürüyüş","Bisiklet","Yüzme","Ağırlık / Fitness","Tenis","Basketbol",
+    "Futbol","Voleybol","CrossFit","Pilates","Yoga","Hiçbiri"
+  ];
 
-      <fieldset>
-        <legend>Ölçümler</legend>
-        <div class="row">
-          <div class="col"><label>Yaş (yıl)</label><input id="ageYears" type="number" step="1" min="5" max="100" placeholder="Örn: 22"></div>
-          <div class="col"><label>Dinlenik Nabız (BPM)</label><input id="restHr" type="number" step="1" placeholder="Sabah uyanınca ölç"></div>
-          <div class="col"><label>Boy (cm)</label><input id="heightCm" type="number" step="0.1" placeholder="Örn: 178"></div>
-          <div class="col"><label>Kilo (kg)</label><input id="weightKg" type="number" step="0.1" placeholder="Örn: 74.5"></div>
-          <div class="col"><label>Bel (cm)</label><input id="waistCm" type="number" step="0.1" placeholder="Göbek deliği hizası"></div>
-          <div class="col"><label>Kalça (cm)</label><input id="hipCm" type="number" step="0.1" placeholder="Kalçanın en geniş yeri"></div>
-          <div class="col"><label>Boyun (cm)</label><input id="neckCm" type="number" step="0.1" placeholder="Adem elması altı"></div>
-        </div>
-        <p class="muted" style="margin-top:8px">Nabız rehberi: <b>HRmax = 220 − yaş</b>; <b>HRR = HRmax − Dinlenik Nabız</b>.</p>
+  function renderChips(boxId, list, name){
+    const box = $(boxId);
+    box.innerHTML = "";
+    list.forEach((txt,i)=>{
+      const id = name+"_"+i;
+      const div = document.createElement("label");
+      div.className = "chip";
+      div.innerHTML = <input type="checkbox" id="${id}" name="${name}" value="${txt}"><span>${txt}</span>;
+      box.appendChild(div);
+    });
+  }
+  renderChips("goalsBox", GOALS, "goals");
+  renderChips("healthBox", HEALTH, "health");
+  renderChips("sportsBox", SPORTS, "sports");
 
-        <div id="hrBox">
-          <p id="hrSummary" class="muted">HRmax ve bölgeler için yaş & dinlenik nabız gir.</p>
-          <table class="zones" id="zonesTable" style="display:none">
-            <thead><tr><th>Bölge</th><th>Aralık (BPM)</th><th>Açıklama</th></tr></thead>
-            <tbody id="zonesBody"></tbody>
-          </table>
-        </div>
-      </fieldset>
+  // Max 3 hedef
+  function enforceMaxGoals(){
+    const checked = Array.from(document.querySelectorAll('input[name="goals"]:checked'));
+    if (checked.length > 3){
+      const last = checked.pop();
+      last.checked = false;
+      msg("En fazla 3 hedef seçebilirsin.", false);
+    } else { msg(""); }
+  }
+  $("goalsBox").addEventListener("change", enforceMaxGoals);
 
-      <div class="footerActions">
-        <button id="btnSave" class="btn">Kaydet</button>
-      </div>
+  // HR hesapları
+  function round(x){ return Math.round(Number(x)||0); }
+  function computeZones(){
+    const age = +($("ageYears").value || 0);
+    const rhr = +($("restHr").value || 0);
+    const table = $("zonesTable");
+    const body  = $("zonesBody");
+    const sum   = $("hrSummary");
 
-      <div id="globalMsg" class="msg"></div>
-    </div>
-  </div>
+    if (age < 5 || age > 100 || rhr <= 0 || rhr > 120){
+      table.style.display = "none";
+      sum.textContent = "HR MAX ve bölgeler için geçerli yaş (5–100) ve dinlenik nabız (BPM) gir.";
+      return;
+    }
 
-  <!-- Firebase compat -->
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+    const hrMax = 220 - age;               // HR MAX
+    const hrr   = hrMax - rhr;              // Karvonen HRR
+    const z = (low,high)=>[ round(rhr + hrr*low), round(rhr + hrr*high) ];
 
-  <!-- Proje config ve sayfa JS -->
-  <script src="./config.js?v=22"></script>
-  <script src="./dashboard.js?v=2"></script>
-</body>
-</html>
+    const rows = [
+      ["%50–60 (Hafif)", ...z(0.50,0.60), "Isınma, toparlanma"],
+      ["%60–70 (Yağ yakım)", ...z(0.60,0.70), "Temel dayanıklılık"],
+      ["%70–80 (Aerobik)", ...z(0.70,0.80), "Tempo, steady-state"],
+      ["%80–90 (Anaerobik)", ...z(0.80,0.90), "Interval, güçlenme"],
+      ["%90–100 (Maks)", ...z(0.90,1.00), "Kısa sprint/tepe"]
+    ];
+
+    body.innerHTML = rows.map(r=><tr><td>${r[0]}</td><td>${r[1]}–${r[2]} bpm</td><td>${r[3]}</td></tr>).join("");
+    table.style.display = "";
+    sum.innerHTML = HR MAX ≈ <b>${hrMax}</b> bpm (maksimum atım), HRR = <b>${hrr}</b> (Karvonen).;
+  }
+
+  // Otomatik ve butonla hesap
+  ["ageYears","restHr"].forEach(id=>$(id).addEventListener("input", computeZones));
+  $("btnCompute").addEventListener("click", computeZones);
+
+  // Auth & Prefill
+  let currentUser = null;
+  auth.onAuthStateChanged(async (u)=>{
+    if(!u){ location.href = "./signup.html"; return; }
+    currentUser = u;
+    $("hello").textContent = "Hoş geldin " + (u.displayName || u.email);
+
+    const key = "st_profile_" + u.uid;
+    try{
+      if (db){
+        const snap = await db.collection("users").doc(u.uid).get();
+        if (snap.exists){ fillFromData(snap.data()); }
+        else {
+          const raw = localStorage.getItem(key);
+          if (raw) fillFromData(JSON.parse(raw));
+        }
+      } else {
+        const raw = localStorage.getItem(key);
+        if (raw) fillFromData(JSON.parse(raw));
+      }
+    }catch(e){ console.warn("Prefill error", e); }
+    computeZones();
+  });
+
+  function fillFromData(d){
+    if (!d) return;
+    (d.goals||[]).forEach(v=>{
+      const el = Array.from(document.querySelectorAll('input[name="goals"]')).find(x=>x.value===v);
+      if (el) el.checked = true;
+    });
+    (d.healthIssues||[]).forEach(v=>{
+      const el = Array.from(document.querySelectorAll('input[name="health"]')).find(x=>x.value===v);
+      if (el) el.checked = true;
+    });
+    (d.sportHistory||[]).forEach(v=>{
+      const el = Array.from(document.querySelectorAll('input[name="sports"]')).find(x=>x.value===v);
+      if (el) el.checked = true;
+    });
+    if (d.level) $("level").value = d.level;
+    if (d.notes) $("notes").value = d.notes;
+    const m = d.measures || {};
+    if (m.ageYears) $("ageYears").value = m.ageYears;
+    if (m.restHr)   $("restHr").value   = m.restHr;
+    if (m.heightCm) $("heightCm").value = m.heightCm;
+    if (m.weightKg) $("weightKg").value = m.weightKg;
+    if (m.waistCm)  $("waistCm").value  = m.waistCm;
+    if (m.hipCm)    $("hipCm").value    = m.hipCm;
+    if (m.neckCm)   $("neckCm").value   = m.neckCm;
+  }
+
+  // Kaydet
+  $("btnSave").addEventListener("click", async ()=>{
+    if (!currentUser){ msg("Oturum bulunamadı.", false); return; }
+    const goals = Array.from(document.querySelectorAll('input[name="goals"]:checked')).map(x=>x.value);
+    if (goals.length === 0){ msg("En az 1 hedef seç.", false); return; }
+    if (goals.length > 3){ msg("En fazla 3 hedef seçebilirsin.", false); return; }
+
+    const ageYears = +($("ageYears").value || 0);
+    const restHr   = +($("restHr").value   || 0);
+    const hrMax    = (ageYears>=5 && ageYears<=100) ? (220 - ageYears) : null;
+    const hrr      = (hrMax && restHr>0 && restHr<=120) ? (hrMax - restHr) : null;
+
+    const payload = {
+      goals,
+      healthIssues: Array.from(document.querySelectorAll('input[name="health"]:checked')).map(x=>x.value),
+      sportHistory: Array.from(document.querySelectorAll('input[name="sports"]:checked')).map(x=>x.value),
+      level: $("level").value || "",
+      notes: $("notes").value.trim(),
+      measures: {
+        ageYears: ageYears || null,
+        restHr:   restHr   || null,
+        heightCm: +($("heightCm").value || 0) || null,
+        weightKg: +($("weightKg").value || 0) || null,
+        waistCm:  +($("waistCm").value  || 0) || null,
+        hipCm:    +($("hipCm").value    || 0) || null,
+        neckCm:   +($("neckCm").value   || 0) || null
+      },
+      computed: { hrMax: hrMax || null, hrr: hrr || null },
+      updatedAt: new Date().toISOString()
+    };
+
+    const key = "st_profile_" + currentUser.uid;
+
+    try{
+      if (db){
+        await db.collection("users").doc(currentUser.uid).set(payload, { merge:true });
+        msg("Kaydedildi ✔ (bulut)", true);
+      } else {
+        localStorage.setItem(key, JSON.stringify(payload));
+        msg("Kaydedildi ✔ (yerel yedek)", true);
+      }
+    }catch(e){
+      console.warn("Firestore write fail, fallback local", e);
+      localStorage.setItem(key, JSON.stringify(payload));
+      msg("Kaydedildi ✔ (yerel yedek)", true);
+    }
+  });
+
+  // Çıkış
+  $("btnLogout").addEventListener("click", async ()=>{
+    try{ await auth.signOut(); }catch(e){}
+    location.href = "./signup.html";
+  });
+})();
