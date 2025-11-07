@@ -2,17 +2,103 @@
 <html lang="tr">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Self Training (Test)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Self Training • Giriş</title>
   <style>
-    body{font-family:Arial,Helvetica,sans-serif;margin:0;padding:32px;background:#f7f9fc}
-    h1{color:#0a7}
-    p{font-size:18px}
-    a{display:inline-block;margin-top:12px}
+    :root{--bg:#f6f7fb;--card:#fff;--pri:#1f55ff;--err:#c62828;--ok:#237a3b}
+    *{box-sizing:border-box}
+    body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg)}
+    .wrap{min-height:100dvh;display:grid;place-items:center;padding:24px}
+    .card{width:100%;max-width:520px;background:var(--card);border-radius:16px;box-shadow:0 8px 28px rgba(0,0,0,.08);padding:20px 20px 24px}
+    h1{margin:4px 0 14px;font-size:24px;text-align:center}
+    .tabs{display:flex;gap:8px;margin-bottom:12px}
+    .tab{flex:1;border:1px solid #d0d4e0;background:#eef1ff;color:#243b80;height:38px;border-radius:10px;cursor:pointer}
+    .tab.active{background:var(--pri);color:#fff;border-color:var(--pri)}
+    .row{display:flex;flex-direction:column;gap:6px;margin:10px 0}
+    label{font-size:13px;color:#4a4f63}
+    input{height:40px;border:1px solid #cfd4e3;border-radius:10px;padding:0 12px;font-size:15px;background:#fff}
+    .btn{height:42px;border:none;background:var(--pri);color:#fff;border-radius:10px;font-weight:600;cursor:pointer}
+    .link{background:none;border:none;color:#243b80;text-decoration:underline;cursor:pointer;padding:0;margin:0;font-size:14px}
+    .msg{min-height:22px;margin-top:10px;font-size:14px}
+    .err{color:var(--err)} .ok{color:var(--ok)} .hide{display:none}
   </style>
 </head>
 <body>
-  <h1>Self Training: canlı 🎉</h1>
-  <p>Başlamak için <a href="signup.html">signup.html</a> sayfasına gidin.</p>
+  <div class="wrap">
+    <div class="card" id="authCard">
+      <h1>Self Training</h1>
+
+      <div class="tabs">
+        <button id="tabLogin" class="tab active" type="button">Giriş</button>
+        <button id="tabSignup" class="tab" type="button">Kayıt</button>
+      </div>
+
+      <section id="loginView">
+        <p style="color:#6b7084;font-size:12px">Girişte yalnızca e-posta ve şifre gerekir.</p>
+        <div class="row"><label for="loginEmail">E-posta</label><input id="loginEmail" type="email" autocomplete="email"></div>
+        <div class="row"><label for="loginPassword">Şifre</label><input id="loginPassword" type="password" autocomplete="current-password"></div>
+        <div class="row" style="gap:8px">
+          <button id="btnLogin" class="btn" type="button">Giriş Yap</button>
+          <button id="btnForgot" class="link" type="button">Şifremi Unuttum</button>
+        </div>
+      </section>
+
+      <section id="signupView" class="hide">
+        <div class="row"><label for="signupName">Ad Soyad (zorunlu)</label><input id="signupName" type="text" autocomplete="name"></div>
+        <div class="row"><label for="signupEmail">E-posta</label><input id="signupEmail" type="email" autocomplete="email"></div>
+        <div class="row"><label for="signupPassword">Şifre</label><input id="signupPassword" type="password" autocomplete="new-password"></div>
+        <div class="row"><label for="signupPassword2">Şifre (tekrar)</label><input id="signupPassword2" type="password" autocomplete="new-password"></div>
+        <div class="row"><button id="btnSignup" class="btn" type="button">Kayıt Ol</button></div>
+      </section>
+
+      <div id="globalMsg" class="msg"></div>
+    </div>
+
+    <div class="card hide" id="dashCard">
+      <h1>Self Training</h1>
+      <p style="text-align:center">Hoş geldin <b id="who"></b> 👋</p>
+      <div style="text-align:center;margin-top:12px">
+        <button id="logout" class="btn" type="button">Çıkış Yap</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script>
+    window.firebaseConfig = {
+      apiKey: "AIzaSyAnMzCWonT_zLi0EnChIDYANBhDiiwmur4",
+      authDomain: "self-training-128b5.firebaseapp.com",
+      projectId: "self-training-128b5",
+      storageBucket: "self-training-128b5.firebasestorage.app",
+      messagingSenderId: "61732879565",
+      appId: "1:61732879565:web:5a446fb76fa88f1103bd84"
+    };
+    firebase.initializeApp(window.firebaseConfig);
+    const auth = firebase.auth();
+    const $ = (id)=>document.getElementById(id);
+    const show=(el)=>el.classList.remove("hide");
+    const hide=(el)=>el.classList.add("hide");
+    const msg=(t,ok=false)=>{const m=$("globalMsg");m.className="msg "+(ok?"ok":"err");m.textContent=t}
+
+    $("tabLogin").onclick=()=>{msg("");$("tabLogin").classList.add("active");$("tabSignup").classList.remove("active");show($("loginView"));hide($("signupView"))}
+    $("tabSignup").onclick=()=>{msg("");$("tabSignup").classList.add("active");$("tabLogin").classList.remove("active");show($("signupView"));hide($("loginView"))}
+
+    $("btnLogin").onclick=async()=>{msg("");const e=$("loginEmail").value.trim(),p=$("loginPassword").value;
+      if(!e||!p)return msg("E-posta ve şifre gerekli.");
+      try{await auth.signInWithEmailAndPassword(e,p);msg("Giriş başarılı.",true);hide($("authCard"));show($("dashCard"));$("who").textContent=auth.currentUser.email;}
+      catch(x){msg("İşlem başarısız ("+x.code+").");}
+    };
+
+    $("btnSignup").onclick=async()=>{msg("");const n=$("signupName").value.trim(),e=$("signupEmail").value.trim(),p1=$("signupPassword").value,p2=$("signupPassword2").value;
+      if(!n)return msg("Ad Soyad zorunlu."); if(!e)return msg("E-posta zorunlu."); if(p1.length<6)return msg("Şifre en az 6 karakter."); if(p1!==p2)return msg("Şifreler aynı değil.");
+      try{const c=await auth.createUserWithEmailAndPassword(e,p1);await c.user.updateProfile({displayName:n});await c.user.sendEmailVerification();msg("Kayıt tamam. Doğrulama maili gönderildi.",true);$("tabLogin").click();}
+      catch(x){msg("İşlem başarısız ("+x.code+").");}
+    };
+
+    $("btnForgot").onclick=async()=>{msg("");const e=$("loginEmail").value.trim();if(!e)return msg("E-posta yaz.");try{await auth.sendPasswordResetEmail(e);msg("Sıfırlama maili gönderildi.",true);}catch(x){msg("İşlem başarısız ("+x.code+").");}}
+
+    $("logout").onclick=async()=>{await auth.signOut();show($("authCard"));hide($("dashCard"));}
+  </script>
 </body>
 </html>
