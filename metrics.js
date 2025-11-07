@@ -1,147 +1,163 @@
-// init
 firebase.initializeApp(window.firebaseConfig);
 const auth = firebase.auth();
 let db = null;
-try{ db = firebase.firestore(); }catch(_){ db = null; }
+try{ db = firebase.firestore(); }catch(e){ db = null; }
 
-const $ = (s)=>document.querySelector(s);
-const testsBox = $("#tests");
+const $ = (id)=>document.getElementById(id);
 
-// HR hesaplama
-function recalc(){
-  const age = parseInt($("#age").value||"0",10);
-  const rhr = parseInt($("#rhr").value||"0",10);
-  if(age>0){
-    const hrmax = 220 - age;
-    $("#hrmax").textContent = hrmax;
-    const hrr = (rhr>0) ? (hrmax - rhr) : "—";
-    $("#hrr").textContent = hrr;
-  }else{
-    $("#hrmax").textContent = "—";
-    $("#hrr").textContent = "—";
-  }
-}
-document.addEventListener("input",(e)=>{
-  if(e.target.id==="age" || e.target.id==="rhr"){ recalc(); }
-});
-
-// Rehber içerikleri
-const HELP = {
-  ybalance: {
-    title: "Y-Balance Testi",
-    aim: "Alt ekstremite denge ve olası sağ-sol asimetrileri taramak.",
-    how: "Tek ayak üzerinde dur. Serbest ayakla öne, sağ-arka, sol-arka yönlere en uzağa uzan. 3 deneme, en iyi değer; cm ile not et.",
-    rel: "Fonksiyonel hedefler, tenis ve çeviklik için başlangıç referansı ve sakatlık riski öngörüsü sağlar.",
-    img: "assets/help/ybalance.png"
-  },
-  flamingo: {
-    title: "Flamingo Denge Testi",
-    aim: "Statik denge kapasitesini ölçmek.",
-    how: "Bir ayak üzerinde, diğer dizi 90° bükülü; süreni başlat. Denge bozulduğunda durdur. 3 deneme, en iyi süre.",
-    rel: "Çeviklik, koordinasyon ve core hedefleriyle ilişkilidir.",
-    img: "assets/help/flamingo.png"
-  },
-  sprint5_10: {
-    title: "5–10 m Sprint",
-    aim: "İlk adım ivmelenmesi ve kısa mesafe sürati değerlendirmek.",
-    how: "Düz hat belirle; 5 m ve 10 m işaretleri koy. Çizgileri geçerken süreyi kaydet.",
-    rel: "Hız/kuvvet hedefleri ve tenis/koşu performans planlamasında yüklenmeyi ayarlamaya yardım eder.",
-    img: "assets/help/sprint.png"
-  },
-  hrmax_hrr: {
-    title: "HRmax & HRR",
-    aim: "Antrenman bölgeleri için temel nabız değerlerini belirlemek.",
-    how: "Yaş ve dinlenik nabzını gir; sistem HRmax = 220 - yaş, HRR = HRmax - RHR hesaplar.",
-    rel: "Yağ yakımı, dayanıklılık ve interval planlarında hedef nabız aralıklarını verir.",
-    img: "assets/help/hr.png"
-  }
+const TESTS = {
+  fatloss: [
+    {id:"waist", title:"Bel Çevresi", badge:"Yağ", 
+     how:"Mezura ile göbek deliği hizasından, bantı yere paralel tutarak ölç. Nefesini ver, rahat konumda ölç.",
+     purpose:"Merkezi yağlanmayı izlemek.",
+     relate:"Yağ yakımı / kilo verme"},
+    {id:"whr", title:"Bel‑Kalça Oranı", badge:"Yağ",
+     how:"Bel (göbek deliği hiza) ve kalça çevresi (en geniş) ölçülür; WHR=Bel/Kalça.",
+     purpose:"Sağlık riski ve yağ dağılımı.",
+     relate:"Yağ yakımı / kilo verme"},
+    {id:"ymca", title:"YMCA Step Test (3 dk)", badge:"Dayanıklılık",
+     how:"30 cm step’e 3 dk 96 bpm ritimde çık‑in. Test sonrası 1. dakikadaki kalp hızını kaydet.",
+     purpose:"Submaksimal aerobik kapasite tahmini.",
+     relate:"Yağ yakımı, genel kondisyon"}
+  ],
+  muscle: [
+    {id:"arm", title:"Üst Kol Çevresi", badge:"Kas",
+     how:"Kol serbest, bicepsin en kalın yerinden mezura ile ölç.",
+     purpose:"Üst ekstremite kas kütlesi değişimi.",
+     relate:"Kas kazanımı / kuvvet"},
+    {id:"chest", title:"Göğüs Çevresi", badge:"Kas",
+     how:"Sternum hizası, bant yere paralel.",
+     purpose:"Göğüs kas kütlesi takibi.",
+     relate:"Kas kazanımı / kuvvet"},
+    {id:"epley", title:"5RM → 1RM (Epley)", badge:"Kuvvet",
+     how:"Güvenli bir 5RM kaldır ve 1RM ≈ 5RM × (1 + 0.0333×5) formülüyle tahmin et.",
+     purpose:"Maksimal kuvvet tahmini (doğrudan 1RM yerine güvenli tahmin).",
+     relate:"Kas kazanımı / kuvvet"}
+  ],
+  endurance: [
+    {id:"cooper", title:"Cooper (12 dk)", badge:"Dayanıklılık",
+      how:"12 dakikada toplam mesafe. Sonuçtan VO₂max tahmini yapılabilir.",
+      purpose:"Aerobik kapasite saha tahmini.",
+      relate:"Koşu / dayanıklılık"},
+    {id:"beep", title:"20 m Beep Test", badge:"Dayanıklılık",
+      how:"İki çizgi arası 20 m; bip sesiyle hızlanan kademeler. Seviyeni kaydet.",
+      purpose:"Maksimal koşu dayanıklılığı.",
+      relate:"Koşu / dayanıklılık"}
+  ],
+  home: [
+    {id:"plank", title:"Plank Süresi", badge:"Core",
+     how:"Dirsek plank, süre tut. Çökmeden sürdürebildiğin maksimum süre.",
+     purpose:"Core dayanıklılığı.",
+     relate:"Ev egzersizi / core"},
+    {id:"squat1m", title:"1 dk Squat Tekrarı", badge:"Alt Vücut",
+     how:"1 dakikada tam kontrollü squat sayısı.",
+     purpose:"Kuvvet‑dayanıklılık.",
+     relate:"Ev egzersizi"}
+  ],
+  mobility: [
+    {id:"sitreach", title:"Sit‑and‑Reach", badge:"Esneklik",
+     how:"Bacaklar düz, uzanabildiğin mesafe (cm).",
+     purpose:"Hamstring‑alt sırt esnekliği.",
+     relate:"Mobilite"},
+    {id:"shoulder", title:"Omuz Fleksiyon Testi", badge:"Esneklik",
+     how:"Duvara sırtın düz; kolları öne‑yukarı kaldır, hareket açıklığını değerlendir.",
+     purpose:"Omuz hareketliliği.",
+     relate:"Mobilite"}
+  ],
+  posture: [
+    {id:"walltest", title:"Duvar Postür Testi", badge:"Duruş",
+     how:"Topuk‑kalça‑sırt‑baş duvara temas. Aşırı boşluk var mı? Not al.",
+     purpose:"Postür farkındalığı.",
+     relate:"Duruş / core"},
+    {id:"birdog", title:"Bird‑Dog Sabitlik", badge:"Core",
+     how:"Karşı kol‑bacak uzatma; 10 tekrarda denge kaybı sayısı.",
+     purpose:"Lombo‑pelvik kontrol.",
+     relate:"Duruş / core"}
+  ],
+  sport: [
+    {id:"agility5_10_5", title:"5‑10‑5 Pro Agility", badge:"Çeviklik",
+     how:"Orta koniden sağ‑sol sprint; toplam süre.",
+     purpose:"Yön değiştirme çevikliği.",
+     relate:"Spor özel çeviklik"},
+    {id:"ybal", title:"Y‑Balance (Özet)", badge:"Denge",
+     how:"Tek ayak üzerinde üç yönde uzanma mesafeleri (normalize ederek kaydet).",
+     purpose:"Tek ayak denge‑stabilite.",
+     relate:"Spor, sakatlık önleme"}
+  ]
 };
 
-function modal(key){
-  const d = HELP[key]; if(!d) return;
-  document.getElementById("helpTitle").textContent = d.title;
-  document.getElementById("helpAim").textContent   = d.aim;
-  document.getElementById("helpHow").textContent   = d.how;
-  document.getElementById("helpRel").textContent   = d.rel;
-  const img = document.getElementById("helpImg");
-  if(d.img){ img.src = d.img; img.style.display="block"; } else { img.style.display="none"; }
-  document.getElementById("helpModal").classList.remove("hide");
+function readCtx(){
+  try{ return JSON.parse(localStorage.getItem("st_ctx")||"{}"); }catch(e){ return {}; }
 }
-document.getElementById("helpModal").addEventListener("click",(e)=>{
-  if(e.target.id==="helpModal" || e.target.id==="helpClose"){
-    document.getElementById("helpModal").classList.add("hide");
-  }
-});
 
-// Hedeflere göre test kartları
-const DEFAULT_TESTS = [
-  {key:"hrmax_hrr", title:"HRmax & HRR", fields:[
-    {id:"age_in", label:"Yaş (yukarıda giriniz)", ro:true},
-    {id:"rhr_in", label:"Dinlenik Nabız (yukarıda giriniz)", ro:true}
-  ]},
-  {key:"ybalance", title:"Y-Balance", fields:[
-    {id:"y_ant", label:"Anterior (cm)"},
-    {id:"y_pm",  label:"Posteromedial (cm)"},
-    {id:"y_pl",  label:"Posterolateral (cm)"}
-  ]},
-  {key:"flamingo", title:"Flamingo Denge", fields:[
-    {id:"flam_sec", label:"En iyi süre (sn)"}
-  ]},
-  {key:"sprint5_10", title:"Sprint 5 m / 10 m", fields:[
-    {id:"s5", label:"5 m (sn)"}, {id:"s10", label:"10 m (sn)"}
-  ]}
-];
-
-function makeTestCard(t){
-  const div = document.createElement("div");
-  div.className="test-card";
-  const h = document.createElement("h3");
-  h.textContent = t.title;
-  const btn = document.createElement("button");
-  btn.className="link"; btn.type="button"; btn.dataset.help=t.key; btn.textContent="Nasıl?";
-  div.appendChild(h); div.appendChild(btn);
-  t.fields.forEach(f=>{
-    const r = document.createElement("div"); r.className="row"; r.style.alignItems="center";
-    const lab = document.createElement("label"); lab.textContent=f.label; lab.style.minWidth="220px";
-    const inp = document.createElement("input"); inp.type="number"; inp.id=f.id; if(f.ro){ inp.readOnly=true; inp.placeholder="Yukarıdan giriniz"; }
-    r.appendChild(lab); r.appendChild(inp); div.appendChild(r);
+function renderTests(goals){
+  const host = document.getElementById("tests");
+  host.innerHTML = "";
+  const uniq = [];
+  goals.forEach(gid=>{
+    (TESTS[gid]||[]).forEach(t=>{
+      if(uniq.includes(t.id)) return;
+      uniq.push(t.id);
+      const card = document.createElement("div");
+      card.className = "test-card";
+      card.innerHTML = `
+        <div class="test-head">
+          <div><span class="badge">${t.badge}</span> <span class="test-title">${t.title}</span></div>
+          <button class="btn" data-id="${t.id}" style="height:32px">Nasıl?</button>
+        </div>
+        <div class="test-body hide" id="body-${t.id}">
+          <div><b>Amaç:</b> ${t.purpose}</div>
+          <div><b>Nasıl yapılır:</b> ${t.how}</div>
+          <div><b>Hedefle ilişkisi:</b> ${t.relate}</div>
+        </div>
+      `;
+      host.appendChild(card);
+    });
   });
-  return div;
+  host.querySelectorAll('button[data-id]').forEach(b=>{
+    b.addEventListener('click', ()=>{
+      const id = b.getAttribute('data-id');
+      const el = document.getElementById("body-"+id);
+      if(el) el.classList.toggle("hide");
+    });
+  });
 }
 
-function loadTests(){
-  testsBox.innerHTML="";
-  // Hedeflere göre genişletebilirsin; şimdilik DEFAULT_TESTS
-  DEFAULT_TESTS.forEach(t=>testsBox.appendChild(makeTestCard(t)));
+function computeHR(){
+  const age = parseInt((document.getElementById("age").value||"").trim(),10);
+  const rhr = parseInt((document.getElementById("rhr").value||"").trim(),10);
+  const hrmax = (Number.isFinite(age) ? (220 - age) : null);
+  document.getElementById("hrmax").textContent = (hrmax!==null?hrmax:"—");
+  document.getElementById("hrr").textContent = (hrmax!==null && Number.isFinite(rhr)) ? (hrmax - rhr) : "—";
 }
-loadTests();
 
-document.addEventListener("click",(e)=>{
-  const btn = e.target.closest("[data-help]");
-  if(btn){ modal(btn.dataset.help); }
-});
+document.getElementById("age").addEventListener("input", computeHR);
+document.getElementById("rhr").addEventListener("input", computeHR);
 
-// Kaydet
-$("#save").onclick = async ()=>{
-  const data = {
-    age: $("#age").value,
-    rhr: $("#rhr").value,
-    tests: {}
+document.getElementById("back").onclick = ()=> history.back();
+document.getElementById("logout").onclick = async ()=>{ await auth.signOut(); location.href="./signup.html"; };
+
+document.getElementById("save").onclick = async ()=>{
+  const payload = {
+    ts: new Date().toISOString(),
+    age: document.getElementById("age").value||null,
+    rhr: document.getElementById("rhr").value||null
   };
-  document.querySelectorAll(".test-card input").forEach(inp=>{
-    data.tests[inp.id] = inp.value;
-  });
-  localStorage.setItem("st_metrics", JSON.stringify(data));
-  const u = auth.currentUser;
+  localStorage.setItem("st_metrics", JSON.stringify(payload));
+  const msg = document.getElementById("msg");
+  msg.className="msg ok"; msg.textContent="Kaydedildi ✔ (yerel)";
   try{
-    if(db && u){ await firebase.firestore().collection("users").doc(u.uid).set({metrics:data},{merge:true}); }
-    $("#saveMsg").textContent="Kaydedildi ✔"; $("#saveMsg").className="msg ok";
-  }catch(e){
-    $("#saveMsg").textContent="Yerel kaydedildi (buluta yazılamadı)."; $("#saveMsg").className="msg";
-  }
+    const u = auth.currentUser;
+    if(firebase.firestore && u){
+      await firebase.firestore().collection("users").doc(u.uid).collection("metrics").add(payload);
+      msg.className="msg ok"; msg.textContent="Kaydedildi ✔ (bulut)";
+    }
+  }catch(e){ console.warn("Firestore yazılamadı:", e); }
 };
 
-// auth + preset
 auth.onAuthStateChanged(u=>{
   if(!u){ location.href="./signup.html"; return; }
+  const ctx = readCtx();
+  renderTests(ctx.goals||[]);
+  computeHR();
 });

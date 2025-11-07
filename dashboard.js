@@ -1,88 +1,116 @@
-// init
 firebase.initializeApp(window.firebaseConfig);
 const auth = firebase.auth();
-let db = null;
-try{ db = firebase.firestore(); }catch(_){ db = null; }
 
-const $ = (s)=>document.querySelector(s);
-const $$=(s)=>document.querySelectorAll(s);
+const $ = (id)=>document.getElementById(id);
+const GOAL_MAX = 3;
 
-const TARGETS = [
-  "Yağ yakımı","Kilo verme","Kas kazanımı","Kuvvet artışı","Dayanıklılık (kardiyo)",
-  "Çeviklik","Esneklik","Fonksiyonel antrenman","Evde ekipmansız","Koşu performansı",
-  "Tenis","Yüzme","HIIT/Interval","Duruş & core","Genel sağlık"
+const GOALS = [
+  {id:"fatloss",   label:"Yağ Yakımı / Kilo Verme"},
+  {id:"muscle",    label:"Kas Kazanımı / Kuvvet"},
+  {id:"endurance", label:"Dayanıklılık / Koşu"},
+  {id:"mobility",  label:"Esneklik / Mobilite"},
+  {id:"home",      label:"Evde Ekipmansız"},
+  {id:"posture",   label:"Duruş / Core"},
+  {id:"sport",     label:"Branş Sporu (tenis/yüzme)"},
 ];
-const LEVELS = ["Yeni başlayan","Orta","İleri","Profesyonel"];
-const INJURIES = ["Diz (ACL/Menisküs)","Bel/boyun","Omuz (rotator cuff)","Ayak bileği","Tendon/bağ","Diğer"];
 
-function chip(label, cls=""){
-  const b = document.createElement("button");
-  b.type="button"; b.className="chip "+cls; b.textContent=label;
-  return b;
+const LEVELS = ["Başlangıç","Orta","İleri"];
+const INJ = ["Yok","Bel","Diz","Omuz","Boyun","Ayak bileği","Diğer"];
+
+function chip(id, text, group){
+  const lbl = document.createElement("label");
+  lbl.className = "chip";
+  const inp = document.createElement("input");
+  inp.type = (group==="goals" || group==="inj") ? "checkbox" : "radio";
+  inp.name = group;
+  inp.value = id;
+  lbl.appendChild(inp);
+  const span = document.createElement("span");
+  span.textContent = text;
+  lbl.appendChild(span);
+  return lbl;
 }
 
 function mountChips(){
-  const tBox=$("#targets"); const lBox=$("#levels"); const iBox=$("#injuries");
-  TARGETS.forEach(x=>tBox.appendChild(chip(x)));
-  LEVELS.forEach(x=>lBox.appendChild(chip(x,"single")));
-  INJURIES.forEach(x=>iBox.appendChild(chip(x)));
+  const gb = $("goalBox");
+  GOALS.forEach(g=>gb.appendChild(chip(g.id,g.label,"goals")));
+  const lb = $("lvlBox");
+  LEVELS.forEach((t,i)=>lb.appendChild(chip(String(i),t,"level")));
+  const ib = $("injBox");
+  INJ.forEach(t=>ib.appendChild(chip(t,t,"inj")));
 }
-mountChips();
 
-// selection logic
-let selectedTargets = new Set();
-let selectedLevel = null;
-let selectedInj = new Set();
-const LIMIT = 3;
+function selected(group){
+  const n = group==="level" ? "level" : (group==="goals"?"goals":"inj");
+  return Array.from(document.querySelectorAll(`input[name="${n}"]`))
+    .filter(i=>i.checked).map(i=>i.value);
+}
 
-$("#targets").addEventListener("click",(e)=>{
-  const b = e.target.closest(".chip"); if(!b) return;
-  const k = b.textContent;
-  if(b.classList.contains("active")){ b.classList.remove("active"); selectedTargets.delete(k); }
-  else{
-    if(selectedTargets.size>=LIMIT){ return; }
-    b.classList.add("active"); selectedTargets.add(k);
-  }
-  $("#selCount").textContent = selectedTargets.size+"/"+LIMIT;
-});
+function enforceMaxGoals(){
+  const gos = Array.from(document.querySelectorAll(`input[name="goals"]`));
+  gos.forEach(i=>{
+    i.addEventListener("change", ()=>{
+      const sel = gos.filter(k=>k.checked);
+      if(sel.length>GOAL_MAX){
+        i.checked = false;
+        alert(`En fazla ${GOAL_MAX} hedef seçebilirsin.`);
+      }
+    });
+  });
+}
 
-$("#levels").addEventListener("click",(e)=>{
-  const b = e.target.closest(".chip"); if(!b) return;
-  $$(`#levels .chip`).forEach(x=>x.classList.remove("active"));
-  b.classList.add("active"); selectedLevel = b.textContent;
-});
+function saveCtx(){
+  const ctx = {
+    goals: selected("goals"),
+    level: selected("level")[0] || "",
+    inj: selected("inj"),
+    history: $("history").value || ""
+  };
+  localStorage.setItem("st_ctx", JSON.stringify(ctx));
+  return ctx;
+}
 
-$("#injuries").addEventListener("click",(e)=>{
-  const b = e.target.closest(".chip"); if(!b) return;
-  const k = b.textContent;
-  if(b.classList.contains("active")){ b.classList.remove("active"); selectedInj.delete(k); }
-  else{ b.classList.add("active"); selectedInj.add(k); }
-});
+function loadCtx(){
+  try{
+    const ctx = JSON.parse(localStorage.getItem("st_ctx")||"{}");
+    if(ctx.goals){
+      ctx.goals.forEach(id=>{
+        const el = Array.from(document.querySelectorAll('input[name="goals"]')).find(i=>i.value===id);
+        if(el) el.checked = true;
+      });
+    }
+    if(ctx.level){
+      const el = Array.from(document.querySelectorAll('input[name="level"]')).find(i=>i.value===ctx.level);
+      if(el) el.checked = true;
+    }
+    if(ctx.inj){
+      ctx.inj.forEach(id=>{
+        const el = Array.from(document.querySelectorAll('input[name="inj"]')).find(i=>i.value===id);
+        if(el) el.checked = true;
+      });
+    }
+    if(ctx.history){ $("history").value = ctx.history; }
+  }catch(e){}
+}
 
-// auth guard (opsiyonel)
 auth.onAuthStateChanged(u=>{
   if(!u){ location.href="./signup.html"; return; }
+  $("status").textContent = `Giriş: ${u.displayName||u.email}`;
 });
 
-$("#logout").onclick = async ()=>{ try{ await auth.signOut(); }catch(_){} location.href="./signup.html"; };
-
-$("#next").onclick = async ()=>{
-  const u = auth.currentUser;
-  const payload = {
-    targets: [...selectedTargets],
-    level: selectedLevel,
-    injuries: [...selectedInj],
-    ts: Date.now()
-  };
-  // localStorage
-  localStorage.setItem("st_profile", JSON.stringify(payload));
-  // Firestore (varsa)
-  try{
-    if(db && u){ await db.collection("users").doc(u.uid).set(payload, {merge:true}); }
-    $("#saveMsg").textContent="Kaydedildi ✔"; $("#saveMsg").className="msg ok";
-  }catch(e){
-    $("#saveMsg").textContent="Yerel kaydedildi (buluta yazılamadı)."; $("#saveMsg").className="msg";
+$("logout").onclick = async ()=>{
+  await auth.signOut();
+  location.href="./signup.html";
+};
+$("next").onclick = ()=>{
+  const ctx = saveCtx();
+  if(!ctx.goals || ctx.goals.length===0){
+    alert("En az 1 hedef seç.");
+    return;
   }
-  // ileri
   location.href="./metrics.html";
 };
+
+mountChips();
+enforceMaxGoals();
+loadCtx();

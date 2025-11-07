@@ -1,9 +1,10 @@
-// ÖRNEK — kendi gerçek bilgilerinle doldur ve 'config.js' adıyla kaydet
+// Bunu config.js olarak kopyalayıp kendi anahtarlarınla doldur.
 window.firebaseConfig = {
-  apiKey: "AIza...",
-  authDomain: "projen.firebaseapp.com",
-  projectId: "projen",
-  storageBucket: "projen.appspot.com",
-  messagingSenderId: "1234567890",
-  appId: "1:1234567890:web:abcdef"
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_PROJECT.firebaseapp.com",
+  projectId: "YOUR_PROJECT",
+  storageBucket: "YOUR_PROJECT.appspot.com",
+  messagingSenderId: "000000000000",
+  appId: "1:000000000000:web:XXXXXXXXXXXXXXXX"
 };
+console.log("CONFIG SAMPLE LOADED");

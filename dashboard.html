@@ -8,35 +8,51 @@
 </head>
 <body>
   <div class="wrap">
-    <div class="card">
-      <h1>Self Training</h1>
-      <p class="help">Hedeflerini seç (en fazla 3). Spor geçmişin ve varsa sakatlıklarını işaretle.</p>
+    <div class="card" id="panelCard">
+      <h1>Hedef & Bilgi</h1>
+      <p class="small">Maksimum <b>3</b> hedef seçebilirsiniz. (Odak netliği için önerimiz: 2‑3)</p>
 
-      <h2>Hedef Seçimi <span id="selCount" class="stat">0/3</span></h2>
-      <div id="targets" class="chips"></div>
+      <div class="row">
+        <label>Hedef(ler)ini seç</label>
+        <div class="chips" id="goalBox"></div>
+        <div class="help">Seçtiklerin, bir sonraki sayfada göreceğin ölçüm testlerini belirler.</div>
+      </div>
 
-      <h2>Seviye (tek seçim)</h2>
-      <div id="levels" class="chips"></div>
+      <div class="row">
+        <label>Spor geçmişi</label>
+        <select id="history">
+          <option value="">Seçiniz…</option>
+          <option>Hiç yok / yeni başlıyorum</option>
+          <option>3‑6 ay düzensiz</option>
+          <option>6‑12 ay düzenli</option>
+          <option>1‑3 yıl düzenli</option>
+          <option>3+ yıl ileri</option>
+        </select>
+      </div>
 
-      <h2>Sakatlık (çoklu seçim)</h2>
-      <div id="injuries" class="chips"></div>
+      <div class="row">
+        <label>Seviye</label>
+        <div class="chips" id="lvlBox"></div>
+      </div>
 
-      <div id="saveMsg" class="msg"></div>
-    </div>
-  </div>
+      <div class="row">
+        <label>Sakatlık / sağlık</label>
+        <div class="chips" id="injBox"></div>
+        <div class="help">Tıbbi tanı yerine belirtini seç. (Örn: Diz, Bel, Omuz vb.)</div>
+      </div>
 
-  <div class="bottom-bar">
-    <div class="bottom-inner">
-      <button id="logout" class="btn secondary">Çıkış</button>
-      <button id="next" class="btn">İlerle</button>
+      <div class="footer">
+        <button id="logout" class="btn" style="background:#444">Çıkış Yap</button>
+        <button id="next" class="btn">İlerle</button>
+      </div>
+
+      <div id="status" class="small"></div>
     </div>
   </div>
 
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
-
   <script src="./config.js"></script>
-  <script src="./dashboard.js"></script>
+  <script src="./dashboard.js?v=3"></script>
 </body>
 </html>
