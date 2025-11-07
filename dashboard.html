@@ -7,10 +7,17 @@
   <style>
     body{margin:0;background:#f6f7fb;font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
     .wrap{min-height:100dvh;display:grid;place-items:center;padding:24px}
-    .card{width:100%;max-width:560px;background:#fff;border-radius:16px;box-shadow:0 8px 28px rgba(0,0,0,.08);padding:28px;text-align:center}
-    h1{margin:0 0 12px}
-    .muted{color:#6b7084;margin:6px 0 18px}
+    .card{width:100%;max-width:680px;background:#fff;border-radius:16px;box-shadow:0 8px 28px rgba(0,0,0,.08);padding:28px}
+    h1{margin:0 0 8px}
+    .muted{color:#6b7084;margin:0 0 18px}
+    .row{display:flex;flex-direction:column;gap:6px;margin:12px 0}
+    label{font-size:13px;color:#4a4f63}
+    textarea, input{width:100%;min-height:44px;border:1px solid #cfd4e3;border-radius:10px;padding:10px 12px;font-size:15px;background:#fff}
+    textarea{min-height:88px;resize:vertical}
     .btn{height:42px;border:none;background:#1f55ff;color:#fff;border-radius:10px;font-weight:600;cursor:pointer;padding:0 18px}
+    .bar{display:flex;gap:10px;align-items:center;margin-top:12px}
+    #saveMsg{font-size:14px;min-height:18px}
+    .ok{color:#237a3b} .err{color:#c62828}
   </style>
 </head>
 <body>
@@ -18,6 +25,24 @@
     <div class="card">
       <h1>Self Training</h1>
       <p class="muted">Hoş geldin <b id="who">...</b> 👋</p>
+
+      <!-- Basit Profil Formu -->
+      <section>
+        <div class="row">
+          <label for="goal">Hedefin (kısa cümlelerle)</label>
+          <textarea id="goal" placeholder="Örn: 8 haftada düzenli koşu + 3 kg yağ kaybı, 5K süresini 28 dk altına indirmek..."></textarea>
+        </div>
+        <div class="row">
+          <label for="history">Spor geçmişin (varsa sakatlıklar, deneyim)</label>
+          <textarea id="history" placeholder="Örn: Lise basketbol, dizde zaman zaman ağrı, haftada 2 gün salona gidiyorum..."></textarea>
+        </div>
+        <div class="bar">
+          <button class="btn" id="btnSave" type="button">Kaydet</button>
+          <span id="saveMsg"></span>
+        </div>
+      </section>
+
+      <hr style="margin:20px 0;border:none;border-top:1px solid #eceff5">
       <button class="btn" id="btnLogout" type="button">Çıkış Yap</button>
     </div>
   </div>
@@ -25,26 +50,64 @@
   <!-- Firebase compat -->
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
 
-  <!-- Proje config -->
-  <script src="/self-training-site/config.js?v=15"></script>
+  <!-- Proje config (mutlak yol) -->
+  <script src="/self-training-site/config.js?v=16"></script>
 
   <script>
     // Başlat (tekil)
     if (!firebase.apps.length) { firebase.initializeApp(window.firebaseConfig); }
     const auth = firebase.auth();
+    const db   = firebase.firestore();
 
-    // Guard: oturum yoksa login sayfasına
-    auth.onAuthStateChanged(user => {
-      if (!user) {
-        location.replace("/self-training-site/index.html");
-        return;
+    const $ = id => document.getElementById(id);
+    const setMsg = (t, ok=false) => { const m=$("saveMsg"); m.className = ok ? "ok" : "err"; m.textContent = t; }
+
+    // Guard + formu doldur
+    auth.onAuthStateChanged(async (user) => {
+      if (!user) { location.replace("/self-training-site/index.html"); return; }
+      $("who").textContent = user.displayName || user.email || "Kullanıcı";
+
+      // Varsa Firestore'daki verileri çek
+      try {
+        const snap = await db.collection("users").doc(user.uid).get();
+        if (snap.exists) {
+          const d = snap.data() || {};
+          $("goal").value    = d.goal    || "";
+          $("history").value = d.history || "";
+        }
+      } catch (e) {
+        console.error(e);
       }
-      document.getElementById("who").textContent = user.displayName || user.email || "Kullanıcı";
     });
 
+    // Kaydet
+    $("btnSave").onclick = async () => {
+      const user = auth.currentUser;
+      if (!user) { setMsg("Oturum kapalı.", false); return; }
+
+      const goal    = $("goal").value.trim();
+      const history = $("history").value.trim();
+
+      $("btnSave").disabled = true; setMsg("");
+      try {
+        await db.collection("users").doc(user.uid).set({
+          goal, history,
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        }, { merge: true });
+
+        setMsg("Kaydedildi ✔", true);
+      } catch (e) {
+        console.error(e);
+        setMsg("Kaydedilemedi: " + (e.message || e), false);
+      } finally {
+        $("btnSave").disabled = false;
+      }
+    };
+
     // Çıkış
-    document.getElementById("btnLogout").onclick = async () => {
+    $("btnLogout").onclick = async () => {
       await auth.signOut();
       location.replace("/self-training-site/index.html");
     };
