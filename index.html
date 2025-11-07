@@ -1,58 +1,52 @@
 
-<!doctype html><html lang="tr"><head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Self Training • Giriş / Kayıt</title>
-<link rel="stylesheet" href="./assets/common.css">
-<style>
-.hero{background:linear-gradient(135deg,#1f55ff,#7b9dff);border-radius:16px;color:#fff;padding:20px}
-.tabs{display:flex;gap:8px;margin-top:10px}
-.tab{flex:1;border:1px solid #9fb6ff;background:#ecf0ff;color:#132b7e;height:38px;border-radius:10px;cursor:pointer}
-.tab.active{background:#fff;color:#1f55ff;border-color:#fff}
-.form{background:#fff;border-radius:12px;padding:16px;margin-top:10px}
-.row{display:flex;flex-direction:column;gap:6px;margin:10px 0}
-.link{background:none;border:none;color:#243b80;text-decoration:underline;cursor:pointer;padding:0;margin:0;font-size:14px}
-.msg{min-height:22px;font-size:14px}
-.err{color:#c62828}.ok{color:#237a3b}.hide{display:none}
-</style></head><body>
-<div class="container">
-  <div class="topbar">
-    <div class="badge">Self Training • Yapay zekâ destekli</div>
-    <div class="right"></div>
-  </div>
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Self Training • Giriş / Kayıt</title>
+  <link rel="stylesheet" href="./assets/css/styles.css">
+  <style>
+    .auth-card{max-width:520px;margin:64px auto}
+    .tabs{display:flex;gap:8px;margin-bottom:12px}
+    .tab{flex:1;border:1px solid var(--line);background:#eef3ff;color:#243b80;height:38px;border-radius:10px;cursor:pointer}
+    .tab.active{background:var(--pri);color:#fff;border-color:var(--pri)}
+  </style>
+</head>
+<body>
+  <div class="container auth-card">
+    <div class="card">
+      <h1>Self Training</h1>
+      <div class="tabs">
+        <button id="tabLogin"  class="tab active" type="button">Giriş</button>
+        <button id="tabSignup" class="tab"         type="button">Kayıt</button>
+      </div>
 
-  <div class="hero">
-    <h1>Hoş geldin 👋</h1>
-    <p>Hedeflerini seç, ölçümlerini gir, kişiselleştirilmiş antrenmanlara başla.</p>
-    <div class="tabs">
-      <button id="tabLogin" class="tab active" type="button">Giriş</button>
-      <button id="tabSignup" class="tab" type="button">Kayıt</button>
+      <section id="loginView">
+        <p class="small">Girişte yalnızca e-posta ve şifre gerekir.</p>
+        <div class="row"><input id="loginEmail" class="input" type="email" placeholder="E-posta"></div>
+        <div class="row"><input id="loginPassword" class="input" type="password" placeholder="Şifre"></div>
+        <div class="row" style="gap:8px">
+          <button id="btnLogin" class="btn" type="button">Giriş Yap</button>
+          <button id="btnForgot" class="btn ghost" type="button">Şifremi Unuttum</button>
+        </div>
+      </section>
+
+      <section id="signupView" class="hide">
+        <div class="row"><input id="signupName" class="input" type="text" placeholder="Ad Soyad"></div>
+        <div class="row"><input id="signupEmail" class="input" type="email" placeholder="E-posta"></div>
+        <div class="row"><input id="signupPassword" class="input" type="password" placeholder="Şifre"></div>
+        <div class="row"><input id="signupPassword2" class="input" type="password" placeholder="Şifre (tekrar)"></div>
+        <div class="row"><button id="btnSignup" class="btn" type="button">Kayıt Ol</button></div>
+      </section>
+
+      <div class="msg"></div>
     </div>
   </div>
 
-  <div class="form card" id="loginView">
-    <div class="row"><label for="loginEmail">E‑posta</label><input id="loginEmail" type="email" class="input wide" autocomplete="email"></div>
-    <div class="row"><label for="loginPassword">Şifre</label><input id="loginPassword" type="password" class="input wide" autocomplete="current-password"></div>
-    <div class="row" style="gap:8px">
-      <button id="btnLogin" class="btn" type="button">Giriş Yap</button>
-      <button id="btnForgot" class="ghost" type="button">Şifremi Unuttum</button>
-    </div>
-    <div id="globalMsg" class="msg"></div>
-  </div>
-
-  <div class="form card hide" id="signupView">
-    <div class="row"><label for="signupName">Ad Soyad</label><input id="signupName" type="text" class="input wide" autocomplete="name"></div>
-    <div class="row"><label for="signupEmail">E‑posta</label><input id="signupEmail" type="email" class="input wide" autocomplete="email"></div>
-    <div class="row"><label for="signupPassword">Şifre</label><input id="signupPassword" type="password" class="input wide" autocomplete="new-password"></div>
-    <div class="row"><label for="signupPassword2">Şifre (tekrar)</label><input id="signupPassword2" type="password" class="input wide" autocomplete="new-password"></div>
-    <div class="row"><button id="btnSignup" class="btn" type="button">Kayıt Ol</button></div>
-    <div id="globalMsg2" class="msg"></div>
-  </div>
-
-  <p class="footer-note">Girişten sonra → Hedef & Bilgi → Ölçümler adımlarına geçersin.</p>
-</div>
-
-<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
-<script src="./config.js?v=100"></script>
-<script src="./signup.js?v=100"></script>
-</body></html>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="./assets/js/common.js"></script>
+  <script src="./signup.js"></script>
+</body>
+</html>

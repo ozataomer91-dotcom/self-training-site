@@ -1,55 +1,149 @@
 
-<!doctype html><html lang="tr"><head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Ölçümler • Self Training</title>
-<link rel="stylesheet" href="./assets/common.css">
-</head><body>
-<div class="container">
-  <div class="topbar">
-    <div class="badge">Self Training • Ölçümler</div>
-    <div class="right"><button id="btnLogout" class="ghost">Çıkış</button></div>
-  </div>
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Ölçümler • Self Training</title>
+  <link rel="stylesheet" href="./assets/css/styles.css">
+</head>
+<body>
+  <div class="container">
+    <div class="topbar">
+      <div><button id="back" class="btn ghost">← Geri</button></div>
+      <div class="right">
+        <span class="small">Hedefe göre testler</span>
+        <button id="logout" class="btn ghost">Çıkış Yap</button>
+      </div>
+    </div>
 
-  <div class="card">
-    <h1>Ölçümler</h1>
-    <p class="hint">Yaş ve dinlenik nabız gir. Sistem <b>HRmax</b> (maks. kalp atım hızı) ve <b>HRR</b> (kalp atım hızı rezervi) hesaplar.</p>
-    <div class="row">
-      <div class="field" style="flex:1;min-width:160px">
-        <label>Yaş (yıl)</label>
-        <input id="age" type="number" class="input" placeholder="örn. 25">
+    <div class="card">
+      <h1>Ölçümler</h1>
+      <p class="hint">Yaş ve dinlenik nabzı gir. Sistem HRmax ve HRR hesaplar. Aşağıda hedeflerine göre test kartları gelir.</p>
+
+      <div class="grid">
+        <div class="col-6">
+          <label for="age">Yaş</label>
+          <input id="age" class="input" placeholder="örn. 25">
+          <p class="small">Yaş: Nüfus cüzdanındaki tam yıl.</p>
+        </div>
+        <div class="col-6">
+          <label for="rhr">Dinlenik Nabız (RHR)</label>
+          <input id="rhr" class="input" placeholder="örn. 60">
+          <p class="small">Sabah uyanınca, 60 sn boyunca sayınız.</p>
+        </div>
+        <div class="col-6">
+          <label>HRmax (220-yaş)</label>
+          <input id="hrmax" class="input" readonly>
+        </div>
+        <div class="col-6">
+          <label>HRR (HRmax - RHR)</label>
+          <input id="hrr" class="input" readonly>
+        </div>
       </div>
-      <div class="field" style="flex:1;min-width:200px">
-        <label>Dinlenik Nabız • RHR (bpm)</label>
-        <input id="rhr" type="number" class="input" placeholder="örn. 60">
-      </div>
-      <div class="field" style="flex:1;min-width:200px">
-        <label>HRmax (220‑yaş)</label>
-        <input id="hrmax" class="input" readonly>
-      </div>
-      <div class="field" style="flex:1;min-width:200px">
-        <label>HRR (HRmax‑RHR)</label>
-        <input id="hrr" class="input" readonly>
+
+      <h2>Testler</h2>
+      <div id="testsWrap" class="grid"></div>
+
+      <div class="sticky-actions">
+        <div class="actions">
+          <button id="save" class="btn">Kaydet</button>
+        </div>
+        <div class="msg"></div>
       </div>
     </div>
   </div>
 
-  <div class="card">
-    <h2>Testler</h2>
-    <p class="hint">Seçtiğin hedeflere göre gerekli testler listelenir. Her test kartındaki <b>Bilgi</b> düğmesiyle “Nasıl yapılır?” ve “Hedefle ilişkisi” açıklamasını aç/kapa.</p>
-    <div id="tests" class="test-grid"></div>
-  </div>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
 
-  <div class="sticky-nav">
-    <div class="actions">
-      <button id="btnBack" class="ghost">Geri</button>
-      <div>
-        <button id="btnSave" class="ghost">Kaydet</button>
-        <button id="btnNext" class="btn">İlerle</button>
-      </div>
-    </div>
-  </div>
-</div>
-<div class="toast"></div>
-<script type="module" src="./assets/util.js?v=100"></script>
-<script type="module" src="./assets/metrics.js?v=100"></script>
-</body></html>
+  <script src="./assets/js/common.js"></script>
+  <script src="./assets/js/tests-data.js"></script>
+  <script>
+    const profile = app.getFromLocal('selfTraining_profile', null);
+    if(!profile){ location.href='./dashboard.html'; }
+
+    // auth
+    app.q('#logout').onclick = async ()=>{
+      try{ await app.auth().signOut(); location.href='./index.html'; }catch(_){ location.href='./index.html'; }
+    };
+    app.q('#back').onclick = ()=>history.back();
+
+    // HR hesap
+    const recalc = ()=>{
+      const age = parseInt(app.q('#age').value||0,10);
+      const rhr = parseInt(app.q('#rhr').value||0,10);
+      const hrmax = age>0 ? (220 - age) : '';
+      const hrr = (hrmax && rhr>0) ? (hrmax - rhr) : '';
+      app.q('#hrmax').value = hrmax || '';
+      app.q('#hrr').value = hrr || '';
+    };
+    ['age','rhr'].forEach(id=>app.q('#'+id).addEventListener('input', recalc));
+
+    // Test kartları
+    const wrap = app.q('#testsWrap');
+    const added = new Set();
+    (profile.goals||[]).forEach(g=>{
+      (window.GOAL_TO_TESTS[g]||[]).forEach(tid=>{
+        if(added.has(tid)) return;
+        added.add(tid);
+        const T = window.TESTS[tid];
+        const col = document.createElement('div'); col.className='col-6';
+        col.innerHTML = `
+          <div class="card">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+              <strong>${T.title}</strong>
+              <button class="btn ghost btnInfo" data-id="${tid}" type="button">Nasıl?</button>
+            </div>
+            <p class="small">${T.desc}</p>
+            <div class="row">
+              <input class="input testVal" placeholder="Değerinizi giriniz" data-id="${tid}">
+            </div>
+          </div>`;
+        wrap.appendChild(col);
+      });
+    });
+
+    wrap.addEventListener('click', (e)=>{
+      const btn = e.target.closest('.btnInfo'); if(!btn) return;
+      const tid = btn.dataset.id; const T = window.TESTS[tid];
+      const html = \`
+        <div class="img"><img src="./assets/img/\${T.img}" alt=""></div>
+        <div>
+          <h3>Nasıl yapılır?</h3>
+          <div>\${T.how}</div>
+        </div>
+        <div>
+          <h3>Hedefle ilişkisi</h3>
+          <div>\${T.why}</div>
+        </div>\`;
+      app.modal.show({title:T.title, html});
+    });
+
+    // Kaydet
+    app.q('#save').onclick = async ()=>{
+      const out = {
+        age: app.q('#age').value.trim(),
+        rhr: app.q('#rhr').value.trim(),
+        hrmax: app.q('#hrmax').value.trim(),
+        hrr: app.q('#hrr').value.trim(),
+        tests: {}
+      };
+      app.qAll('.testVal').forEach(inp=> out.tests[inp.dataset.id] = inp.value.trim());
+      app.saveToLocal('selfTraining_metrics', out);
+
+      const user = app.auth() ? app.auth().currentUser : null;
+      const db = app.getDb();
+      if(user && db){
+        try{
+          await db.collection('users').doc(user.uid).set({metrics:out},{merge:true});
+          app.toast('Kaydedildi ✔', true);
+        }catch(_){ app.toast('Yerel kaydedildi.', true); }
+      }else{
+        app.toast('Yerel kaydedildi.', true);
+      }
+    };
+  </script>
+</body>
+</html>
