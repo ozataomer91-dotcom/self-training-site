@@ -25,18 +25,26 @@
     .msg{min-height:22px;margin-top:10px;font-size:14px}
     .ok{color:var(--ok)} .err{color:var(--err)}
     .btn{height:44px;border:none;background:var(--pri);color:#fff;border-radius:10px;font-weight:600;cursor:pointer;padding:0 18px}
-    .topbar{margin-bottom:10px}
+    .topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
     .muted{color:#6b7084;font-size:13px}
-    /* Alt aksiyon alanı: solda Çıkış, sağda Kaydet */
-    .footerActions{display:flex;justify-content:space-between;align-items:center;margin-top:16px}
+    /* en alttaki aksiyon alanı (sadece Kaydet) */
+    .footerActions{display:flex;justify-content:flex-end;margin-top:16px}
+    /* tablo ufak stiller */
+    .zones{width:100%;border-collapse:collapse;margin-top:8px;font-size:14px}
+    .zones th,.zones td{border:1px solid #e2e6f3;padding:8px;text-align:left}
+    .zones th{background:#f3f5ff}
   </style>
 </head>
 <body>
   <div class="wrap">
     <div class="card">
+      <!-- ÜSTTE: başlık + ÇIKIŞ -->
       <div class="topbar">
-        <h1>Self Training</h1>
-        <p class="sub" id="hello">Yükleniyor…</p>
+        <div>
+          <h1>Self Training</h1>
+          <p class="sub" id="hello">Yükleniyor…</p>
+        </div>
+        <button id="btnLogout" class="btn" style="background:#444">Çıkış</button>
       </div>
 
       <fieldset>
@@ -88,18 +96,15 @@
 
         <div id="hrBox">
           <p id="hrSummary" class="muted">HRmax ve bölgeler için yaş & dinlenik nabız gir.</p>
-          <table class="zones" id="zonesTable" style="display:none;width:100%;border-collapse:collapse;margin-top:8px;font-size:14px">
-            <thead>
-              <tr style="background:#f3f5ff"><th style="border:1px solid #e2e6f3;padding:8px;text-align:left">Bölge</th><th style="border:1px solid #e2e6f3;padding:8px;text-align:left">Aralık (BPM)</th><th style="border:1px solid #e2e6f3;padding:8px;text-align:left">Açıklama</th></tr>
-            </thead>
+          <table class="zones" id="zonesTable" style="display:none">
+            <thead><tr><th>Bölge</th><th>Aralık (BPM)</th><th>Açıklama</th></tr></thead>
             <tbody id="zonesBody"></tbody>
           </table>
         </div>
       </fieldset>
 
-      <!-- EN ALTA: solda Çıkış, sağda Kaydet -->
+      <!-- EN ALTA: sadece KAYDET -->
       <div class="footerActions">
-        <button id="btnLogout" class="btn" style="background:#444">Çıkış</button>
         <button id="btnSave" class="btn">Kaydet</button>
       </div>
 
@@ -113,7 +118,7 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
 
   <!-- Proje config ve sayfa JS -->
-  <script src="./config.js?v=22"></script>
+  <script src="./config.js?v=23"></script>
   <script src="./dashboard.js?v=2"></script>
 </body>
 </html>
