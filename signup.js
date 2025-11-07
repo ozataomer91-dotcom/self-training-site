@@ -1,9 +1,6 @@
 console.log("SIGNUP JS BOOT");
 
-// Firebase init (çift başlatmayı engelle)
-if (!firebase.apps.length) {
-  firebase.initializeApp(window.firebaseConfig);
-}
+firebase.initializeApp(window.firebaseConfig);
 const auth = firebase.auth();
 
 // Kısayollar
@@ -24,7 +21,7 @@ const tr = (c) => ({
   "auth/network-request-failed":"Ağ hatası.",
   "auth/too-many-requests":"Çok fazla deneme yaptın. Biraz bekle.",
   "auth/api-key-not-valid.please-pass-a-valid-api-key.":"API anahtarı geçersiz (config.js kontrol)."
-}[c] || İşlem başarısız (${c}).);
+}[c] || `İşlem başarısız (${c}).`);
 
 // Sekmeler
 $("tabLogin").onclick  = ()=>{ clearMsg(); $("tabLogin").classList.add("active"); $("tabSignup").classList.remove("active"); show("loginView"); hide("signupView"); };
@@ -62,28 +59,26 @@ $("btnForgot").onclick = async ()=>{
   }catch(e){ setMsg(tr(e.code)); }
 };
 
-// Kayıt — isim OPSİYONEL, doğrulama maili gönder
+// Kayıt — SADECE burada doğrulama maili gönder
 $("btnSignup").onclick = async ()=>{
   clearMsg();
-  const name = ($("signupName")?.value || "").trim(); // artık opsiyonel
+  const name = $("signupName").value.trim();
   const email= $("signupEmail").value.trim();
   const p1   = $("signupPassword").value;
   const p2   = $("signupPassword2").value;
 
+  if(!name){ setMsg("Ad Soyad zorunlu."); return; }
   if(!email){ setMsg("E-posta zorunlu."); return; }
   if((p1||"").length < 6){ setMsg("Şifre en az 6 karakter."); return; }
   if(p1 !== p2){ setMsg("Şifreler aynı değil."); return; }
 
   try{
     const cred = await auth.createUserWithEmailAndPassword(email, p1);
-    if (name) { await cred.user.updateProfile({ displayName: name }); } // ad varsa kaydet
-
-    // Sadece kayıt aşamasında doğrulama maili
+    await cred.user.updateProfile({ displayName: name });
     await cred.user.sendEmailVerification({
       url: "https://ozataomer91-dotcom.github.io/self-training-site/dashboard.html?verified=1",
       handleCodeInApp: false
     });
-
     setMsg("Kayıt tamam. Doğrulama maili gönderildi. Onaylayıp giriş yap.", true);
     $("tabLogin").click();
     $("loginEmail").value = email;
