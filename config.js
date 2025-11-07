@@ -1,6 +1,6 @@
 // Firebase kimlik bilgilerin (compat ile)
 window.firebaseConfig = {
-  apiKey: "AIzaSyAnMzcWonT_zL0EhcNlDIYANBhDiivmur4",
+  apiKey: "AIzaSyAnMzCWonT_zLi0EnChIDYANBhDiiwmur4",
   authDomain: "self-training-128b5.firebaseapp.com",
   projectId: "self-training-128b5",
   storageBucket: "self-training-128b5.firebasestorage.app",
