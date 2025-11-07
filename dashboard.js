@@ -1,125 +1,92 @@
-// dashboard.js — Hedef/Geçmiş ekranı (ölçümler ayrı sayfada)
-console.log("DASHBOARD v1 BOOT");
 
 (function(){
-  if (!window.firebase) { alert("Firebase yüklenemedi."); return; }
-  if (!firebase.apps.length) {
-    try { firebase.initializeApp(window.firebaseConfig); } catch(e) {}
-  }
+  const $ = (s) => document.querySelector(s);
+  const $$ = (s) => Array.from(document.querySelectorAll(s));
+  const byId = (id)=>document.getElementById(id);
+
+  // Firebase
+  if(!window.firebaseConfig){ console.error("config.js bulunamadı"); }
+  if(!firebase.apps.length){ firebase.initializeApp(window.firebaseConfig); }
   const auth = firebase.auth();
-  const db   = firebase.firestore ? firebase.firestore() : null;
+  const db   = firebase.firestore();
 
-  const $ = (id)=>document.getElementById(id);
-  const msg=(t,ok=false)=>{ const m=$("globalMsg"); m.className="msg "+(ok?"ok":"err"); m.textContent=t; };
-
-  const MAX_GOALS = 3; // İstersek 2 yapabiliriz
-
+  // Hedefler
   const GOALS = [
-    "Yağ Yakma (Kilo Verme)","Kas Kazanımı (Hipertrofi)","Kuvvet Artışı",
-    "Kardiyo Dayanıklılığı (Koşu/Bisiklet)","Esneklik & Mobilite",
-    "Genel Sağlık / Formda Kalma","Evde Ekipmansız Egzersiz","Postür & Sırt Sağlığı",
-    "Rehabilitasyon / Spora Dönüş","Koşu Performansı (Tempo/Interval)",
-    "HIIT / Metabolik","Fonksiyonel Antrenman","Tenis Odaklı","Yüzme Kondisyonu"
+    "Yağ yakımı / Kilo verme",
+    "Kas kazanımı / Hipertrofi",
+    "Kuvvet artışı (1RM)",
+    "Dayanıklılık (koşu/tempo)",
+    "Fonksiyonel fitness / HIIT",
+    "Mobilite & Esneklik",
+    "Postür / Bel-boyun sağlığı",
+    "Evde ekipmansız antrenman",
+    "Kardiyorespiratuvar sağlık",
+    "Hız / Çeviklik",
+    "Patlayıcı güç (plyo)",
+    "Rehabilitasyon odaklı dönüş",
+    "Yüzme performansı",
+    "Tenis / Raket sporları hazırlık"
   ];
-  const HEALTH = [
-    "Bel ağrısı","Diz ağrısı / Menisküs","Omuz sıkışma / Rotator cuff","Boyun ağrısı",
-    "Kalp / Hipertansiyon","Astım","Diyabet","Tiroid","Obezite","Diğer"
-  ];
-  const SPORTS = [
-    "Koşu","Yürüyüş","Bisiklet","Yüzme","Ağırlık / Fitness","Tenis","Basketbol",
-    "Futbol","Voleybol","CrossFit","Pilates","Yoga","Hiçbiri"
-  ];
 
-  function renderChips(boxId, list, name){
-    const box = $(boxId);
-    box.innerHTML = "";
-    list.forEach((txt,i)=>{
-      const id = name+"_"+i;
-      const div = document.createElement("label");
-      div.className = "chip";
-      div.innerHTML = `<input type="checkbox" id="${id}" name="${name}" value="${txt}"><span>${txt}</span>`;
-      box.appendChild(div);
-    });
-  }
-  renderChips("goalsBox", GOALS, "goals");
-  renderChips("healthBox", HEALTH, "health");
-  renderChips("sportsBox", SPORTS, "sports");
-
-  // Max hedef kuralı
-  function enforceMaxGoals(){
-    const checked = Array.from(document.querySelectorAll('input[name="goals"]:checked'));
-    if (checked.length > MAX_GOALS){
-      const last = checked.pop();
-      last.checked = false;
-      msg(`En fazla ${MAX_GOALS} hedef seçebilirsin.`, false);
-    } else { msg(""); }
-  }
-  $("goalsBox").addEventListener("change", enforceMaxGoals);
-
-  // Auth & Prefill
-  let currentUser = null;
-  auth.onAuthStateChanged(async (u)=>{
-    if(!u){ location.href = "./signup.html"; return; }
-    currentUser = u;
-    $("hello").textContent = "Hoş geldin " + (u.displayName || u.email);
-
-    try{
-      if (db){
-        const snap = await db.collection("users").doc(u.uid).get();
-        if (snap.exists){ fillFromData(snap.data()); }
-      }
-    }catch(e){ console.warn("Prefill error", e); }
+  // UI build
+  const wrap = byId("goalWrap");
+  GOALS.forEach((g,i)=>{
+    const id = "g"+i;
+    const label = document.createElement("label");
+    label.className = "choice";
+    label.innerHTML = `<input type="checkbox" class="gchk" id="${id}" value="${g}"><span>${g}</span>`;
+    wrap.appendChild(label);
   });
 
-  function fillFromData(d){
-    if (!d) return;
-    (d.goals||[]).forEach(v=>{
-      const el = Array.from(document.querySelectorAll('input[name="goals"]')).find(x=>x.value===v);
-      if (el) el.checked = true;
-    });
-    (d.healthIssues||[]).forEach(v=>{
-      const el = Array.from(document.querySelectorAll('input[name="health"]')).find(x=>x.value===v);
-      if (el) el.checked = true;
-    });
-    (d.sportHistory||[]).forEach(v=>{
-      const el = Array.from(document.querySelectorAll('input[name="sports"]')).find(x=>x.value===v);
-      if (el) el.checked = true;
-    });
-    if (d.level) $("level").value = d.level;
-    if (d.notes) $("notes").value = d.notes;
-  }
-
-  // İlerle: kaydet + ölçümlere git
-  $("btnNext").addEventListener("click", async ()=>{
-    if (!currentUser){ msg("Oturum bulunamadı.", false); return; }
-    const goals = Array.from(document.querySelectorAll('input[name="goals"]:checked')).map(x=>x.value);
-    if (goals.length === 0){ msg("En az 1 hedef seç.", false); return; }
-    if (goals.length > MAX_GOALS){ msg(`En fazla ${MAX_GOALS} hedef seçebilirsin.`, false); return; }
-
-    const payload = {
-      goals,
-      healthIssues: Array.from(document.querySelectorAll('input[name="health"]:checked')).map(x=>x.value),
-      sportHistory: Array.from(document.querySelectorAll('input[name="sports"]:checked')).map(x=>x.value),
-      level: $("level").value || "",
-      notes: $("notes").value.trim(),
-      step: "goals",
-      updatedAt: new Date().toISOString()
-    };
-
-    try{
-      if (db){
-        await db.collection("users").doc(currentUser.uid).set(payload, { merge:true });
-      }
-      location.href = "./measures.html";
-    }catch(e){
-      console.warn("Save error", e);
-      msg("Kaydetme hatası oluştu. Yeniden dene.", false);
+  // En fazla 3 seç
+  const limit = 3;
+  wrap.addEventListener("change", (event) => {
+    const checked = $$(".gchk:checked");
+    if(checked.length > limit){
+      event.target.checked = false;
+      byId("goalMsg").textContent = `En fazla ${limit} hedef seçebilirsin.`;
+      byId("goalMsg").className = "msg err";
+      setTimeout(()=>{ byId("goalMsg").textContent=""; byId("goalMsg").className="msg"; }, 1800);
     }
   });
 
-  // Çıkış
-  $("btnLogout").addEventListener("click", async ()=>{
-    try{ await auth.signOut(); }catch(e){}
-    location.href = "./signup.html";
+  // Auth guard
+  let UID = null;
+  auth.onAuthStateChanged(user=>{
+    if(!user){ location.href = "./index.html"; return; }
+    UID = user.uid;
   });
+
+  // Çıkış
+  byId("btnSignOut").onclick = async ()=>{
+    try{ await auth.signOut(); location.href="./index.html"; }catch(e){ console.error(e); }
+  };
+
+  // İlerle → kaydet + metrics.html
+  byId("btnNext").onclick = async ()=>{
+    const goals = $$(".gchk:checked").map(c=>c.value);
+    const health = byId("health").value.trim();
+    const level  = byId("level").value;
+    const history= byId("history").value.trim();
+
+    if(goals.length === 0){
+      byId("saveMsg").textContent = "En az 1 hedef seç.";
+      byId("saveMsg").className = "msg err"; return;
+    }
+
+    const payload = { goals, health, level, history, updatedAt: new Date().toISOString() };
+    // Yerel
+    localStorage.setItem("stStep1", JSON.stringify(payload));
+
+    // Firestore opsiyonel
+    try{
+      if(UID){
+        await db.collection("users").doc(UID).set({ step1: payload }, { merge:true });
+        byId("saveMsg").textContent = "Kaydedildi. Ölçümlere geçiliyor…";
+        byId("saveMsg").className = "msg ok";
+      }
+    }catch(e){ console.warn("Firestore kaydı başarısız:", e); }
+
+    setTimeout(()=>location.href="./metrics.html", 500);
+  };
 })();

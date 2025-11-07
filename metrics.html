@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Self Training • Ölçümler</title>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <div class="container">
+    <div class="spread">
+      <div>
+        <h1>Self Training</h1>
+        <p class="sub">Yaş ve dinlenik nabzını gir; hedefine özel testleri doldur.</p>
+      </div>
+    </div>
+
+    <div class="card section">
+      <div class="label">Kalp Atım Bilgileri</div>
+      <div class="grid cols-3">
+        <div class="box">
+          <div class="label">Yaş (yıl)</div>
+          <input id="age" type="number" min="5" max="100" placeholder="Örn: 22">
+          <small>Yaş: Kimlikteki tam yıl.</small>
+        </div>
+        <div class="box">
+          <div class="label">Dinlenik Nabız (BPM)</div>
+          <input id="rhr" type="number" min="30" max="120" placeholder="Örn: 60">
+          <small>Sabah uyanınca 60 sn ölç.</small>
+        </div>
+        <div class="box">
+          <div class="label">HRmax / HRR (otomatik)</div>
+          <div><span id="hrmax" class="badge">—</span> <span id="hrr" class="badge">—</span></div>
+          <small>Formül: HRmax = 220 − yaş; HRR = HRmax − dinlenik.</small>
+        </div>
+      </div>
+    </div>
+
+    <div class="card section">
+      <div class="label">Hedefine Göre Testler</div>
+      <div id="tests" class="grid cols-2"></div>
+      <div class="help">Her testin altında kısa rehber var.</div>
+    </div>
+
+    <div class="actions">
+      <div class="row">
+        <button id="btnBack" class="btn ghost">Geri</button>
+        <button id="btnSignOut" class="btn ghost">Çıkış</button>
+        <button id="btnSave" class="btn primary">Kaydet</button>
+      </div>
+      <div id="saveMsg" class="msg"></div>
+    </div>
+  </div>
+
+  <!-- Firebase compat -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+
+  <!-- Proje konfigürasyonu -->
+  <script src="./config.js"></script>
+  <script src="./metrics.js"></script>
+</body>
+</html>
