@@ -2,45 +2,39 @@
 <html lang="tr">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Self Training • Giriş</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Self Training • Giriş / Kayıt</title>
   <style>
     :root{--bg:#f6f7fb;--card:#fff;--pri:#1f55ff;--err:#c62828;--ok:#237a3b}
     *{box-sizing:border-box}
     body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg)}
     .wrap{min-height:100dvh;display:grid;place-items:center;padding:24px}
-    .card{width:100%;max-width:640px;background:var(--card);border-radius:16px;box-shadow:0 8px 28px rgba(0,0,0,.08);padding:20px 20px 24px}
+    .card{width:100%;max-width:520px;background:var(--card);border-radius:16px;box-shadow:0 8px 28px rgba(0,0,0,.08);padding:20px 20px 24px}
     h1{margin:4px 0 14px;font-size:24px;text-align:center}
     .tabs{display:flex;gap:8px;margin-bottom:12px}
     .tab{flex:1;border:1px solid #d0d4e0;background:#eef1ff;color:#243b80;height:38px;border-radius:10px;cursor:pointer}
     .tab.active{background:var(--pri);color:#fff;border-color:var(--pri)}
     .row{display:flex;flex-direction:column;gap:6px;margin:10px 0}
-    .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
     label{font-size:13px;color:#4a4f63}
-    input,select,textarea{height:40px;border:1px solid #cfd4e3;border-radius:10px;padding:0 12px;font-size:15px;background:#fff}
-    textarea{height:72px;resize:vertical;padding:10px 12px}
-    .btn{height:42px;border:none;background:var(--pri);color:#fff;border-radius:10px;font-weight:600;cursor:pointer;padding:0 16px}
+    input{height:40px;border:1px solid #cfd4e3;border-radius:10px;padding:0 12px;font-size:15px;background:#fff}
+    .btn{height:42px;border:none;background:var(--pri);color:#fff;border-radius:10px;font-weight:600;cursor:pointer}
     .link{background:none;border:none;color:#243b80;text-decoration:underline;cursor:pointer;padding:0;margin:0;font-size:14px}
     .msg{min-height:22px;margin-top:10px;font-size:14px}
     .err{color:var(--err)} .ok{color:var(--ok)} .hide{display:none}
-    .right{display:flex;gap:8px;justify-content:flex-end}
-    .muted{color:#6b7084;font-size:12px}
-    .sep{height:1px;background:#e8eaf3;margin:16px 0}
   </style>
 </head>
 <body>
   <div class="wrap">
-    <!-- Auth Kartı -->
-    <div class="card" id="authCard">
+    <div class="card">
       <h1>Self Training</h1>
 
       <div class="tabs">
-        <button id="tabLogin" class="tab active" type="button">Giriş</button>
-        <button id="tabSignup" class="tab" type="button">Kayıt</button>
+        <button id="tabLogin"  class="tab active" type="button">Giriş</button>
+        <button id="tabSignup" class="tab"         type="button">Kayıt</button>
       </div>
 
       <section id="loginView">
-        <p class="muted">Girişte yalnızca e-posta ve şifre gerekir.</p>
+        <p style="color:#6b7084;font-size:12px">Girişte yalnızca e-posta ve şifre gerekir.</p>
         <div class="row"><label for="loginEmail">E-posta</label><input id="loginEmail" type="email" autocomplete="email"></div>
         <div class="row"><label for="loginPassword">Şifre</label><input id="loginPassword" type="password" autocomplete="current-password"></div>
         <div class="row" style="gap:8px">
@@ -59,190 +53,14 @@
 
       <div id="globalMsg" class="msg"></div>
     </div>
-
-    <!-- Panel Kartı -->
-    <div class="card hide" id="dashCard">
-      <h1>Self Training</h1>
-      <p>Hoş geldin <b id="who"></b> 👋</p>
-
-      <div class="sep"></div>
-      <p class="muted">Profilini doldur — kaydettiğinde bulutta (Firestore) tutulur.</p>
-
-      <form id="profileForm">
-        <div class="grid">
-          <div class="row">
-            <label for="height">Boy (cm)</label>
-            <input id="height" type="number" inputmode="numeric" placeholder="176">
-          </div>
-          <div class="row">
-            <label for="weight">Kilo (kg)</label>
-            <input id="weight" type="number" inputmode="numeric" placeholder="72">
-          </div>
-          <div class="row">
-            <label for="goal">Hedef</label>
-            <select id="goal">
-              <option value="">Seç</option>
-              <option>Yağ kaybı</option>
-              <option>Kuvvet</option>
-              <option>Kas kütlesi</option>
-              <option>Dayanıklılık</option>
-              <option>Performans/Çeviklik</option>
-            </select>
-          </div>
-          <div class="row">
-            <label for="experience">Spor geçmişi</label>
-            <select id="experience">
-              <option value="">Seç</option>
-              <option>Yeni başlıyor</option>
-              <option>3-12 ay</option>
-              <option>1-3 yıl</option>
-              <option>3+ yıl</option>
-            </select>
-          </div>
-        </div>
-        <div class="row">
-          <label for="bodytype">Vücut tipi</label>
-          <select id="bodytype">
-            <option value="">Seç</option>
-            <option>Ektomorf</option>
-            <option>Mezomorf</option>
-            <option>Endomorf</option>
-          </select>
-        </div>
-        <div class="row">
-          <label for="notes">Notlar</label>
-          <textarea id="notes" placeholder="Sakatlık, özel durum, haftalık program..."></textarea>
-        </div>
-        <div class="right">
-          <button id="saveProfile" class="btn" type="button">Kaydet</button>
-          <button id="logout" class="btn" type="button" style="background:#6b7280">Çıkış Yap</button>
-        </div>
-      </form>
-
-      <div id="dashMsg" class="msg"></div>
-    </div>
   </div>
 
   <!-- Firebase compat -->
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
 
-  <script>
-    // *** SENDE ÇALIŞAN CONFIG (dokunma) ***
-    window.firebaseConfig = {
-      apiKey: "AIzaSyAnMzcWonT_zL0EhcNlDIYANBhDiivmur4",
-      authDomain: "self-training-128b5.firebaseapp.com",
-      projectId: "self-training-128b5",
-      storageBucket: "self-training-128b5.firebasestorage.app",
-      messagingSenderId: "61732879565",
-      appId: "1:61732879565:web:5a446fb76a88f1103bd84"
-    };
-
-    // Yardımcılar
-    const $  = (id) => document.getElementById(id);
-    const show = (el) => el.classList.remove("hide");
-    const hide = (el) => el.classList.add("hide");
-    const setMsg = (node, t, ok=false)=>{ node.className="msg "+(ok?"ok":"err"); node.textContent=t; };
-
-    // Firebase init
-    firebase.initializeApp(window.firebaseConfig);
-    const auth = firebase.auth();
-    const db   = firebase.firestore();
-
-    // Sekmeler
-    $("tabLogin").onclick = ()=>{ setMsg($("globalMsg"),""); $("tabLogin").classList.add("active"); $("tabSignup").classList.remove("active"); show($("loginView")); hide($("signupView")); };
-    $("tabSignup").onclick= ()=>{ setMsg($("globalMsg"),""); $("tabSignup").classList.add("active"); $("tabLogin").classList.remove("active"); show($("signupView")); hide($("loginView")); };
-
-    // Giriş
-    $("btnLogin").onclick = async ()=>{
-      setMsg($("globalMsg"),"");
-      const e=$("loginEmail").value.trim(), p=$("loginPassword").value;
-      if(!e||!p) return setMsg($("globalMsg"),"E-posta ve şifre gerekli.");
-      try{
-        await auth.signInWithEmailAndPassword(e,p);
-        openDashboard();
-      }catch(x){ setMsg($("globalMsg"), "İşlem başarısız ("+x.code+")."); }
-    };
-
-    // Kayıt
-    $("btnSignup").onclick = async ()=>{
-      setMsg($("globalMsg"),"");
-      const n=$("signupName").value.trim(), e=$("signupEmail").value.trim(), p1=$("signupPassword").value, p2=$("signupPassword2").value;
-      if(!n) return setMsg($("globalMsg"),"Ad Soyad zorunlu."); 
-      if(!e) return setMsg($("globalMsg"),"E-posta zorunlu.");
-      if(p1.length<6) return setMsg($("globalMsg"),"Şifre en az 6 karakter.");
-      if(p1!==p2) return setMsg($("globalMsg"),"Şifreler aynı değil.");
-      try{
-        const c = await auth.createUserWithEmailAndPassword(e,p1);
-        await c.user.updateProfile({ displayName:n });
-        await c.user.sendEmailVerification();
-        setMsg($("globalMsg"),"Kayıt tamam. Doğrulama maili gönderildi.", true);
-        $("tabLogin").click(); $("loginEmail").value=e;
-      }catch(x){ setMsg($("globalMsg"),"İşlem başarısız ("+x.code+")."); }
-    };
-
-    // Şifre sıfırlama
-    $("btnForgot").onclick = async ()=>{
-      setMsg($("globalMsg"),"");
-      const e=$("loginEmail").value.trim();
-      if(!e) return setMsg($("globalMsg"),"E-posta yaz.");
-      try{ await auth.sendPasswordResetEmail(e); setMsg($("globalMsg"),"Sıfırlama maili gönderildi.",true); }
-      catch(x){ setMsg($("globalMsg"),"İşlem başarısız ("+x.code+")."); }
-    };
-
-    // Oturum
-    auth.onAuthStateChanged((u)=>{ if(u) openDashboard(); else{ show($("authCard")); hide($("dashCard")); } });
-
-    // Paneli aç + veriyi çek
-    async function openDashboard(){
-      const u = auth.currentUser;
-      if(!u) return;
-      hide($("authCard")); show($("dashCard"));
-      $("who").textContent = u.displayName || u.email || "Kullanıcı";
-      setMsg($("dashMsg"), "Profil yükleniyor…");
-
-      try{
-        const snap = await db.collection("users").doc(u.uid).get();
-        if(snap.exists){
-          const d = snap.data();
-          $("height").value    = d.height ?? "";
-          $("weight").value    = d.weight ?? "";
-          $("goal").value      = d.goal ?? "";
-          $("experience").value= d.experience ?? "";
-          $("bodytype").value  = d.bodytype ?? "";
-          $("notes").value     = d.notes ?? "";
-          setMsg($("dashMsg"), "Profil yüklendi.", true);
-        }else{
-          setMsg($("dashMsg"), "Profil bulunamadı. Doldurup kaydedebilirsin.", true);
-        }
-      }catch(e){
-        setMsg($("dashMsg"), "Profil okunamadı ("+e.code+").");
-      }
-    }
-
-    // Kaydet
-    $("saveProfile").onclick = async ()=>{
-      const u = auth.currentUser; if(!u) return;
-      const data = {
-        height: $("height").value ? Number($("height").value) : null,
-        weight: $("weight").value ? Number($("weight").value) : null,
-        goal: $("goal").value || "",
-        experience: $("experience").value || "",
-        bodytype: $("bodytype").value || "",
-        notes: $("notes").value || "",
-        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-      };
-      try{
-        await db.collection("users").doc(u.uid).set(data, {merge:true});
-        setMsg($("dashMsg"), "Profil kaydedildi ✔", true);
-      }catch(e){
-        setMsg($("dashMsg"), "Kaydedilemedi ("+e.code+").");
-      }
-    };
-
-    // Çıkış
-    $("logout").onclick = async ()=>{ await auth.signOut(); show($("authCard")); hide($("dashCard")); };
-  </script>
+  <!-- Bizim dosyalar (bağıl yollarla, artık doğru yüklenir) -->
+  <script src="./config.js?v=7" defer></script>
+  <script src="./signup.js?v=7" defer></script>
 </body>
 </html>
