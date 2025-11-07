@@ -1,126 +1,55 @@
-<!doctype html>
-<html lang="tr">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Ölçümler • Self Training</title>
-  <style>
-    :root{--bg:#f6f7fb;--card:#fff;--pri:#1f55ff;--txt:#283044;--muted:#6b7084;--border:#e2e6ef}
-    *{box-sizing:border-box} html,body{height:100%}
-    body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--txt)}
-    .wrap{max-width:960px;margin:32px auto;padding:0 16px}
-    .card{background:var(--card);border-radius:16px;box-shadow:0 8px 28px rgba(0,0,0,.08);padding:20px 20px 24px;border:1px solid var(--border)}
-    h1{margin:0 0 8px 0}
-    p.muted{color:var(--muted);margin-top:6px}
-    .grid{display:grid;grid-template-columns:repeat(12,1fr);gap:12px}
-    .col-6{grid-column:span 6} .col-4{grid-column:span 4} .col-3{grid-column:span 3} .col-12{grid-column:span 12}
-    label{display:block;font-size:13px;color:#444;margin-bottom:6px}
-    input,select,textarea{width:100%;height:40px;border:1px solid #cfd4e3;border-radius:10px;padding:0 12px;font-size:15px;background:#fff}
-    .row{margin:10px 0}
-    .btn{height:42px;border:none;background:var(--pri);color:#fff;border-radius:10px;font-weight:600;cursor:pointer;padding:0 16px}
-    .btn.link{background:#eef1ff;color:#243b80;border:1px solid #d0d4e0}
-    .btn.small{height:30px;border-radius:8px;font-size:13px}
-    .actions{display:flex;gap:10px;justify-content:flex-end;margin-top:16px}
-    .msg{min-height:22px;font-size:14px;margin-top:8px}
-    .ok{color:#237a3b} .err{color:#c62828}
-    /* Modal */
-    .overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;padding:16px}
-    .overlay.show{display:flex}
-    .modal{background:#fff;max-width:700px;width:min(92vw,700px);border-radius:14px;box-shadow:0 15px 60px rgba(0,0,0,.35);border:1px solid var(--border);position:relative}
-    .modal header{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
-    .modal header h3{margin:0;font-size:16px}
-    .modal .close{border:none;background:transparent;font-size:20px;cursor:pointer;line-height:1;padding:4px 8px}
-    .modal .content{padding:16px 18px;display:grid;gap:12px}
-    .pill{display:inline-flex;align-items:center;gap:6px;border:1px solid #d0d4e0;padding:6px 10px;border-radius:999px;background:#fff}
-    .field-help{display:flex;align-items:center;gap:8px}
-    .field-help .btn.small{margin-left:auto}
-    @media (max-width:720px){
-      .col-6{grid-column:span 12} .col-4{grid-column:span 12} .col-3{grid-column:span 6}
-      .actions{justify-content:stretch} .actions .btn{flex:1}
-    }
-    .sticky-actions{position:sticky;bottom:0;background:linear-gradient(180deg, rgba(246,247,251,0) 0%, rgba(246,247,251,1) 40%);padding-top:8px}
-  </style>
-</head>
-<body>
-  <div class="wrap">
-    <div class="card">
-      <h1>Ölçümler</h1>
-      <p class="muted">Yaş ve dinlenik nabız (RHR) gir. Sistem HRmax ve HRR hesaplar. Seçtiğin hedeflere göre test kartları aşağıda listelenir.</p>
 
-      <div class="grid">
-        <div class="col-3 row">
-          <label for="age">Yaş (yıl)</label>
-          <input id="age" type="number" min="6" max="100" placeholder="örn. 25">
-        </div>
-        <div class="col-3 row">
-          <label for="rhr">Dinlenik Nabız (RHR)</label>
-          <input id="rhr" type="number" min="30" max="120" placeholder="örn. 60">
-        </div>
-        <div class="col-3 row">
-          <label for="hrmax">HRmax (220-yaş)</label>
-          <input id="hrmax" type="number" readonly placeholder="Otomatik">
-        </div>
-        <div class="col-3 row">
-          <label for="hrr">HRR (HRmax - RHR)</label>
-          <input id="hrr" type="number" readonly placeholder="Otomatik">
-        </div>
+<!doctype html><html lang="tr"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Ölçümler • Self Training</title>
+<link rel="stylesheet" href="./assets/common.css">
+</head><body>
+<div class="container">
+  <div class="topbar">
+    <div class="badge">Self Training • Ölçümler</div>
+    <div class="right"><button id="btnLogout" class="ghost">Çıkış</button></div>
+  </div>
+
+  <div class="card">
+    <h1>Ölçümler</h1>
+    <p class="hint">Yaş ve dinlenik nabız gir. Sistem <b>HRmax</b> (maks. kalp atım hızı) ve <b>HRR</b> (kalp atım hızı rezervi) hesaplar.</p>
+    <div class="row">
+      <div class="field" style="flex:1;min-width:160px">
+        <label>Yaş (yıl)</label>
+        <input id="age" type="number" class="input" placeholder="örn. 25">
       </div>
-
-      <h2 style="margin-top:18px">Testler</h2>
-
-      <section class="row">
-        <div class="field-help">
-          <strong>HRmax &amp; HRR</strong>
-          <button class="btn small link" data-help="hr">Nasıl?</button>
-        </div>
-        <div class="grid">
-          <div class="col-6 row">
-            <label>Yaş (yukarıdan gelir)</label>
-            <input disabled placeholder="Yukarıdan giriniz">
-          </div>
-          <div class="col-6 row">
-            <label>Dinlenik Nabız (yukarıdan gelir)</label>
-            <input disabled placeholder="Yukarıdan giriniz">
-          </div>
-        </div>
-      </section>
-
-      <section class="row">
-        <div class="field-help">
-          <strong>Y-Balance</strong>
-          <button class="btn small link" data-help="ybal">Nasıl?</button>
-        </div>
-        <div class="grid">
-          <div class="col-4 row"><label>Anterior (cm)</label><input id="ybal_a" type="number" placeholder="Örn. 60"></div>
-          <div class="col-4 row"><label>Posteromedial (cm)</label><input id="ybal_pm" type="number" placeholder="Örn. 100"></div>
-          <div class="col-4 row"><label>Posterolateral (cm)</label><input id="ybal_pl" type="number" placeholder="Örn. 98"></div>
-        </div>
-      </section>
-
-      <div class="sticky-actions">
-        <div id="msg" class="msg"></div>
-        <div class="actions">
-          <button id="btnBack" class="btn link" type="button">Geri</button>
-          <button id="btnSave" class="btn" type="button">Kaydet</button>
-          <button id="btnLogout" class="btn link" type="button">Çıkış</button>
-        </div>
+      <div class="field" style="flex:1;min-width:200px">
+        <label>Dinlenik Nabız • RHR (bpm)</label>
+        <input id="rhr" type="number" class="input" placeholder="örn. 60">
+      </div>
+      <div class="field" style="flex:1;min-width:200px">
+        <label>HRmax (220‑yaş)</label>
+        <input id="hrmax" class="input" readonly>
+      </div>
+      <div class="field" style="flex:1;min-width:200px">
+        <label>HRR (HRmax‑RHR)</label>
+        <input id="hrr" class="input" readonly>
       </div>
     </div>
   </div>
 
-  <!-- Modal -->
-  <div id="overlay" class="overlay" aria-hidden="true">
-    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="mTitle">
-      <header>
-        <h3 id="mTitle">Bilgi</h3>
-        <button class="close" type="button" data-close aria-label="Kapat">×</button>
-      </header>
-      <div class="content" id="mBody">
-        <!-- JS ile doldurulacak -->
+  <div class="card">
+    <h2>Testler</h2>
+    <p class="hint">Seçtiğin hedeflere göre gerekli testler listelenir. Her test kartındaki <b>Bilgi</b> düğmesiyle “Nasıl yapılır?” ve “Hedefle ilişkisi” açıklamasını aç/kapa.</p>
+    <div id="tests" class="test-grid"></div>
+  </div>
+
+  <div class="sticky-nav">
+    <div class="actions">
+      <button id="btnBack" class="ghost">Geri</button>
+      <div>
+        <button id="btnSave" class="ghost">Kaydet</button>
+        <button id="btnNext" class="btn">İlerle</button>
       </div>
     </div>
   </div>
-
-  <script src="./assets/metrics.js?v=4"></script>
-</body>
-</html>
+</div>
+<div class="toast"></div>
+<script type="module" src="./assets/util.js?v=100"></script>
+<script type="module" src="./assets/metrics.js?v=100"></script>
+</body></html>

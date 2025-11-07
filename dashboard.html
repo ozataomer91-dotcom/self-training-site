@@ -1,58 +1,45 @@
-<!doctype html>
-<html lang="tr">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Panel • Self Training</title>
-  <link rel="stylesheet" href="./styles.css">
-</head>
-<body>
-  <div class="wrap">
-    <div class="card" id="panelCard">
-      <h1>Hedef & Bilgi</h1>
-      <p class="small">Maksimum <b>3</b> hedef seçebilirsiniz. (Odak netliği için önerimiz: 2‑3)</p>
 
-      <div class="row">
-        <label>Hedef(ler)ini seç</label>
-        <div class="chips" id="goalBox"></div>
-        <div class="help">Seçtiklerin, bir sonraki sayfada göreceğin ölçüm testlerini belirler.</div>
-      </div>
-
-      <div class="row">
-        <label>Spor geçmişi</label>
-        <select id="history">
-          <option value="">Seçiniz…</option>
-          <option>Hiç yok / yeni başlıyorum</option>
-          <option>3‑6 ay düzensiz</option>
-          <option>6‑12 ay düzenli</option>
-          <option>1‑3 yıl düzenli</option>
-          <option>3+ yıl ileri</option>
-        </select>
-      </div>
-
-      <div class="row">
-        <label>Seviye</label>
-        <div class="chips" id="lvlBox"></div>
-      </div>
-
-      <div class="row">
-        <label>Sakatlık / sağlık</label>
-        <div class="chips" id="injBox"></div>
-        <div class="help">Tıbbi tanı yerine belirtini seç. (Örn: Diz, Bel, Omuz vb.)</div>
-      </div>
-
-      <div class="footer">
-        <button id="logout" class="btn" style="background:#444">Çıkış Yap</button>
-        <button id="next" class="btn">İlerle</button>
-      </div>
-
-      <div id="status" class="small"></div>
-    </div>
+<!doctype html><html lang="tr"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Hedef & Bilgi • Self Training</title>
+<link rel="stylesheet" href="./assets/common.css">
+</head><body>
+<div class="container">
+  <div class="topbar">
+    <div class="badge">Self Training • Hedef & Bilgi</div>
+    <div class="right"><button id="btnLogout" class="ghost">Çıkış</button></div>
   </div>
 
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
-  <script src="./config.js"></script>
-  <script src="./dashboard.js?v=3"></script>
-</body>
-</html>
+  <div class="card">
+    <h1>Hedefini Seç <span class="help">(en fazla 3)</span></h1>
+    <div id="goalChips" class="row"></div>
+    <p class="hint">Seçimlerin antrenman önerilerini kişiselleştirir.</p>
+  </div>
+
+  <div class="card">
+    <h2>Sağlık / Sakatlık</h2>
+    <label for="health">Ek bilgi (opsiyonel)</label>
+    <input id="health" class="input wide" placeholder="Örn: Sağ diz ACL öyküsü, bel fıtığı, doktor onayı var…" />
+    <p class="hint">Not: Ciddi rahatsızlıklarda mutlaka doktor onayı ile ilerleyin.</p>
+  </div>
+
+  <div class="card">
+    <h2>Spor Geçmişi & Seviye</h2>
+    <label for="level">Seviye</label>
+    <select id="level">
+      <option value="">Seçiniz</option>
+      <option>Yeni Başlayan</option><option>Orta</option><option>İleri</option><option>Elit</option>
+    </select>
+  </div>
+
+  <div class="sticky-nav">
+    <div class="actions">
+      <button id="btnBack" class="ghost">Geri</button>
+      <button id="btnNext" class="btn">İlerle</button>
+    </div>
+  </div>
+</div>
+<div class="toast"></div>
+<script type="module" src="./assets/util.js?v=100"></script>
+<script type="module" src="./assets/dashboard.js?v=100"></script>
+</body></html>
