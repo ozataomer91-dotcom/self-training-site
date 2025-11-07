@@ -1,4 +1,4 @@
-// v=13
+// v=20
 console.log("SIGNUP JS BOOT");
 
 // Firebase init (çift başlatmayı önle)
@@ -14,7 +14,7 @@ const hide=(id)=>$(id).classList.add("hide");
 const setMsg=(t,ok=false)=>{const m=$("globalMsg");m.className="msg "+(ok?"ok":"err");m.textContent=t}
 const clearMsg=()=>{const m=$("globalMsg");m.className="msg";m.textContent=""}
 
-// Hata çevirici (⚠ fallback DÜZGÜN: backtick ile)
+// Hata çevirici
 const tr = (c) => ({
   "auth/invalid-email":"Geçersiz e-posta.",
   "auth/missing-password":"Şifre gerekli.",
@@ -63,10 +63,10 @@ $("btnForgot").onclick = async ()=>{
   }catch(e){ setMsg(tr(e.code)); }
 };
 
-// Kayıt — isim OPSİYONEL, doğrulama maili gönder
+// Kayıt — isim OPSİYONEL, doğrulama maili kayıt aşamasında gönderilir
 $("btnSignup").onclick = async ()=>{
   clearMsg();
-  const name = ($("signupName")?.value || "").trim(); // artık opsiyonel
+  const name = ($("signupName")?.value || "").trim(); // opsiyonel
   const email= $("signupEmail").value.trim();
   const p1   = $("signupPassword").value;
   const p2   = $("signupPassword2").value;
@@ -79,7 +79,7 @@ $("btnSignup").onclick = async ()=>{
     const cred = await auth.createUserWithEmailAndPassword(email, p1);
     if (name) { await cred.user.updateProfile({ displayName: name }); } // ad varsa kaydet
 
-    // Sadece kayıt aşamasında doğrulama maili
+    // Kayıt aşamasında doğrulama maili (opsiyonel kullanım)
     await cred.user.sendEmailVerification({
       url: "https://ozataomer91-dotcom.github.io/self-training-site/dashboard.html?verified=1",
       handleCodeInApp: false
