@@ -11,7 +11,7 @@ const setMsg=(t,ok=false)=>{const m=$("globalMsg");m.className="msg "+(ok?"ok":"
 const clearMsg=()=>{const m=$("globalMsg");m.className="msg";m.textContent=""}
 
 // Hata çevirici
-const tr = (c) => ({
+const TR = {
   "auth/invalid-email":"Geçersiz e-posta.",
   "auth/missing-password":"Şifre gerekli.",
   "auth/wrong-password":"E-posta/şifre hatalı.",
@@ -21,11 +21,12 @@ const tr = (c) => ({
   "auth/network-request-failed":"Ağ hatası.",
   "auth/too-many-requests":"Çok fazla deneme yaptın. Biraz bekle.",
   "auth/api-key-not-valid.please-pass-a-valid-api-key.":"API anahtarı geçersiz (config.js kontrol)."
-}[c] || `İşlem başarısız (${c}).`);
+};
+const tr=(c)=> TR[c] || ("İşlem başarısız ("+c+").");
 
 // Sekmeler
-$("tabLogin").onclick  = ()=>{ clearMsg(); $("tabLogin").classList.add("active"); $("tabSignup").classList.remove("active"); show("loginView"); hide("signupView"); };
-$("tabSignup").onclick = ()=>{ clearMsg(); $("tabSignup").classList.add("active"); $("tabLogin").classList.remove("active"); show("signupView"); hide("loginView"); };
+$("tabLogin").onclick  = ()=>{ clearMsg(); $("tabLogin").classList.remove("secondary"); $("tabSignup").classList.add("secondary"); show("loginView"); hide("signupView"); };
+$("tabSignup").onclick = ()=>{ clearMsg(); $("tabSignup").classList.remove("secondary"); $("tabLogin").classList.add("secondary"); show("signupView"); hide("loginView"); };
 
 // ENTER ile gönder
 window.addEventListener("keydown",(e)=>{
@@ -67,16 +68,15 @@ $("btnSignup").onclick = async ()=>{
   const p1   = $("signupPassword").value;
   const p2   = $("signupPassword2").value;
 
-  if(!name){ setMsg("Ad Soyad zorunlu."); return; }
   if(!email){ setMsg("E-posta zorunlu."); return; }
   if((p1||"").length < 6){ setMsg("Şifre en az 6 karakter."); return; }
   if(p1 !== p2){ setMsg("Şifreler aynı değil."); return; }
 
   try{
     const cred = await auth.createUserWithEmailAndPassword(email, p1);
-    await cred.user.updateProfile({ displayName: name });
+    if(name){ await cred.user.updateProfile({ displayName: name }); }
     await cred.user.sendEmailVerification({
-      url: "https://ozataomer91-dotcom.github.io/self-training-site/dashboard.html?verified=1",
+      url: location.origin + location.pathname.replace(/\/[^\/]*$/, '') + "/dashboard.html?verified=1",
       handleCodeInApp: false
     });
     setMsg("Kayıt tamam. Doğrulama maili gönderildi. Onaylayıp giriş yap.", true);

@@ -1,142 +1,147 @@
+// init
+firebase.initializeApp(window.firebaseConfig);
+const auth = firebase.auth();
+let db = null;
+try{ db = firebase.firestore(); }catch(_){ db = null; }
 
-(function(){
-  const $ = (s)=>document.querySelector(s);
-  const byId = (id)=>document.getElementById(id);
-  const fmt = (x)=>Number.isFinite(x)? Math.round(x) : "—";
+const $ = (s)=>document.querySelector(s);
+const testsBox = $("#tests");
 
-  if(!window.firebaseConfig){ console.error("config.js yok"); }
-  if(!firebase.apps.length){ firebase.initializeApp(window.firebaseConfig); }
-  const auth = firebase.auth();
-  const db   = firebase.firestore();
+// HR hesaplama
+function recalc(){
+  const age = parseInt($("#age").value||"0",10);
+  const rhr = parseInt($("#rhr").value||"0",10);
+  if(age>0){
+    const hrmax = 220 - age;
+    $("#hrmax").textContent = hrmax;
+    const hrr = (rhr>0) ? (hrmax - rhr) : "—";
+    $("#hrr").textContent = hrr;
+  }else{
+    $("#hrmax").textContent = "—";
+    $("#hrr").textContent = "—";
+  }
+}
+document.addEventListener("input",(e)=>{
+  if(e.target.id==="age" || e.target.id==="rhr"){ recalc(); }
+});
 
-  let UID = null;
-  auth.onAuthStateChanged(u=>{
-    if(!u){ location.href="./index.html"; return; }
-    UID = u.uid;
+// Rehber içerikleri
+const HELP = {
+  ybalance: {
+    title: "Y-Balance Testi",
+    aim: "Alt ekstremite denge ve olası sağ-sol asimetrileri taramak.",
+    how: "Tek ayak üzerinde dur. Serbest ayakla öne, sağ-arka, sol-arka yönlere en uzağa uzan. 3 deneme, en iyi değer; cm ile not et.",
+    rel: "Fonksiyonel hedefler, tenis ve çeviklik için başlangıç referansı ve sakatlık riski öngörüsü sağlar.",
+    img: "assets/help/ybalance.png"
+  },
+  flamingo: {
+    title: "Flamingo Denge Testi",
+    aim: "Statik denge kapasitesini ölçmek.",
+    how: "Bir ayak üzerinde, diğer dizi 90° bükülü; süreni başlat. Denge bozulduğunda durdur. 3 deneme, en iyi süre.",
+    rel: "Çeviklik, koordinasyon ve core hedefleriyle ilişkilidir.",
+    img: "assets/help/flamingo.png"
+  },
+  sprint5_10: {
+    title: "5–10 m Sprint",
+    aim: "İlk adım ivmelenmesi ve kısa mesafe sürati değerlendirmek.",
+    how: "Düz hat belirle; 5 m ve 10 m işaretleri koy. Çizgileri geçerken süreyi kaydet.",
+    rel: "Hız/kuvvet hedefleri ve tenis/koşu performans planlamasında yüklenmeyi ayarlamaya yardım eder.",
+    img: "assets/help/sprint.png"
+  },
+  hrmax_hrr: {
+    title: "HRmax & HRR",
+    aim: "Antrenman bölgeleri için temel nabız değerlerini belirlemek.",
+    how: "Yaş ve dinlenik nabzını gir; sistem HRmax = 220 - yaş, HRR = HRmax - RHR hesaplar.",
+    rel: "Yağ yakımı, dayanıklılık ve interval planlarında hedef nabız aralıklarını verir.",
+    img: "assets/help/hr.png"
+  }
+};
+
+function modal(key){
+  const d = HELP[key]; if(!d) return;
+  document.getElementById("helpTitle").textContent = d.title;
+  document.getElementById("helpAim").textContent   = d.aim;
+  document.getElementById("helpHow").textContent   = d.how;
+  document.getElementById("helpRel").textContent   = d.rel;
+  const img = document.getElementById("helpImg");
+  if(d.img){ img.src = d.img; img.style.display="block"; } else { img.style.display="none"; }
+  document.getElementById("helpModal").classList.remove("hide");
+}
+document.getElementById("helpModal").addEventListener("click",(e)=>{
+  if(e.target.id==="helpModal" || e.target.id==="helpClose"){
+    document.getElementById("helpModal").classList.add("hide");
+  }
+});
+
+// Hedeflere göre test kartları
+const DEFAULT_TESTS = [
+  {key:"hrmax_hrr", title:"HRmax & HRR", fields:[
+    {id:"age_in", label:"Yaş (yukarıda giriniz)", ro:true},
+    {id:"rhr_in", label:"Dinlenik Nabız (yukarıda giriniz)", ro:true}
+  ]},
+  {key:"ybalance", title:"Y-Balance", fields:[
+    {id:"y_ant", label:"Anterior (cm)"},
+    {id:"y_pm",  label:"Posteromedial (cm)"},
+    {id:"y_pl",  label:"Posterolateral (cm)"}
+  ]},
+  {key:"flamingo", title:"Flamingo Denge", fields:[
+    {id:"flam_sec", label:"En iyi süre (sn)"}
+  ]},
+  {key:"sprint5_10", title:"Sprint 5 m / 10 m", fields:[
+    {id:"s5", label:"5 m (sn)"}, {id:"s10", label:"10 m (sn)"}
+  ]}
+];
+
+function makeTestCard(t){
+  const div = document.createElement("div");
+  div.className="test-card";
+  const h = document.createElement("h3");
+  h.textContent = t.title;
+  const btn = document.createElement("button");
+  btn.className="link"; btn.type="button"; btn.dataset.help=t.key; btn.textContent="Nasıl?";
+  div.appendChild(h); div.appendChild(btn);
+  t.fields.forEach(f=>{
+    const r = document.createElement("div"); r.className="row"; r.style.alignItems="center";
+    const lab = document.createElement("label"); lab.textContent=f.label; lab.style.minWidth="220px";
+    const inp = document.createElement("input"); inp.type="number"; inp.id=f.id; if(f.ro){ inp.readOnly=true; inp.placeholder="Yukarıdan giriniz"; }
+    r.appendChild(lab); r.appendChild(inp); div.appendChild(r);
   });
+  return div;
+}
 
-  byId("btnSignOut").onclick = async ()=>{ try{ await auth.signOut(); location.href="./index.html"; }catch(e){ console.error(e); } };
-  byId("btnBack").onclick = ()=> location.href="./dashboard.html";
+function loadTests(){
+  testsBox.innerHTML="";
+  // Hedeflere göre genişletebilirsin; şimdilik DEFAULT_TESTS
+  DEFAULT_TESTS.forEach(t=>testsBox.appendChild(makeTestCard(t)));
+}
+loadTests();
 
-  function calc(){
-    const age = parseFloat(byId("age").value);
-    const rhr = parseFloat(byId("rhr").value);
-    const hrmax = Number.isFinite(age) ? 220 - age : NaN;
-    const hrr   = (Number.isFinite(hrmax) && Number.isFinite(rhr)) ? (hrmax - rhr) : NaN;
-    byId("hrmax").textContent = "HRmax: "+fmt(hrmax);
-    byId("hrr").textContent   = "HRR: "+fmt(hrr);
-  }
-  ["age","rhr"].forEach(id=> byId(id).addEventListener("input", calc));
+document.addEventListener("click",(e)=>{
+  const btn = e.target.closest("[data-help]");
+  if(btn){ modal(btn.dataset.help); }
+});
 
-  const STEP1 = JSON.parse(localStorage.getItem("stStep1")||"{}");
-
-  const GOAL_TESTS = {
-    "Yağ yakımı / Kilo verme":[
-      {id:"waist",   label:"Bel çevresi (cm)",    help:"Mezura ile göbek hizası."},
-      {id:"walk6min",label:"6 dk yürüyüş (m)",    help:"Düz zeminde toplam metre."}
-    ],
-    "Kas kazanımı / Hipertrofi":[
-      {id:"pushups", label:"Şınav max tekrar",     help:"Form bozulana kadar."},
-      {id:"plank",   label:"Plank süresi (sn)",    help:"Ön kol plank."}
-    ],
-    "Kuvvet artışı (1RM)":[
-      {id:"squat5rm",   label:"Squat 5RM (kg)",   help:"Isınma sonrası 5 tekrarda maksimum."},
-      {id:"deadlift5rm",label:"Deadlift 5RM (kg)",help:"İmkan yoksa boş bırak."}
-    ],
-    "Dayanıklılık (koşu/tempo)":[
-      {id:"coop",  label:"Cooper 12 dk (m)",      help:"Pist/parkur toplam metre."},
-      {id:"pace5k",label:"5K tempo (dk:ss)",      help:"Varsa en iyi 5K süresi."}
-    ],
-    "Fonksiyonel fitness / HIIT":[
-      {id:"burpee",label:"Burpee 2 dk tekrar",    help:"2 dakikada toplam tekrar."},
-      {id:"jump",  label:"Dikey sıçrama (cm)",    help:"Duvar işareti ile ölç."}
-    ],
-    "Mobilite & Esneklik":[
-      {id:"sitreach",label:"Sit&Reach (cm)",      help:"Şerit metre ile yapılabilir."},
-      {id:"shoulder",label:"Omuz hareket (1–10)", help:"Öz değerlendirme."}
-    ],
-    "Postür / Bel-boyun sağlığı":[
-      {id:"mckenzie",label:"Bel ağrısı (0–10)",   help:"0 yok, 10 şiddetli."},
-      {id:"neck",    label:"Boyun mobilite (1–10)",help:"Öz değerlendirme."}
-    ],
-    "Evde ekipmansız antrenman":[
-      {id:"airsquat",label:"Air Squat 1 dk tekrar",help:"Tam oturuş-kalkış say."},
-      {id:"wallsit", label:"Wall-sit süresi (sn)", help:"Diz 90° duvarda."}
-    ],
-    "Kardiyorespiratuvar sağlık":[
-      {id:"restbp", label:"Dinlenik tansiyon (mmHg)", help:"Varsa ölçüm cihazı."},
-      {id:"step",   label:"Step test nabız (BPM)",    help:"3 dk step sonra 1.dk nabız."}
-    ],
-    "Hız / Çeviklik":[
-      {id:"t505",   label:"5-10-5 Pro Agility (sn)", help:"Konilerle ölç."},
-      {id:"sprint10",label:"10 m sprint (sn)",       help:"Kronometreyle."}
-    ],
-    "Patlayıcı güç (plyo)":[
-      {id:"broad", label:"Geniş atlama (cm)",       help:"Ayak parmak ucundan."},
-      {id:"cmj",   label:"Countermovement Jump (cm)",help:"Varsa uygulama."}
-    ],
-    "Rehabilitasyon odaklı dönüş":[
-      {id:"pain",    label:"Ağrı skoru (0–10)",     help:"0 yok, 10 şiddetli."},
-      {id:"singleleg",label:"Tek ayak denge (sn)",  help:"Gözler açık."}
-    ],
-    "Yüzme performansı":[
-      {id:"swim100",label:"100m yüzme (sn)",       help:"Havuzda kronometre."},
-      {id:"swim400",label:"400m yüzme (sn)",       help:"Varsa."}
-    ],
-    "Tenis / Raket sporları hazırlık":[
-      {id:"ybalance",label:"Y-Balance (cm)",       help:"Yön başına en iyi değer."},
-      {id:"sidestep",label:"Yan adım testi (sn)",  help:"Kısa parkur."}
-    ]
+// Kaydet
+$("#save").onclick = async ()=>{
+  const data = {
+    age: $("#age").value,
+    rhr: $("#rhr").value,
+    tests: {}
   };
-
-  const testsWrap = byId("tests");
-  function renderTests(){
-    testsWrap.innerHTML = "";
-    const goals = (STEP1.goals || []);
-    if(!goals.length){
-      const p=document.createElement("p"); p.textContent="Hedef bulunamadı. Geri dönüp seçim yap."; testsWrap.appendChild(p); return;
-    }
-    goals.forEach(g=>{
-      (GOAL_TESTS[g] || []).forEach(t=>{
-        const box = document.createElement("div");
-        box.className = "box";
-        box.innerHTML = `
-          <div class="label">${t.label}</div>
-          <input type="text" id="t_${t.id}" placeholder="Değer gir">
-          <small>${t.help}</small>
-        `;
-        testsWrap.appendChild(box);
-      });
-    });
+  document.querySelectorAll(".test-card input").forEach(inp=>{
+    data.tests[inp.id] = inp.value;
+  });
+  localStorage.setItem("st_metrics", JSON.stringify(data));
+  const u = auth.currentUser;
+  try{
+    if(db && u){ await firebase.firestore().collection("users").doc(u.uid).set({metrics:data},{merge:true}); }
+    $("#saveMsg").textContent="Kaydedildi ✔"; $("#saveMsg").className="msg ok";
+  }catch(e){
+    $("#saveMsg").textContent="Yerel kaydedildi (buluta yazılamadı)."; $("#saveMsg").className="msg";
   }
-  renderTests();
+};
 
-  byId("btnSave").onclick = async ()=>{
-    const age = parseFloat(byId("age").value);
-    const rhr = parseFloat(byId("rhr").value);
-    const hrmax = Number.isFinite(age) ? 220 - age : null;
-    const hrr   = (Number.isFinite(hrmax) && Number.isFinite(rhr)) ? (hrmax - rhr) : null;
-
-    const fields = Array.from(testsWrap.querySelectorAll("input")).reduce((acc,el)=>{
-      acc[el.id.replace(/^t_/, "")] = el.value.trim(); return acc;
-    }, {});
-
-    const payload = { age:isNaN(age)?null:age, rhr:isNaN(rhr)?null:rhr, hrmax, hrr, tests: fields, updatedAt:new Date().toISOString() };
-    localStorage.setItem("stMetrics", JSON.stringify(payload));
-
-    try{
-      if(auth.currentUser){
-        await db.collection("users").doc(auth.currentUser.uid).set({ metrics: payload }, { merge:true });
-        byId("saveMsg").textContent = "Kaydedildi ✔";
-        byId("saveMsg").className = "msg ok";
-      }else{
-        byId("saveMsg").textContent = "Yerel kaydedildi (oturum yok).";
-        byId("saveMsg").className = "msg ok";
-      }
-    }catch(e){
-      console.warn(e);
-      byId("saveMsg").textContent = "Kaydetme başarısız. İnternet veya izinleri kontrol et.";
-      byId("saveMsg").className = "msg err";
-    }
-  };
-})();
+// auth + preset
+auth.onAuthStateChanged(u=>{
+  if(!u){ location.href="./signup.html"; return; }
+});

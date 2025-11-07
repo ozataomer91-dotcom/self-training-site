@@ -2,62 +2,40 @@
 <html lang="tr">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Self Training • Hedef & Bilgi</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Panel • Self Training</title>
   <link rel="stylesheet" href="./styles.css">
 </head>
 <body>
-  <div class="container">
-    <div class="spread">
-      <div>
-        <h1>Self Training</h1>
-        <p class="sub">Hedefini seç, kısa bilgileri doldur. Ölçümler sonraki sayfada.</p>
-      </div>
-    </div>
+  <div class="wrap">
+    <div class="card">
+      <h1>Self Training</h1>
+      <p class="help">Hedeflerini seç (en fazla 3). Spor geçmişin ve varsa sakatlıklarını işaretle.</p>
 
-    <div class="card section">
-      <div class="label">Hedefini Seç <span class="badge">en fazla 3</span></div>
-      <div class="help">Seçimlerin sonraki adımda testleri ve antrenman önerilerini kişiselleştirir.</div>
-      <div id="goalWrap" class="choices" aria-live="polite"></div>
-      <div id="goalMsg" class="msg"></div>
-    </div>
+      <h2>Hedef Seçimi <span id="selCount" class="stat">0/3</span></h2>
+      <div id="targets" class="chips"></div>
 
-    <div class="card section">
-      <div class="label">Sağlık / Sakatlık</div>
-      <input id="health" type="text" placeholder="Örn: Sağ diz ACL öyküsü, bel fıtığı, doktor onayı var…" />
-      <div class="help">Ciddi rahatsızlıklarda lütfen doktor onayıyla ilerleyin.</div>
-    </div>
+      <h2>Seviye (tek seçim)</h2>
+      <div id="levels" class="chips"></div>
 
-    <div class="card section">
-      <div class="label">Spor Geçmişi & Seviye</div>
-      <div class="grid cols-2">
-        <select id="level">
-          <option value="">Seçiniz</option>
-          <option>Başlangıç</option>
-          <option>Orta</option>
-          <option>İleri</option>
-          <option>Profesyonel</option>
-        </select>
-        <input id="history" type="text" placeholder="Örn: 2 yıl basketbol, 6 ay fitness" />
-      </div>
-      <div class="help">Kısa özet yazabilirsin (opsiyonel).</div>
-    </div>
+      <h2>Sakatlık (çoklu seçim)</h2>
+      <div id="injuries" class="chips"></div>
 
-    <div class="actions">
-      <div class="row">
-        <button id="btnSignOut" class="btn ghost">Çıkış</button>
-        <button id="btnNext" class="btn primary">İlerle</button>
-      </div>
       <div id="saveMsg" class="msg"></div>
     </div>
   </div>
 
-  <!-- Firebase compat -->
+  <div class="bottom-bar">
+    <div class="bottom-inner">
+      <button id="logout" class="btn secondary">Çıkış</button>
+      <button id="next" class="btn">İlerle</button>
+    </div>
+  </div>
+
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
 
-  <!-- Proje konfigürasyonu -->
   <script src="./config.js"></script>
   <script src="./dashboard.js"></script>
 </body>

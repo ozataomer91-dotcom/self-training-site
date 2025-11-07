@@ -1,92 +1,88 @@
+// init
+firebase.initializeApp(window.firebaseConfig);
+const auth = firebase.auth();
+let db = null;
+try{ db = firebase.firestore(); }catch(_){ db = null; }
 
-(function(){
-  const $ = (s) => document.querySelector(s);
-  const $$ = (s) => Array.from(document.querySelectorAll(s));
-  const byId = (id)=>document.getElementById(id);
+const $ = (s)=>document.querySelector(s);
+const $$=(s)=>document.querySelectorAll(s);
 
-  // Firebase
-  if(!window.firebaseConfig){ console.error("config.js bulunamadı"); }
-  if(!firebase.apps.length){ firebase.initializeApp(window.firebaseConfig); }
-  const auth = firebase.auth();
-  const db   = firebase.firestore();
+const TARGETS = [
+  "Yağ yakımı","Kilo verme","Kas kazanımı","Kuvvet artışı","Dayanıklılık (kardiyo)",
+  "Çeviklik","Esneklik","Fonksiyonel antrenman","Evde ekipmansız","Koşu performansı",
+  "Tenis","Yüzme","HIIT/Interval","Duruş & core","Genel sağlık"
+];
+const LEVELS = ["Yeni başlayan","Orta","İleri","Profesyonel"];
+const INJURIES = ["Diz (ACL/Menisküs)","Bel/boyun","Omuz (rotator cuff)","Ayak bileği","Tendon/bağ","Diğer"];
 
-  // Hedefler
-  const GOALS = [
-    "Yağ yakımı / Kilo verme",
-    "Kas kazanımı / Hipertrofi",
-    "Kuvvet artışı (1RM)",
-    "Dayanıklılık (koşu/tempo)",
-    "Fonksiyonel fitness / HIIT",
-    "Mobilite & Esneklik",
-    "Postür / Bel-boyun sağlığı",
-    "Evde ekipmansız antrenman",
-    "Kardiyorespiratuvar sağlık",
-    "Hız / Çeviklik",
-    "Patlayıcı güç (plyo)",
-    "Rehabilitasyon odaklı dönüş",
-    "Yüzme performansı",
-    "Tenis / Raket sporları hazırlık"
-  ];
+function chip(label, cls=""){
+  const b = document.createElement("button");
+  b.type="button"; b.className="chip "+cls; b.textContent=label;
+  return b;
+}
 
-  // UI build
-  const wrap = byId("goalWrap");
-  GOALS.forEach((g,i)=>{
-    const id = "g"+i;
-    const label = document.createElement("label");
-    label.className = "choice";
-    label.innerHTML = `<input type="checkbox" class="gchk" id="${id}" value="${g}"><span>${g}</span>`;
-    wrap.appendChild(label);
-  });
+function mountChips(){
+  const tBox=$("#targets"); const lBox=$("#levels"); const iBox=$("#injuries");
+  TARGETS.forEach(x=>tBox.appendChild(chip(x)));
+  LEVELS.forEach(x=>lBox.appendChild(chip(x,"single")));
+  INJURIES.forEach(x=>iBox.appendChild(chip(x)));
+}
+mountChips();
 
-  // En fazla 3 seç
-  const limit = 3;
-  wrap.addEventListener("change", (event) => {
-    const checked = $$(".gchk:checked");
-    if(checked.length > limit){
-      event.target.checked = false;
-      byId("goalMsg").textContent = `En fazla ${limit} hedef seçebilirsin.`;
-      byId("goalMsg").className = "msg err";
-      setTimeout(()=>{ byId("goalMsg").textContent=""; byId("goalMsg").className="msg"; }, 1800);
-    }
-  });
+// selection logic
+let selectedTargets = new Set();
+let selectedLevel = null;
+let selectedInj = new Set();
+const LIMIT = 3;
 
-  // Auth guard
-  let UID = null;
-  auth.onAuthStateChanged(user=>{
-    if(!user){ location.href = "./index.html"; return; }
-    UID = user.uid;
-  });
+$("#targets").addEventListener("click",(e)=>{
+  const b = e.target.closest(".chip"); if(!b) return;
+  const k = b.textContent;
+  if(b.classList.contains("active")){ b.classList.remove("active"); selectedTargets.delete(k); }
+  else{
+    if(selectedTargets.size>=LIMIT){ return; }
+    b.classList.add("active"); selectedTargets.add(k);
+  }
+  $("#selCount").textContent = selectedTargets.size+"/"+LIMIT;
+});
 
-  // Çıkış
-  byId("btnSignOut").onclick = async ()=>{
-    try{ await auth.signOut(); location.href="./index.html"; }catch(e){ console.error(e); }
+$("#levels").addEventListener("click",(e)=>{
+  const b = e.target.closest(".chip"); if(!b) return;
+  $$(`#levels .chip`).forEach(x=>x.classList.remove("active"));
+  b.classList.add("active"); selectedLevel = b.textContent;
+});
+
+$("#injuries").addEventListener("click",(e)=>{
+  const b = e.target.closest(".chip"); if(!b) return;
+  const k = b.textContent;
+  if(b.classList.contains("active")){ b.classList.remove("active"); selectedInj.delete(k); }
+  else{ b.classList.add("active"); selectedInj.add(k); }
+});
+
+// auth guard (opsiyonel)
+auth.onAuthStateChanged(u=>{
+  if(!u){ location.href="./signup.html"; return; }
+});
+
+$("#logout").onclick = async ()=>{ try{ await auth.signOut(); }catch(_){} location.href="./signup.html"; };
+
+$("#next").onclick = async ()=>{
+  const u = auth.currentUser;
+  const payload = {
+    targets: [...selectedTargets],
+    level: selectedLevel,
+    injuries: [...selectedInj],
+    ts: Date.now()
   };
-
-  // İlerle → kaydet + metrics.html
-  byId("btnNext").onclick = async ()=>{
-    const goals = $$(".gchk:checked").map(c=>c.value);
-    const health = byId("health").value.trim();
-    const level  = byId("level").value;
-    const history= byId("history").value.trim();
-
-    if(goals.length === 0){
-      byId("saveMsg").textContent = "En az 1 hedef seç.";
-      byId("saveMsg").className = "msg err"; return;
-    }
-
-    const payload = { goals, health, level, history, updatedAt: new Date().toISOString() };
-    // Yerel
-    localStorage.setItem("stStep1", JSON.stringify(payload));
-
-    // Firestore opsiyonel
-    try{
-      if(UID){
-        await db.collection("users").doc(UID).set({ step1: payload }, { merge:true });
-        byId("saveMsg").textContent = "Kaydedildi. Ölçümlere geçiliyor…";
-        byId("saveMsg").className = "msg ok";
-      }
-    }catch(e){ console.warn("Firestore kaydı başarısız:", e); }
-
-    setTimeout(()=>location.href="./metrics.html", 500);
-  };
-})();
+  // localStorage
+  localStorage.setItem("st_profile", JSON.stringify(payload));
+  // Firestore (varsa)
+  try{
+    if(db && u){ await db.collection("users").doc(u.uid).set(payload, {merge:true}); }
+    $("#saveMsg").textContent="Kaydedildi ✔"; $("#saveMsg").className="msg ok";
+  }catch(e){
+    $("#saveMsg").textContent="Yerel kaydedildi (buluta yazılamadı)."; $("#saveMsg").className="msg";
+  }
+  // ileri
+  location.href="./metrics.html";
+};

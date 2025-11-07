@@ -2,62 +2,71 @@
 <html lang="tr">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Self Training • Ölçümler</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Ölçümler • Self Training</title>
   <link rel="stylesheet" href="./styles.css">
 </head>
 <body>
-  <div class="container">
-    <div class="spread">
-      <div>
-        <h1>Self Training</h1>
-        <p class="sub">Yaş ve dinlenik nabzını gir; hedefine özel testleri doldur.</p>
-      </div>
-    </div>
+  <div class="wrap">
+    <div class="card">
+      <h1>Ölçümler</h1>
+      <p class="help">Yaş ve dinlenik nabzı gir. Sistem HRmax ve HRR hesaplar. Aşağıda hedeflerine göre test kartları gelir.</p>
 
-    <div class="card section">
-      <div class="label">Kalp Atım Bilgileri</div>
-      <div class="grid cols-3">
-        <div class="box">
-          <div class="label">Yaş (yıl)</div>
-          <input id="age" type="number" min="5" max="100" placeholder="Örn: 22">
-          <small>Yaş: Kimlikteki tam yıl.</small>
-        </div>
-        <div class="box">
-          <div class="label">Dinlenik Nabız (BPM)</div>
-          <input id="rhr" type="number" min="30" max="120" placeholder="Örn: 60">
-          <small>Sabah uyanınca 60 sn ölç.</small>
-        </div>
-        <div class="box">
-          <div class="label">HRmax / HRR (otomatik)</div>
-          <div><span id="hrmax" class="badge">—</span> <span id="hrr" class="badge">—</span></div>
-          <small>Formül: HRmax = 220 − yaş; HRR = HRmax − dinlenik.</small>
-        </div>
-      </div>
-    </div>
+      <div class="kv">
+        <div><label for="age">Yaş</label></div>
+        <div><input id="age" type="number" min="8" max="100" placeholder="örn. 25"></div>
 
-    <div class="card section">
-      <div class="label">Hedefine Göre Testler</div>
-      <div id="tests" class="grid cols-2"></div>
-      <div class="help">Her testin altında kısa rehber var.</div>
-    </div>
+        <div><label for="rhr">Dinlenik Nabız (RHR)</label></div>
+        <div><input id="rhr" type="number" min="30" max="120" placeholder="örn. 60"></div>
 
-    <div class="actions">
-      <div class="row">
-        <button id="btnBack" class="btn ghost">Geri</button>
-        <button id="btnSignOut" class="btn ghost">Çıkış</button>
-        <button id="btnSave" class="btn primary">Kaydet</button>
+        <div>HRmax (220-yaş)</div>
+        <div><span id="hrmax" class="stat">—</span></div>
+
+        <div>HRR (HRmax - RHR)</div>
+        <div><span id="hrr" class="stat">—</span></div>
       </div>
+
+      <h2>Testler</h2>
+      <div id="tests"></div>
+
       <div id="saveMsg" class="msg"></div>
     </div>
   </div>
 
-  <!-- Firebase compat -->
+  <div class="bottom-bar">
+    <div class="bottom-inner">
+      <button id="logout" class="btn secondary">Çıkış</button>
+      <button id="save" class="btn">Kaydet</button>
+    </div>
+  </div>
+
+  <!-- REHBER MODALI -->
+  <div id="helpModal" class="help-modal hide">
+    <div class="help-box">
+      <button id="helpClose" class="help-x" aria-label="Kapat">✕</button>
+      <h2 id="helpTitle"></h2>
+      <p id="helpAim"></p>
+      <h3>Nasıl yapılır?</h3>
+      <p id="helpHow"></p>
+      <h3>Hedefle ilişkisi</h3>
+      <p id="helpRel"></p>
+      <img id="helpImg" alt="" style="max-width:100%;display:none;margin-top:8px;">
+    </div>
+  </div>
+  <style>
+    .hide{display:none}
+    .help-modal{position:fixed;inset:0;background:rgba(0,0,0,.5);display:grid;place-items:center;z-index:9999}
+    .help-box{background:#fff;max-width:720px;width:92%;padding:20px;border-radius:14px;
+              box-shadow:0 10px 30px rgba(0,0,0,.18);font:14px/1.45 system-ui, -apple-system, Segoe UI, Roboto, Arial}
+    .help-box h2{margin:0 0 6px}
+    .help-box h3{margin:14px 0 6px;font-size:15px}
+    .help-x{float:right;border:0;background:#f1f3f7;border-radius:8px;padding:6px 10px;cursor:pointer}
+  </style>
+
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
 
-  <!-- Proje konfigürasyonu -->
   <script src="./config.js"></script>
   <script src="./metrics.js"></script>
 </body>
