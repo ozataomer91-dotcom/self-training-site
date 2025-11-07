@@ -1,10 +1,10 @@
 // Firebase kimlik bilgilerin (compat)
 window.firebaseConfig = {
-  apiKey: "AIzaSyAnMzcWonT_zL0EhcNlDIYANBhDiivmur4",
+  apiKey: "AIzaSyAnMzCWonT_zLi0EnChIDYANBhDiiwmur4",
   authDomain: "self-training-128b5.firebaseapp.com",
   projectId: "self-training-128b5",
-  storageBucket: "self-training-128b5.firebasestorage.app",
+  storageBucket: "self-training-128b5.appspot.com",   // DÜZELTİLDİ
   messagingSenderId: "61732879565",
-  appId: "1:61732879565:web:5a446fb76a88f1103bd84",
+  appId: "1:61732879565:web:5a446fb76fa88f1103bd84"
 };
 console.log("CONFIG OK");
