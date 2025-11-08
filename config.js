@@ -1,10 +1,11 @@
-
-// Proje Firebase kimlik bilgileri
+// Firebase config şablonu
+// Kendi projenizdeki değerleri buraya yapıştırın.
 window.firebaseConfig = {
-  apiKey: "AIzaSyAnMzCWonT_zLi0EnChIDYANBhDiiwmur4",
-  authDomain: "self-training-128b5.firebaseapp.com",
-  projectId: "self-training-128b5",
-  storageBucket: "self-training-128b5.firebasestorage.app",
-  messagingSenderId: "61732879565",
-  appId: "1:61732879565:web:5a446fb76a88f1103bd84"
+  apiKey: "PASTE_YOUR_API_KEY",
+  authDomain: "your-project.firebaseapp.com",
+  projectId: "your-project",
+  storageBucket: "your-project.appspot.com",
+  messagingSenderId: "000000000000",
+  appId: "1:000000000000:web:XXXXXXXXXXXX"
 };
+console.log("CONFIG OK");
