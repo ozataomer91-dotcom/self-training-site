@@ -1,3 +1,13 @@
+// config.js
+window.firebaseConfig = {
+  apiKey: "AI...senin_anahtarın...",
+  authDomain: "senin-projen.firebaseapp.com",
+  projectId: "senin-projen",
+  storageBucket: "senin-projen.appspot.com",   // DİKKAT: appspot.com
+  messagingSenderId: "XXXXXXXXXXXX",
+  appId: "1:XXXXXXXXXXXX:web:YYYYYYYYYYYYYY"
+};
+console.log("CONFIG OK");
 // config.js — BURAYA GERÇEK FIREBASE PROJE ANAHTARLARINI YAZ
 // ⚠️ 'YOUR_...' yerlerini kendi projenin değerleriyle değiştir.
 // Firebase Console → Project settings → General → Your apps → SDK setup and config
