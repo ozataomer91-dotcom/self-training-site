@@ -2,56 +2,77 @@
 <html lang="tr">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Ölçümler • Self Training</title>
-  <link rel="stylesheet" href="./styles.css">
+  <link rel="stylesheet" href="./style.css">
 </head>
 <body>
   <div class="container">
-    <div class="topbar">
-      <button id="btnBack" class="btn">&larr; Geri</button>
-      <div class="right">
-        <a class="btn link" id="goalLink">Hedefe göre testler</a>
-        <button id="btnLogout" class="btn">Çıkış Yap</button>
+    <div class="topline">
+      <div class="title">Ölçümler <span class="badge">Adım 2/2</span></div>
+      <div class="actions">
+        <button id="btnBack" class="btn ghost">← Geri</button>
+        <button id="btnLogout" class="btn ghost">Çıkış Yap</button>
       </div>
     </div>
 
     <div class="card">
-      <div class="h"><h1>Ölçümler</h1></div>
-      <div class="small">Yaş ve dinlenik nabız gir. Sistem HRmax ve HRR hesaplar; aşağıda hedeflerine göre test kartları gelir.</div>
-
-      <div class="grid2" style="margin-top:10px">
-        <div class="box">
-          <div class="row"><label for="age">Yaş</label><input id="age" type="number" placeholder="örn. 26"></div>
-          <div class="small">Yaş: Nüfus cüzdanındaki tam yıl.</div>
+      <p class="help">Yaş ve dinlenik nabız gir. Sistem HRmax ve HRR hesaplar. Aşağıda hedeflerine göre test kartları gelir.</p>
+      <div class="row">
+        <div class="col">
+          <label for="age">Yaş</label>
+          <input id="age" class="input" placeholder="örn. 26" inputmode="numeric">
+          <div class="help">Nüfus cüzdanındaki tam yıl.</div>
         </div>
-        <div class="box">
-          <div class="row"><label for="rhr">Dinlenik Nabız (RHR)</label><input id="rhr" type="number" placeholder="örn. 60"></div>
-          <div class="small">Sabah uyanınca, 60 sn boyunca sayınız.</div>
+        <div class="col">
+          <label for="rhr">Dinlenik Nabız (RHR)</label>
+          <input id="rhr" class="input" placeholder="örn. 60" inputmode="numeric">
+          <div class="help">Sabah uyanınca, 60 sn boyunca sayınız.</div>
         </div>
       </div>
 
-      <div class="grid2" style="margin-top:10px">
-        <div class="box"><div class="row"><label>HRmax (220-yaş)</label><input id="hrmax" disabled></div></div>
-        <div class="box"><div class="row"><label>HRR (HRmax - RHR)</label><input id="hrr" disabled></div></div>
+      <div class="row">
+        <div class="col">
+          <label for="hrmax">HRmax (220‑yaş)</label>
+          <input id="hrmax" class="input" readonly>
+        </div>
+        <div class="col">
+          <label for="hrr">HRR (HRmax − RHR)</label>
+          <input id="hrr" class="input" readonly>
+        </div>
       </div>
 
-      <div class="box" style="margin-top:12px">
-        <h2>Testler</h2>
-        <div id="tests"></div>
+      <h2>Testler</h2>
+      <div id="tests"></div>
+
+      <div class="sticky-actions">
+        <div class="actions">
+          <button id="btnSave" class="btn right">Kaydet</button>
+        </div>
       </div>
 
-      <div class="footer">
-        <div id="msg" class="msg"></div>
-        <div><button id="btnSave" class="btn primary">Kaydet</button></div>
+      <div class="msg" id="msg"></div>
+    </div>
+  </div>
+
+  <div id="modalWrap" class="modal-backdrop">
+    <div class="modal" role="dialog" aria-modal="true">
+      <header><h3 id="mTitle">Test Bilgisi</h3><button id="mClose" class="btn ghost small">×</button></header>
+      <div class="content">
+        <div id="mHow"></div>
+        <div class="hr"></div>
+        <div><b>Hedefle ilişkisi</b><div id="mRel" class="help"></div></div>
       </div>
+      <footer>
+        <button id="mOk" class="btn">Tamam</button>
+      </footer>
     </div>
   </div>
 
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
   <script src="./config.js"></script>
+  <script src="./tests-data.js"></script>
   <script src="./metrics.js"></script>
 </body>
 </html>
