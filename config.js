@@ -1,11 +1,12 @@
-// Firebase config şablonu
-// Kendi projenizdeki değerleri buraya yapıştırın.
+// config.js — BURAYA GERÇEK FIREBASE PROJE ANAHTARLARINI YAZ
+// ⚠️ 'YOUR_...' yerlerini kendi projenin değerleriyle değiştir.
+// Firebase Console → Project settings → General → Your apps → SDK setup and config
 window.firebaseConfig = {
-  apiKey: "PASTE_YOUR_API_KEY",
-  authDomain: "your-project.firebaseapp.com",
-  projectId: "your-project",
-  storageBucket: "your-project.appspot.com",
-  messagingSenderId: "000000000000",
-  appId: "1:000000000000:web:XXXXXXXXXXXX"
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+  projectId: "YOUR_PROJECT_ID",
+  storageBucket: "YOUR_PROJECT_ID.appspot.com",
+  messagingSenderId: "YOUR_SENDER_ID",
+  appId: "YOUR_APP_ID"
 };
 console.log("CONFIG OK");
