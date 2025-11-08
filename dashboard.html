@@ -1,148 +1,102 @@
-
 <!doctype html>
 <html lang="tr">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Hedef & Bilgi • Self Training</title>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Panel • Self Training</title>
   <link rel="stylesheet" href="./assets/css/styles.css">
 </head>
-<body>
-  <div class="container">
-    <div class="topbar">
-      <div><span class="badge">Panel</span></div>
-      <div class="right">
-        <span id="hello" class="small"></span>
-        <button id="logout" class="btn ghost">Çıkış Yap</button>
+<body class="bg">
+  <div class="wrap">
+    <div class="card card-slim">
+      <div class="topbar">
+        <button class="link" onclick="history.back()">&larr; Geri</button>
+        <div class="small">Giriş: <span id="who">—</span></div>
+        <button class="link" onclick="signOutAndGo()">Çıkış Yap</button>
       </div>
-    </div>
+      <h2>Hedef & Bilgi</h2>
 
-    <div class="card">
-      <h1>Hedef & Bilgi</h1>
+      <div class="row">
+        <label>Hedef(ler)ini seç <span class="small">(maks. 3)</span></label>
+        <div id="goals" class="chips"></div>
+        <div class="small">Seçtiklerin, ölçüm/test önerilerini belirler.</div>
+      </div>
 
-      <fieldset>
-        <legend>Maksimum 3 hedef seçebilirsiniz. <span class="small">(Öneri: 2–3 odak)</span></legend>
-        <div id="goals" class="tags"></div>
-        <p class="small">Seçtikleriniz, bir sonraki sayfada göreceğiniz testleri otomatik belirler.</p>
-      </fieldset>
-
-      <div class="grid">
-        <div class="col-12">
-          <h2>Sport geçmişi</h2>
-          <select id="sportBackground" class="input">
+      <div class="grid2">
+        <div class="row">
+          <label>Spor geçmişi</label>
+          <select id="history">
             <option value="">Seçiniz…</option>
             <option>Hiç yok</option>
-            <option>Okul/Amatör</option>
-            <option>Düzenli fitness</option>
-            <option>Branş sporcusu (tenis/yüzme vb.)</option>
+            <option>Okul/amatör</option>
+            <option>Düzenli rekreasyonel</option>
+            <option>Yarışmacı/pro</option>
           </select>
         </div>
-        <div class="col-12">
-          <h2>Seviye</h2>
-          <div id="levels" class="tags"></div>
-        </div>
-        <div class="col-12">
-          <h2>Sakatlık / Sağlık</h2>
-          <div id="injuries" class="tags"></div>
-          <input id="injuryText" class="input" placeholder="Tıbbi tanı yerine belirsiz olanı değil, belirgin bölgeyi seçiniz (örn. Diz, Bel).">
-          <p class="small">Not: Ciddi rahatsızlıklarda doktor onayı ile ilerleyin.</p>
+        <div class="row">
+          <label>Seviye</label>
+          <select id="level"><option>Başlangıç</option><option>Orta</option><option>İleri</option></select>
         </div>
       </div>
 
-      <div class="sticky-actions">
-        <div class="actions">
-          <button id="next" class="btn">İleri</button>
-        </div>
-        <div class="msg" id="msg"></div>
+      <div class="row">
+        <label>Sakatlık / sağlık</label>
+        <div class="chips" id="injuryChips"></div>
+        <textarea id="injuryNote" placeholder="Tıbbi tanı yerine genel tarif (ör. bel fıtığı, sağ diz ACL öyküsü)…"></textarea>
       </div>
+
+      <div class="sticky-foot"><button id="next" class="btn">İleri</button></div>
     </div>
   </div>
 
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
-
   <script src="./assets/js/common.js"></script>
   <script>
-    // UI verileri
-    const GOAL_OPTIONS = [
-      {id:'fatloss', label:'Yağ Yakımı / Kilo Verme'},
-      {id:'muscle',  label:'Kas Kazanımı / Kuvvet'},
-      {id:'endurance',label:'Dayanıklılık / Koşu'},
-      {id:'mobility', label:'Esneklik / Mobilite'},
-      {id:'home',     label:'Evde Ekipmansız'},
-      {id:'posture',  label:'Duruş / Core'},
-      {id:'sport',    label:'Branş Sporu (tenis/yüzme)'}
-    ];
-    const LEVEL_OPTIONS = ['Başlangıç','Orta','İleri'];
-    const INJURY_OPTIONS = ['Yok','Bel','Diz','Omuz','Boyun','Ayak bileği'];
+  const GOAL_OPTIONS = [
+    ['fatloss','Yağ Yakımı / Kilo Verme'],
+    ['muscle','Kas Kazanımı / Kuvvet'],
+    ['endurance','Dayanıklılık / Koşu'],
+    ['mobility','Esneklik / Mobilite'],
+    ['home','Evde Ekipmansız'],
+    ['posture','Duruş / Core'],
+    ['sport','Branş Sporu (tenis/yüzme)']
+  ];
+  const INJ = ['Yok','Bel','Diz','Omuz','Boyun','Ayak bileği'];
 
-    // render tags
-    const wrap = app.q('#goals');
-    GOAL_OPTIONS.forEach(g=>{
-      const el = document.createElement('button');
-      el.type='button'; el.className='tag'; el.textContent=g.label; el.dataset.id=g.id;
-      el.addEventListener('click', ()=>{
-        const actives = app.qAll('.tag.active', wrap);
-        if(!el.classList.contains('active') && actives.length>=3){
-          app.toast('En fazla 3 hedef seçebilirsin.');
-          return;
-        }
-        el.classList.toggle('active');
-      });
-      wrap.appendChild(el);
-    });
-
-    const levelsWrap = app.q('#levels');
-    LEVEL_OPTIONS.forEach(l=>{
-      const el = document.createElement('button'); el.type='button'; el.className='tag'; el.textContent=l; el.dataset.v=l;
-      el.addEventListener('click', ()=>{
-        app.qAll('#levels .tag').forEach(x=>x.classList.remove('active'));
-        el.classList.add('active');
-      });
-      levelsWrap.appendChild(el);
-    });
-
-    const injWrap = app.q('#injuries');
-    INJURY_OPTIONS.forEach(l=>{
-      const el = document.createElement('button'); el.type='button'; el.className='tag'; el.textContent=l; el.dataset.v=l;
-      el.addEventListener('click', ()=>{
-        if(l==='Yok'){ app.qAll('#injuries .tag').forEach(x=>x.classList.remove('active')); el.classList.add('active'); return; }
-        el.classList.toggle('active'); app.q('#injuries .tag[data-v="Yok"]').classList.remove('active');
-      });
-      injWrap.appendChild(el);
-    });
-
-    // auth greeting
-    const user = app.auth() ? app.auth().currentUser : null;
-    app.q('#hello').textContent = user && user.email ? ('Giriş: ' + user.displayName || user.email) : '';
-
-    app.q('#logout').onclick = async ()=>{
-      try{ await app.auth().signOut(); location.href='./index.html'; }catch(_){ location.href='./index.html'; }
+  const gWrap = $('#goals');
+  GOAL_OPTIONS.forEach(([key,label])=>{
+    const b=document.createElement('button'); b.type='button';
+    b.className='chip'; b.textContent=label; b.dataset.key=key;
+    b.onclick=()=>{
+      const act=$$('.chip.active',gWrap);
+      if(!b.classList.contains('active') && act.length>=3){ toast('Maksimum 3 hedef.'); return; }
+      b.classList.toggle('active');
     };
+    gWrap.appendChild(b);
+  });
 
-    app.q('#next').onclick = async ()=>{
-      const goals = app.qAll('#goals .tag.active').map(x=>x.dataset.id);
-      const level = (app.q('#levels .tag.active')||{}).dataset?.v || '';
-      const background = app.q('#sportBackground').value;
-      const injuries = app.qAll('#injuries .tag.active').map(x=>x.dataset.v);
-      const injuryText = app.q('#injuryText').value.trim();
+  const injWrap = $('#injuryChips');
+  INJ.forEach(label=>{
+    const b=document.createElement('button'); b.type='button'; b.className='chip'; b.textContent=label;
+    b.onclick=()=>b.classList.toggle('active');
+    injWrap.appendChild(b);
+  });
 
-      if(goals.length===0){ app.toast('En az 1 hedef seçmelisin.'); return; }
+  const user = (window.firebase?.auth?.currentUser) || store.get('demo_user');
+  $('#who').textContent = user?.displayName || user?.name || '—';
 
-      const payload = {goals, level, background, injuries, injuryText, ts: Date.now()};
-      app.saveToLocal('selfTraining_profile', payload);
-
-      // Firestore varsa yaz
-      const user = app.auth() ? app.auth().currentUser : null;
-      const db = app.getDb();
-      if(user && db){
-        try{
-          await db.collection('users').doc(user.uid).set({profile:payload},{merge:true});
-        }catch(_){ /* sessizce geç */ }
-      }
-      location.href='./metrics.html';
+  $('#next').onclick = ()=>{
+    const goals = $$('.chip.active', gWrap).map(b=>({key:b.dataset.key,label:b.textContent}));
+    if(goals.length===0){ toast('En az 1 hedef seç.'); return; }
+    const profile = {
+      goals,
+      history: $('#history').value,
+      level: $('#level').value,
+      injuries: $$('.chip.active', injWrap).map(b=>b.textContent),
+      injuryNote: $('#injuryNote').value.trim()
     };
+    store.set('st_profile_v1', profile);
+    location.href='./metrics.html';
+  };
   </script>
 </body>
 </html>

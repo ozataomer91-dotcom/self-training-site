@@ -1,149 +1,143 @@
-
 <!doctype html>
 <html lang="tr">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
   <title>Ölçümler • Self Training</title>
   <link rel="stylesheet" href="./assets/css/styles.css">
 </head>
-<body>
-  <div class="container">
-    <div class="topbar">
-      <div><button id="back" class="btn ghost">← Geri</button></div>
-      <div class="right">
-        <span class="small">Hedefe göre testler</span>
-        <button id="logout" class="btn ghost">Çıkış Yap</button>
+<body class="bg">
+  <div class="wrap">
+    <div class="card card-slim">
+      <div class="topbar">
+        <button class="link" onclick="history.back()">&larr; Geri</button>
+        <div class="small" id="selGoals">Hedefe göre testler</div>
+        <button class="link" onclick="signOutAndGo()">Çıkış Yap</button>
       </div>
-    </div>
 
-    <div class="card">
-      <h1>Ölçümler</h1>
-      <p class="hint">Yaş ve dinlenik nabzı gir. Sistem HRmax ve HRR hesaplar. Aşağıda hedeflerine göre test kartları gelir.</p>
+      <h2>Ölçümler</h2>
+      <p class="hint">Yaş ve dinlenik nabız gir. Sistem HRmax ve HRR hesaplar; aşağıda hedeflerine göre test kartları gelir.</p>
 
-      <div class="grid">
-        <div class="col-6">
-          <label for="age">Yaş</label>
-          <input id="age" class="input" placeholder="örn. 25">
-          <p class="small">Yaş: Nüfus cüzdanındaki tam yıl.</p>
-        </div>
-        <div class="col-6">
-          <label for="rhr">Dinlenik Nabız (RHR)</label>
-          <input id="rhr" class="input" placeholder="örn. 60">
-          <p class="small">Sabah uyanınca, 60 sn boyunca sayınız.</p>
-        </div>
-        <div class="col-6">
-          <label>HRmax (220-yaş)</label>
-          <input id="hrmax" class="input" readonly>
-        </div>
-        <div class="col-6">
-          <label>HRR (HRmax - RHR)</label>
-          <input id="hrr" class="input" readonly>
-        </div>
+      <div class="grid2">
+        <div class="row"><label for="age">Yaş</label><input id="age" type="number" min="5" max="100" placeholder="örn. 25"></div>
+        <div class="row"><label for="rhr">Dinlenik Nabız (RHR)</label><input id="rhr" type="number" min="30" max="130" placeholder="örn. 60"></div>
+      </div>
+
+      <div class="grid2">
+        <div class="row"><label for="hrmax">HRmax (220-yaş)</label><input id="hrmax" type="number" readonly></div>
+        <div class="row"><label for="hrr">HRR (HRmax - RHR)</label><input id="hrr" type="number" readonly></div>
       </div>
 
       <h2>Testler</h2>
-      <div id="testsWrap" class="grid"></div>
+      <div id="tests"></div>
 
-      <div class="sticky-actions">
-        <div class="actions">
-          <button id="save" class="btn">Kaydet</button>
-        </div>
-        <div class="msg"></div>
+      <div class="sticky-foot">
+        <button id="save" class="btn">Kaydet</button>
       </div>
     </div>
   </div>
 
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+  <div class="modal-back" id="modalBack">
+    <div class="modal" role="dialog" aria-modal="true">
+      <div class="modal-head">
+        <strong id="mTitle">Bilgi</strong>
+        <button class="modal-close" id="mClose">&times;</button>
+      </div>
+      <div class="small"><strong>Nasıl yapılır?</strong></div>
+      <div id="mHow" class="kapsul"></div>
+      <div class="small" style="margin-top:6px"><strong>Hedefle ilişkisi</strong></div>
+      <div id="mWhy" class="kapsul"></div>
+    </div>
+  </div>
 
   <script src="./assets/js/common.js"></script>
   <script src="./assets/js/tests-data.js"></script>
   <script>
-    const profile = app.getFromLocal('selfTraining_profile', null);
-    if(!profile){ location.href='./dashboard.html'; }
+  const profile = store.get('st_profile_v1');
+  const tBox = $('#tests');
+  const modalBack = $('#modalBack'); const mTitle=$('#mTitle'); const mHow=$('#mHow'); const mWhy=$('#mWhy');
 
-    // auth
-    app.q('#logout').onclick = async ()=>{
-      try{ await app.auth().signOut(); location.href='./index.html'; }catch(_){ location.href='./index.html'; }
-    };
-    app.q('#back').onclick = ()=>history.back();
+  function openModal(t){ mTitle.textContent=t.name; mHow.textContent=t.how; mWhy.textContent=t.why; modalBack.style.display='flex'; }
+  function closeModal(){ modalBack.style.display='none'; }
+  on($('#mClose'),'click', closeModal);
+  on(modalBack,'click', (e)=>{ if(e.target===modalBack) closeModal(); });
+  on(window,'keydown', (e)=>{ if(e.key==='Escape') closeModal(); });
 
-    // HR hesap
-    const recalc = ()=>{
-      const age = parseInt(app.q('#age').value||0,10);
-      const rhr = parseInt(app.q('#rhr').value||0,10);
-      const hrmax = age>0 ? (220 - age) : '';
-      const hrr = (hrmax && rhr>0) ? (hrmax - rhr) : '';
-      app.q('#hrmax').value = hrmax || '';
-      app.q('#hrr').value = hrr || '';
-    };
-    ['age','rhr'].forEach(id=>app.q('#'+id).addEventListener('input', recalc));
+  function calc(){
+    const age = parseInt($('#age').value,10);
+    const rhr = parseInt($('#rhr').value,10);
+    if(Number.isFinite(age) && Number.isFinite(rhr)){
+      const hrmax = 220 - age;
+      const hrr   = hrmax - rhr;
+      $('#hrmax').value = hrmax;
+      $('#hrr').value   = hrr;
+    } else { $('#hrmax').value=''; $('#hrr').value=''; }
+  }
+  on($('#age'),'input',  calc);
+  on($('#rhr'),'input',  calc);
 
-    // Test kartları
-    const wrap = app.q('#testsWrap');
-    const added = new Set();
-    (profile.goals||[]).forEach(g=>{
-      (window.GOAL_TO_TESTS[g]||[]).forEach(tid=>{
-        if(added.has(tid)) return;
-        added.add(tid);
-        const T = window.TESTS[tid];
-        const col = document.createElement('div'); col.className='col-6';
-        col.innerHTML = `
-          <div class="card">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
-              <strong>${T.title}</strong>
-              <button class="btn ghost btnInfo" data-id="${tid}" type="button">Nasıl?</button>
-            </div>
-            <p class="small">${T.desc}</p>
-            <div class="row">
-              <input class="input testVal" placeholder="Değerinizi giriniz" data-id="${tid}">
-            </div>
-          </div>`;
-        wrap.appendChild(col);
-      });
-    });
+  const TESTS = {
+    hr:       { id:'hr',       name:'HRmax & HRR',        info:'Kalp atım rezervi', how:'Yaş ve dinlenik nabzı gir. HRmax=220-yaş, HRR=HRmax-RHR.', why:'Yoğunluk bölgelerini ayarlar.' },
+    coop12:   { id:'coop12',   name:'Cooper 12 dk Koşu',  info:'12 dk mesafe',      how:'Düz zeminde 12 dk boyunca en iyi temponla koş, metreyi not et.',              why:'Aerobik dayanıklılık.' },
+    squat60:  { id:'squat60',  name:'60 sn Squat',        info:'Tekrar sayısı',      how:'Tam hareket açıklığıyla 60 sn içinde tekrar say.',                           why:'Alt ekstremite kuvvet-dayanıklılık.' },
+    pushup60: { id:'pushup60', name:'60 sn Şınav',        info:'Tekrar sayısı',      how:'Doğru formu koru; 60 sn içinde say.',                                        why:'Üst ekstremite kuvvet-dayanıklılık.' },
+    plank:    { id:'plank',    name:'Ön Plank',           info:'Süre (sn)',          how:'Dirsek plank pozisyonunda maksimum süre tut.',                               why:'Core/duruş.' },
+    sitreach: { id:'sitreach', name:'Sit & Reach',        info:'Uzanma (cm)',        how:'Kutu/mezura ile ileri uzanma mesafesi.',                                     why:'Esneklik-mobilite.' },
+    ybal:     { id:'ybal',     name:'Y-Balance',          info:'3 yön (cm)',         how:'Anterior/Posteromedial/Posterolateral yönlerde ulaşma mesafesi ölç.',       why:'Denge/sakatlık riski.' },
+    ttest:    { id:'ttest',    name:'T-Test (Çeviklik)',  info:'Süre (sn)',          how:'Konilerle T şekli kur, kronometre ile süre al.',                             why:'Çeviklik/branş.' },
+    sprint10: { id:'sprint10', name:'10 m Sprint',        info:'Süre (sn)',          how:'10m en iyi denemeyi koş, süreyi kaydet.',                                   why:'Hız/koşu formu.' }
+  };
+  const GOAL_TO_TESTS = {
+    fatloss:   ['hr','coop12','squat60'],
+    muscle:    ['pushup60','squat60','plank'],
+    endurance: ['hr','coop12','sprint10'],
+    mobility:  ['sitreach','ybal','plank'],
+    home:      ['pushup60','squat60','plank'],
+    posture:   ['plank','sitreach','ybal'],
+    sport:     ['ttest','ybal','sprint10']
+  };
 
-    wrap.addEventListener('click', (e)=>{
-      const btn = e.target.closest('.btnInfo'); if(!btn) return;
-      const tid = btn.dataset.id; const T = window.TESTS[tid];
-      const html = \`
-        <div class="img"><img src="./assets/img/\${T.img}" alt=""></div>
-        <div>
-          <h3>Nasıl yapılır?</h3>
-          <div>\${T.how}</div>
+  function renderTests(){
+    tBox.innerHTML='';
+    if(!profile || !profile.goals || profile.goals.length===0){
+      tBox.innerHTML='<div class="kapsul">Önce hedef seçimi yapmalısın (Panel → Hedef & Bilgi).</div>';
+      return;
+    }
+    $('#selGoals').textContent = profile.goals.map(g=>g.label).join(' • ');
+
+    const ids = new Set();
+    profile.goals.forEach(g=> (GOAL_TO_TESTS[g.key]||[]).forEach(id=>ids.add(id)));
+
+    Array.from(ids).forEach(id=>{
+      const t = TESTS[id]; if(!t) return;
+      const card=document.createElement('div'); card.className='test-card';
+      card.innerHTML = `
+        <div class="test-title">
+          <div><strong>${t.name}</strong> <span class="badge">${t.info}</span></div>
+          <button class="chip" data-id="${t.id}">Nasıl?</button>
         </div>
-        <div>
-          <h3>Hedefle ilişkisi</h3>
-          <div>\${T.why}</div>
-        </div>\`;
-      app.modal.show({title:T.title, html});
+        <div class="grid2" style="margin-top:10px">
+          <div class="row"><label>Sonuç / not</label><input type="text" data-field="result_${t.id}" placeholder="Değerinizi yazın"></div>
+          <div class="row"><label>Tarih</label><input type="date" data-field="date_${t.id}"></div>
+        </div>`;
+      tBox.appendChild(card);
     });
 
-    // Kaydet
-    app.q('#save').onclick = async ()=>{
-      const out = {
-        age: app.q('#age').value.trim(),
-        rhr: app.q('#rhr').value.trim(),
-        hrmax: app.q('#hrmax').value.trim(),
-        hrr: app.q('#hrr').value.trim(),
-        tests: {}
-      };
-      app.qAll('.testVal').forEach(inp=> out.tests[inp.dataset.id] = inp.value.trim());
-      app.saveToLocal('selfTraining_metrics', out);
+    $$('.test-card .chip', tBox).forEach(btn=>{
+      btn.addEventListener('click',()=>openModal(TESTS[btn.dataset.id]));
+    });
+  }
 
-      const user = app.auth() ? app.auth().currentUser : null;
-      const db = app.getDb();
-      if(user && db){
-        try{
-          await db.collection('users').doc(user.uid).set({metrics:out},{merge:true});
-          app.toast('Kaydedildi ✔', true);
-        }catch(_){ app.toast('Yerel kaydedildi.', true); }
-      }else{
-        app.toast('Yerel kaydedildi.', true);
-      }
-    };
+  renderTests(); calc();
+
+  $('#save').onclick=()=>{
+    const age=parseInt($('#age').value,10), rhr=parseInt($('#rhr').value,10);
+    if(!Number.isFinite(age) || !Number.isFinite(rhr)) return toast('Önce yaş ve RHR gir.');
+    const data={ age, rhr, hrmax:220-age, hrr:(220-age)-rhr, results:{} };
+    $$('#tests [data-field]').forEach(inp=> data.results[inp.dataset.field]=inp.value );
+    store.set('st_metrics_v1', data);
+    toast('Kaydedildi ✔', true);
+  };
   </script>
 </body>
 </html>
