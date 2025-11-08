@@ -1,78 +1,143 @@
 <!doctype html>
 <html lang="tr">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
   <title>Ölçümler • Self Training</title>
-  <link rel="stylesheet" href="./style.css">
+  <link rel="stylesheet" href="./assets/css/styles.css">
 </head>
-<body>
-  <div class="container">
-    <div class="topline">
-      <div class="title">Ölçümler <span class="badge">Adım 2/2</span></div>
-      <div class="actions">
-        <button id="btnBack" class="btn ghost">← Geri</button>
-        <button id="btnLogout" class="btn ghost">Çıkış Yap</button>
-      </div>
-    </div>
-
-    <div class="card">
-      <p class="help">Yaş ve dinlenik nabız gir. Sistem HRmax ve HRR hesaplar. Aşağıda hedeflerine göre test kartları gelir.</p>
-      <div class="row">
-        <div class="col">
-          <label for="age">Yaş</label>
-          <input id="age" class="input" placeholder="örn. 26" inputmode="numeric">
-          <div class="help">Nüfus cüzdanındaki tam yıl.</div>
-        </div>
-        <div class="col">
-          <label for="rhr">Dinlenik Nabız (RHR)</label>
-          <input id="rhr" class="input" placeholder="örn. 60" inputmode="numeric">
-          <div class="help">Sabah uyanınca, 60 sn boyunca sayınız.</div>
-        </div>
+<body class="bg">
+  <div class="wrap">
+    <div class="card card-slim">
+      <div class="topbar">
+        <button class="link" onclick="history.back()">&larr; Geri</button>
+        <div class="small" id="selGoals">Hedefe göre testler</div>
+        <button class="link" onclick="signOutAndGo()">Çıkış Yap</button>
       </div>
 
-      <div class="row">
-        <div class="col">
-          <label for="hrmax">HRmax (220‑yaş)</label>
-          <input id="hrmax" class="input" readonly>
-        </div>
-        <div class="col">
-          <label for="hrr">HRR (HRmax − RHR)</label>
-          <input id="hrr" class="input" readonly>
-        </div>
+      <h2>Ölçümler</h2>
+      <p class="hint">Yaş ve dinlenik nabız gir. Sistem HRmax ve HRR hesaplar; aşağıda hedeflerine göre test kartları gelir.</p>
+
+      <div class="grid2">
+        <div class="row"><label for="age">Yaş</label><input id="age" type="number" min="5" max="100" placeholder="örn. 25"></div>
+        <div class="row"><label for="rhr">Dinlenik Nabız (RHR)</label><input id="rhr" type="number" min="30" max="130" placeholder="örn. 60"></div>
+      </div>
+
+      <div class="grid2">
+        <div class="row"><label for="hrmax">HRmax (220-yaş)</label><input id="hrmax" type="number" readonly></div>
+        <div class="row"><label for="hrr">HRR (HRmax - RHR)</label><input id="hrr" type="number" readonly></div>
       </div>
 
       <h2>Testler</h2>
       <div id="tests"></div>
 
-      <div class="sticky-actions">
-        <div class="actions">
-          <button id="btnSave" class="btn right">Kaydet</button>
-        </div>
+      <div class="sticky-foot">
+        <button id="save" class="btn">Kaydet</button>
       </div>
-
-      <div class="msg" id="msg"></div>
     </div>
   </div>
 
-  <div id="modalWrap" class="modal-backdrop">
+  <div class="modal-back" id="modalBack">
     <div class="modal" role="dialog" aria-modal="true">
-      <header><h3 id="mTitle">Test Bilgisi</h3><button id="mClose" class="btn ghost small">×</button></header>
-      <div class="content">
-        <div id="mHow"></div>
-        <div class="hr"></div>
-        <div><b>Hedefle ilişkisi</b><div id="mRel" class="help"></div></div>
+      <div class="modal-head">
+        <strong id="mTitle">Bilgi</strong>
+        <button class="modal-close" id="mClose">&times;</button>
       </div>
-      <footer>
-        <button id="mOk" class="btn">Tamam</button>
-      </footer>
+      <div class="small"><strong>Nasıl yapılır?</strong></div>
+      <div id="mHow" class="kapsul"></div>
+      <div class="small" style="margin-top:6px"><strong>Hedefle ilişkisi</strong></div>
+      <div id="mWhy" class="kapsul"></div>
     </div>
   </div>
 
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
-  <script src="./config.js"></script>
-  <script src="./tests-data.js"></script>
-  <script src="./metrics.js"></script>
+  <script src="./assets/js/common.js"></script>
+  <script src="./assets/js/tests-data.js"></script>
+  <script>
+  const profile = store.get('st_profile_v1');
+  const tBox = $('#tests');
+  const modalBack = $('#modalBack'); const mTitle=$('#mTitle'); const mHow=$('#mHow'); const mWhy=$('#mWhy');
+
+  function openModal(t){ mTitle.textContent=t.name; mHow.textContent=t.how; mWhy.textContent=t.why; modalBack.style.display='flex'; }
+  function closeModal(){ modalBack.style.display='none'; }
+  on($('#mClose'),'click', closeModal);
+  on(modalBack,'click', (e)=>{ if(e.target===modalBack) closeModal(); });
+  on(window,'keydown', (e)=>{ if(e.key==='Escape') closeModal(); });
+
+  function calc(){
+    const age = parseInt($('#age').value,10);
+    const rhr = parseInt($('#rhr').value,10);
+    if(Number.isFinite(age) && Number.isFinite(rhr)){
+      const hrmax = 220 - age;
+      const hrr   = hrmax - rhr;
+      $('#hrmax').value = hrmax;
+      $('#hrr').value   = hrr;
+    } else { $('#hrmax').value=''; $('#hrr').value=''; }
+  }
+  on($('#age'),'input',  calc);
+  on($('#rhr'),'input',  calc);
+
+  const TESTS = {
+    hr:       { id:'hr',       name:'HRmax & HRR',        info:'Kalp atım rezervi', how:'Yaş ve dinlenik nabzı gir. HRmax=220-yaş, HRR=HRmax-RHR.', why:'Yoğunluk bölgelerini ayarlar.' },
+    coop12:   { id:'coop12',   name:'Cooper 12 dk Koşu',  info:'12 dk mesafe',      how:'Düz zeminde 12 dk boyunca en iyi temponla koş, metreyi not et.',              why:'Aerobik dayanıklılık.' },
+    squat60:  { id:'squat60',  name:'60 sn Squat',        info:'Tekrar sayısı',      how:'Tam hareket açıklığıyla 60 sn içinde tekrar say.',                           why:'Alt ekstremite kuvvet-dayanıklılık.' },
+    pushup60: { id:'pushup60', name:'60 sn Şınav',        info:'Tekrar sayısı',      how:'Doğru formu koru; 60 sn içinde say.',                                        why:'Üst ekstremite kuvvet-dayanıklılık.' },
+    plank:    { id:'plank',    name:'Ön Plank',           info:'Süre (sn)',          how:'Dirsek plank pozisyonunda maksimum süre tut.',                               why:'Core/duruş.' },
+    sitreach: { id:'sitreach', name:'Sit & Reach',        info:'Uzanma (cm)',        how:'Kutu/mezura ile ileri uzanma mesafesi.',                                     why:'Esneklik-mobilite.' },
+    ybal:     { id:'ybal',     name:'Y-Balance',          info:'3 yön (cm)',         how:'Anterior/Posteromedial/Posterolateral yönlerde ulaşma mesafesi ölç.',       why:'Denge/sakatlık riski.' },
+    ttest:    { id:'ttest',    name:'T-Test (Çeviklik)',  info:'Süre (sn)',          how:'Konilerle T şekli kur, kronometre ile süre al.',                             why:'Çeviklik/branş.' },
+    sprint10: { id:'sprint10', name:'10 m Sprint',        info:'Süre (sn)',          how:'10m en iyi denemeyi koş, süreyi kaydet.',                                   why:'Hız/koşu formu.' }
+  };
+  const GOAL_TO_TESTS = {
+    fatloss:   ['hr','coop12','squat60'],
+    muscle:    ['pushup60','squat60','plank'],
+    endurance: ['hr','coop12','sprint10'],
+    mobility:  ['sitreach','ybal','plank'],
+    home:      ['pushup60','squat60','plank'],
+    posture:   ['plank','sitreach','ybal'],
+    sport:     ['ttest','ybal','sprint10']
+  };
+
+  function renderTests(){
+    tBox.innerHTML='';
+    if(!profile || !profile.goals || profile.goals.length===0){
+      tBox.innerHTML='<div class="kapsul">Önce hedef seçimi yapmalısın (Panel → Hedef & Bilgi).</div>';
+      return;
+    }
+    $('#selGoals').textContent = profile.goals.map(g=>g.label).join(' • ');
+
+    const ids = new Set();
+    profile.goals.forEach(g=> (GOAL_TO_TESTS[g.key]||[]).forEach(id=>ids.add(id)));
+
+    Array.from(ids).forEach(id=>{
+      const t = TESTS[id]; if(!t) return;
+      const card=document.createElement('div'); card.className='test-card';
+      card.innerHTML = `
+        <div class="test-title">
+          <div><strong>${t.name}</strong> <span class="badge">${t.info}</span></div>
+          <button class="chip" data-id="${t.id}">Nasıl?</button>
+        </div>
+        <div class="grid2" style="margin-top:10px">
+          <div class="row"><label>Sonuç / not</label><input type="text" data-field="result_${t.id}" placeholder="Değerinizi yazın"></div>
+          <div class="row"><label>Tarih</label><input type="date" data-field="date_${t.id}"></div>
+        </div>`;
+      tBox.appendChild(card);
+    });
+
+    $$('.test-card .chip', tBox).forEach(btn=>{
+      btn.addEventListener('click',()=>openModal(TESTS[btn.dataset.id]));
+    });
+  }
+
+  renderTests(); calc();
+
+  $('#save').onclick=()=>{
+    const age=parseInt($('#age').value,10), rhr=parseInt($('#rhr').value,10);
+    if(!Number.isFinite(age) || !Number.isFinite(rhr)) return toast('Önce yaş ve RHR gir.');
+    const data={ age, rhr, hrmax:220-age, hrr:(220-age)-rhr, results:{} };
+    $$('#tests [data-field]').forEach(inp=> data.results[inp.dataset.field]=inp.value );
+    store.set('st_metrics_v1', data);
+    toast('Kaydedildi ✔', true);
+  };
+  </script>
 </body>
 </html>
