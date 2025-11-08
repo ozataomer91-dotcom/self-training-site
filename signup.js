@@ -1,48 +1,62 @@
-console.log('SIGNUP JS BOOT');
 
-// sekmeler
-$('#tabLogin').onclick  = ()=>{ $('#tabLogin').classList.add('active'); $('#tabSignup').classList.remove('active'); $('#loginView').classList.remove('hide'); $('#signupView').classList.add('hide') };
-$('#tabSignup').onclick = ()=>{ $('#tabSignup').classList.add('active'); $('#tabLogin').classList.remove('active'); $('#signupView').classList.remove('hide'); $('#loginView').classList.add('hide') };
+console.log("SIGNUP BOOT");
 
-const setMsg=(t,ok=false)=>{const m=$('#globalMsg');m.className='msg '+(ok?'ok':'err');m.textContent=t};
-const goDash = ()=>location.href='./dashboard.html';
+firebase.initializeApp(window.firebaseConfig);
+const auth = firebase.auth();
 
-// Giriş
-$('#btnLogin').onclick = async ()=>{
-  const email = $('#loginEmail').value.trim();
-  const pass  = $('#loginPassword').value;
-  if(!email || !pass) return setMsg('E-posta ve şifre gerekli.');
+const qs = (s)=>document.querySelector(s);
+const show = (id)=>qs(id).classList.remove("hide");
+const hide = (id)=>qs(id).classList.add("hide");
+
+qs("#tabLogin").onclick = ()=>{ hide("#signupView"); show("#loginView"); qs("#tabLogin").classList.remove("ghost"); qs("#tabSignup").classList.add("ghost"); };
+qs("#tabSignup").onclick= ()=>{ hide("#loginView"); show("#signupView"); qs("#tabSignup").classList.remove("ghost"); qs("#tabLogin").classList.add("ghost"); };
+
+function setMsg(el, t, ok=false){ const m=qs(el); m.textContent=t; m.className="msg " + (ok?"ok":"err"); }
+function clearMsg(){ ["#msgLogin","#msgSignup"].forEach(id=>{const m=qs(id); m.textContent=""; m.className="msg"; }); }
+
+window.addEventListener("keydown",(e)=>{
+  if(e.key==="Enter"){
+    const onSignup = !qs("#signupView").classList.contains("hide");
+    (onSignup?qs("#btnSignup"):qs("#btnLogin")).click();
+  }
+}, true);
+
+qs("#btnLogin").onclick = async ()=>{
+  clearMsg();
+  const email = qs("#loginEmail").value.trim();
+  const pass  = qs("#loginPassword").value;
+  if(!email || !pass){ setMsg("#msgLogin","E‑posta ve şifre gerekli."); return; }
   try{
-    if(window.firebase?.auth) await firebase.auth().signInWithEmailAndPassword(email,pass);
-    setMsg('Giriş başarılı.',true); goDash();
-  }catch(e){ setMsg('Giriş başarısız'); }
+    await auth.signInWithEmailAndPassword(email, pass);
+    location.href = "./dashboard.html";
+  }catch(e){ setMsg("#msgLogin", e.message); }
 };
 
-// Şifre sıfırla
-$('#btnForgot').onclick = async ()=>{
-  const email = $('#loginEmail').value.trim();
-  if(!email) return setMsg('E-posta yaz.');
+qs("#btnForgot").onclick = async ()=>{
+  clearMsg();
+  const email = qs("#loginEmail").value.trim();
+  if(!email){ setMsg("#msgLogin","Önce e‑posta yaz."); return; }
   try{
-    if(window.firebase?.auth) await firebase.auth().sendPasswordResetEmail(email);
-    setMsg('Sıfırlama maili gönderildi.',true);
-  }catch(e){ setMsg('İşlem başarısız'); }
+    await auth.sendPasswordResetEmail(email);
+    setMsg("#msgLogin","Sıfırlama maili gönderildi (Gelen/Spam).", true);
+  }catch(e){ setMsg("#msgLogin", e.message); }
 };
 
-// Kayıt
-$('#btnSignup').onclick = async ()=>{
-  const name=$('#signupName').value.trim(), email=$('#signupEmail').value.trim();
-  const p1=$('#signupPassword').value, p2=$('#signupPassword2').value;
-  if(!name) return setMsg('Ad Soyad zorunlu');
-  if(!email) return setMsg('E-posta zorunlu');
-  if((p1||'').length<6) return setMsg('Şifre en az 6 karakter');
-  if(p1!==p2) return setMsg('Şifreler aynı değil');
+qs("#btnSignup").onclick = async ()=>{
+  clearMsg();
+  const name = qs("#signupName").value.trim();
+  const email= qs("#signupEmail").value.trim();
+  const p1   = qs("#signupPassword").value;
+  const p2   = qs("#signupPassword2").value;
+  if(!name){ setMsg("#msgSignup","Ad Soyad zorunlu."); return; }
+  if(!email){ setMsg("#msgSignup","E‑posta zorunlu."); return; }
+  if((p1||"").length<6){ setMsg("#msgSignup","Şifre en az 6 karakter."); return; }
+  if(p1!==p2){ setMsg("#msgSignup","Şifreler aynı değil."); return; }
   try{
-    if(window.firebase?.auth){
-      const cred=await firebase.auth().createUserWithEmailAndPassword(email,p1);
-      await cred.user.updateProfile({displayName:name});
-    } else {
-      store.set('demo_user',{name,email});
-    }
-    setMsg('Kayıt başarılı.',true); goDash();
-  }catch(e){ setMsg('Kayıt başarısız'); }
+    const cred = await auth.createUserWithEmailAndPassword(email, p1);
+    await cred.user.updateProfile({ displayName: name });
+    setMsg("#msgSignup","Kayıt tamam. Şimdi giriş yapabilirsin.", true);
+    hide("#signupView"); show("#loginView");
+    qs("#loginEmail").value = email;
+  }catch(e){ setMsg("#msgSignup", e.message); }
 };

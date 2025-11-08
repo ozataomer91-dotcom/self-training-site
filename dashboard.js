@@ -1,116 +1,55 @@
+
+// auth
 firebase.initializeApp(window.firebaseConfig);
 const auth = firebase.auth();
 
-const $ = (id)=>document.getElementById(id);
-const GOAL_MAX = 3;
+const $ = (s)=>document.querySelector(s);
+const msg = (t, ok=false)=>{ const m=$("#msg"); m.textContent=t; m.className="msg "+(ok?"ok":"err"); }
 
 const GOALS = [
-  {id:"fatloss",   label:"Yağ Yakımı / Kilo Verme"},
-  {id:"muscle",    label:"Kas Kazanımı / Kuvvet"},
-  {id:"endurance", label:"Dayanıklılık / Koşu"},
-  {id:"mobility",  label:"Esneklik / Mobilite"},
-  {id:"home",      label:"Evde Ekipmansız"},
-  {id:"posture",   label:"Duruş / Core"},
-  {id:"sport",     label:"Branş Sporu (tenis/yüzme)"},
+  "Yağ Yakımı / Kilo Verme","Kas Kazanımı / Kuvvet","Dayanıklılık / Koşu",
+  "Esneklik / Mobilite","Evde Ekipmansız","Duruş / Core",
+  "Fonksiyonel Fitness / HIIT","Sürat / Çeviklik","Branş Sporu (tenis/yüzme)"
 ];
+const INJ = ["Yok","Bel","Diz","Omuz","Boyun","Ayak bileği"];
 
-const LEVELS = ["Başlangıç","Orta","İleri"];
-const INJ = ["Yok","Bel","Diz","Omuz","Boyun","Ayak bileği","Diğer"];
-
-function chip(id, text, group){
-  const lbl = document.createElement("label");
-  lbl.className = "chip";
-  const inp = document.createElement("input");
-  inp.type = (group==="goals" || group==="inj") ? "checkbox" : "radio";
-  inp.name = group;
-  inp.value = id;
-  lbl.appendChild(inp);
-  const span = document.createElement("span");
-  span.textContent = text;
-  lbl.appendChild(span);
-  return lbl;
-}
-
-function mountChips(){
-  const gb = $("goalBox");
-  GOALS.forEach(g=>gb.appendChild(chip(g.id,g.label,"goals")));
-  const lb = $("lvlBox");
-  LEVELS.forEach((t,i)=>lb.appendChild(chip(String(i),t,"level")));
-  const ib = $("injBox");
-  INJ.forEach(t=>ib.appendChild(chip(t,t,"inj")));
-}
-
-function selected(group){
-  const n = group==="level" ? "level" : (group==="goals"?"goals":"inj");
-  return Array.from(document.querySelectorAll(`input[name="${n}"]`))
-    .filter(i=>i.checked).map(i=>i.value);
-}
-
-function enforceMaxGoals(){
-  const gos = Array.from(document.querySelectorAll(`input[name="goals"]`));
-  gos.forEach(i=>{
-    i.addEventListener("change", ()=>{
-      const sel = gos.filter(k=>k.checked);
-      if(sel.length>GOAL_MAX){
-        i.checked = false;
-        alert(`En fazla ${GOAL_MAX} hedef seçebilirsin.`);
+function makeChips(container, items, maxSelect=0){
+  const el = $(container); el.innerHTML="";
+  const state = new Set();
+  items.forEach(txt=>{
+    const c = document.createElement("button");
+    c.type="button"; c.className="chip"; c.textContent=txt;
+    c.onclick=()=>{
+      if(c.classList.contains("active")){ c.classList.remove("active"); state.delete(txt); }
+      else{
+        if(maxSelect && state.size>=maxSelect){ return; }
+        c.classList.add("active"); state.add(txt);
       }
-    });
+    };
+    el.appendChild(c);
   });
+  return ()=>Array.from(state);
 }
 
-function saveCtx(){
-  const ctx = {
-    goals: selected("goals"),
-    level: selected("level")[0] || "",
-    inj: selected("inj"),
-    history: $("history").value || ""
-  };
-  localStorage.setItem("st_ctx", JSON.stringify(ctx));
-  return ctx;
-}
-
-function loadCtx(){
-  try{
-    const ctx = JSON.parse(localStorage.getItem("st_ctx")||"{}");
-    if(ctx.goals){
-      ctx.goals.forEach(id=>{
-        const el = Array.from(document.querySelectorAll('input[name="goals"]')).find(i=>i.value===id);
-        if(el) el.checked = true;
-      });
-    }
-    if(ctx.level){
-      const el = Array.from(document.querySelectorAll('input[name="level"]')).find(i=>i.value===ctx.level);
-      if(el) el.checked = true;
-    }
-    if(ctx.inj){
-      ctx.inj.forEach(id=>{
-        const el = Array.from(document.querySelectorAll('input[name="inj"]')).find(i=>i.value===id);
-        if(el) el.checked = true;
-      });
-    }
-    if(ctx.history){ $("history").value = ctx.history; }
-  }catch(e){}
-}
+const pickGoals = makeChips("#goals", GOALS, 3);
+const pickInj   = makeChips("#injuries", INJ, 6);
 
 auth.onAuthStateChanged(u=>{
-  if(!u){ location.href="./signup.html"; return; }
-  $("status").textContent = `Giriş: ${u.displayName||u.email}`;
+  $("#who").textContent = u ? (u.displayName || u.email) : "Anonim";
 });
 
-$("logout").onclick = async ()=>{
-  await auth.signOut();
-  location.href="./signup.html";
-};
-$("next").onclick = ()=>{
-  const ctx = saveCtx();
-  if(!ctx.goals || ctx.goals.length===0){
-    alert("En az 1 hedef seç.");
-    return;
-  }
-  location.href="./metrics.html";
-};
+$("#btnLogout").onclick = ()=>auth.signOut().then(()=>location.href="./index.html");
 
-mountChips();
-enforceMaxGoals();
-loadCtx();
+$("#btnNext").onclick = ()=>{
+  const selGoals = pickGoals();
+  if(selGoals.length===0){ msg("En az 1 hedef seç."); return; }
+  const payload = {
+    goals: selGoals,
+    history: $("#history").value,
+    level: $("#level").value,
+    injuries: pickInj().filter(x=>x!=="Yok"),
+    injOther: $("#injOther").value.trim()
+  };
+  localStorage.setItem("st_profile", JSON.stringify(payload));
+  location.href = "./metrics.html";
+};
