@@ -1,15 +1,14 @@
 <!doctype html>
 <html lang="tr">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Self Training • Giriş / Kayıt</title>
   <style>
-    :root{--bg:#f6f7fb;--card:#fff;--pri:#1f55ff;--err:#c62828;--ok:#237a3b}
+    :root{--bg:#f6f7fb;--card:#fff;--pri:#1f55ff;--err:#c62828;--ok:#237a3b;--txt:#1c2233}
     *{box-sizing:border-box}
-    html,body{height:100%}
-    body{margin:0;font-family:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;background:var(--bg)}
-    .wrap{min-height:100%;display:grid;place-items:center;padding:24px}
+    body{margin:0;font-family:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--txt)}
+    .wrap{min-height:100dvh;display:grid;place-items:center;padding:24px}
     .card{width:100%;max-width:520px;background:var(--card);border-radius:16px;box-shadow:0 8px 28px rgba(0,0,0,.08);padding:20px 20px 24px}
     h1{margin:4px 0 14px;font-size:24px;text-align:center}
     .tabs{display:flex;gap:8px;margin-bottom:12px}
@@ -21,7 +20,7 @@
     .btn{height:42px;border:none;background:var(--pri);color:#fff;border-radius:10px;font-weight:600;cursor:pointer}
     .link{background:none;border:none;color:#243b80;text-decoration:underline;cursor:pointer;padding:0;margin:0;font-size:14px}
     .msg{min-height:22px;margin-top:10px;font-size:14px}
-    .err{color:var(--err)} .ok{color:var(--ok)} .hide{display:none}
+    .msg.err{color:var(--err)} .msg.ok{color:var(--ok)} .hide{display:none}
   </style>
 </head>
 <body>
@@ -35,6 +34,7 @@
       </div>
 
       <section id="loginView">
+        <p style="color:#6b7084;font-size:12px">Girişte yalnızca e‑posta ve şifre gerekir.</p>
         <div class="row"><label for="loginEmail">E‑posta</label><input id="loginEmail" type="email" autocomplete="email"></div>
         <div class="row"><label for="loginPassword">Şifre</label><input id="loginPassword" type="password" autocomplete="current-password"></div>
         <div class="row" style="gap:8px">
@@ -59,8 +59,19 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
 
-  <!-- Proje dosyaları (sırayla) -->
-  <script src="./config.js?v=99"></script>
-  <script src="./signup.js?v=99"></script>
+  <!-- Proje dosyaları (bağıl yollar, cache kırmak için v paramı) -->
+  <script src="./config.js?v=101"></script>
+  <script src="./signup.js?v=101"></script>
+
+  <script>
+    // Basit sekme geçişi
+    const $ = id => document.getElementById(id);
+    const show=(id)=>$(id).classList.remove("hide");
+    const hide=(id)=>$(id).classList.add("hide");
+    window.addEventListener("DOMContentLoaded", () => {
+      $("tabLogin").onclick = ()=>{ $("tabLogin").classList.add("active"); $("tabSignup").classList.remove("active"); show("loginView"); hide("signupView"); };
+      $("tabSignup").onclick= ()=>{ $("tabSignup").classList.add("active"); $("tabLogin").classList.remove("active"); show("signupView"); hide("loginView"); };
+    });
+  </script>
 </body>
 </html>
