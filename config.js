@@ -1,10 +1,12 @@
-
-// Proje Firebase kimlik bilgileri
+// config.js — BURAYA GERÇEK FIREBASE PROJE ANAHTARLARINI YAZ
+// ⚠️ 'YOUR_...' yerlerini kendi projenin değerleriyle değiştir.
+// Firebase Console → Project settings → General → Your apps → SDK setup and config
 window.firebaseConfig = {
-  apiKey: "AIzaSyAnMzCWonT_zLi0EnChIDYANBhDiiwmur4",
-  authDomain: "self-training-128b5.firebaseapp.com",
-  projectId: "self-training-128b5",
-  storageBucket: "self-training-128b5.firebasestorage.app",
-  messagingSenderId: "61732879565",
-  appId: "1:61732879565:web:5a446fb76a88f1103bd84"
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+  projectId: "YOUR_PROJECT_ID",
+  storageBucket: "YOUR_PROJECT_ID.appspot.com",
+  messagingSenderId: "YOUR_SENDER_ID",
+  appId: "YOUR_APP_ID"
 };
+console.log("CONFIG OK");
