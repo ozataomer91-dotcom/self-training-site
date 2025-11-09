@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Self Training • Giriş</title>
+  <title>Self Training • Kayıt</title>
   <link rel="stylesheet" href="icerik.css?v=4">
 </head>
 <body>
@@ -11,30 +11,23 @@
     <h1>Self Training</h1>
 
     <div class="tabs">
-      <button id="tabLogin" class="tab active">Giriş</button>
-      <button id="tabSignup" class="tab">Kayıt</button>
+      <button id="tabLogin" class="tab">Giriş</button>
+      <button id="tabSignup" class="tab active">Kayıt</button>
     </div>
-
-    <p class="hint">Girişte yalnızca e‑posta ve şifre gerekir.</p>
 
     <label for="email">E-posta</label>
     <input id="email" type="email" placeholder="ornek@posta.com" autocomplete="email" />
 
     <label for="password">Şifre</label>
-    <input id="password" type="password" placeholder="••••••••" autocomplete="current-password" />
+    <input id="password" type="password" placeholder="En az 6 karakter" autocomplete="new-password" />
 
-    <button id="btnLogin" class="btn primary">Giriş Yap</button>
-    <a href="#" id="lnkForgot" class="link">Şifremi Unuttum</a>
-
-    <div id="warn" class="warn"></div>
+    <button id="btnSignup" class="btn primary">Kayıt Ol</button>
   </main>
 
-  <!-- Firebase compat (9.x) -->
   <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
 
-  <!-- Proje dosyaları -->
   <script src="yapilandirma.js?v=4"></script>
-  <script src="signup.js?v=4"></script>
+  <script src="kayit.js?v=4"></script>
 </body>
 </html>
