@@ -1,73 +1,32 @@
-<!doctype html>
-<html lang="tr">
+<!DOCTYPE html>
+<html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Panel • Hedef & Bilgi</title>
-  <link rel="stylesheet" href="./styles.css">
+  <title>Dashboard</title>
+  <link rel="stylesheet" href="./style.css" />
+  <script defer src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script defer src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script defer src="./config.js"></script>
+  <script defer src="./auth.js"></script>
+  <script defer src="./guard.js"></script>
 </head>
 <body>
-  <div class="container">
-    <div class="topbar">
-      <button id="btnBack" class="btn">&larr; Geri</button>
-      <div class="right">
-        <span id="who" class="small"></span>
-        <button id="btnLogout" class="btn">Çıkış Yap</button>
-      </div>
-    </div>
+  <main class="container">
+    <h1>Welcome</h1>
+    <p id="userInfo" class="note">Loading user...</p>
+    <button class="btn" id="logoutBtn">Sign out</button>
+  </main>
 
-    <div class="card">
-      <div class="h"><h1>Hedef & Bilgi</h1></div>
-
-      <div class="box">
-        <h2>Hedef(ler)ini seç <span class="small">(En fazla 3)</span></h2>
-        <div id="goalChips" class="chips"></div>
-        <div class="small">Seçtiklerin, bir sonraki sayfada göreceğin ölçüm/test kartlarını belirler.</div>
-      </div>
-
-      <div class="grid2" style="margin-top:12px">
-        <div class="box">
-          <h2>Spor geçmişi</h2>
-          <div class="row">
-            <label for="hist">Seçiniz…</label>
-            <select id="hist">
-              <option value="">—</option>
-              <option>Yok</option>
-              <option>Tenis</option>
-              <option>Yüzme</option>
-              <option>Koşu</option>
-              <option>Futbol</option>
-              <option>Basketbol</option>
-              <option>Diğer</option>
-            </select>
-          </div>
-          <div class="row">
-            <label>Seviye</label>
-            <div class="chips" id="lvlChips"></div>
-          </div>
-        </div>
-
-        <div class="box">
-          <h2>Sağlık / sakatlık</h2>
-          <div class="chips" id="injChips" style="margin-bottom:8px"></div>
-          <div class="row"><label for="injNote">Ek bilgi (opsiyonel)</label><input id="injNote" placeholder="Örn: Sağ diz ACL öyküsü, bel fıtığı, vb."></div>
-          <div class="small">Not: Ciddi rahatsızlıklarda mutlaka doktor onayı ile ilerleyin.</div>
-        </div>
-      </div>
-
-      <div class="footer">
-        <div id="msg" class="msg"></div>
-        <div>
-          <button id="btnNext" class="btn primary">İleri</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
-  <script src="./config.js"></script>
-  <script src="./dashboard.js"></script>
+  <script>
+    window.$auth.onChanged((user)=>{
+      const p = document.getElementById("userInfo");
+      p.textContent = user ? `Logged in as: ${user.email}` : "No user";
+    });
+    document.getElementById("logoutBtn").addEventListener("click", async ()=>{
+      await window.$auth.signout();
+      location.replace("./index.html");
+    });
+  </script>
 </body>
 </html>

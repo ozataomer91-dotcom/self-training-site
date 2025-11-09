@@ -1,16 +1,18 @@
+Self-Training – minimal starter (GitHub Pages + Firebase Auth)
 
-Self Training – web demeti
-==========================
-Klasör GitHub Pages için hazırdır.
+STEP-BY-STEP (do this EXACTLY):
+1) Create/choose a Firebase project. Enable Authentication -> Sign-in method -> Email/Password (ENABLED).
+2) In Project settings -> Your apps (</>) -> Copy web app config. Paste into /config.js in window.firebaseConfig.
+3) Upload ALL files in this folder to your repository root (NOT inside another subfolder).
+4) On GitHub -> Settings -> Pages -> Source = 'Deploy from a branch', Branch = main (or master), Folder = / (root).
+5) Visit https://<your-username>.github.io/<your-repo>/index.html
+6) Open DevTools Console and verify:
+   - !!window.firebase -> true
+   - typeof firebase.initializeApp -> "function"
+   - firebase.apps.length -> 1
+   - !!window.$auth -> true
 
-1) config.js içindeki Firebase bilgilerini kendi projenizin değerleriyle değiştirin.
-2) index.html → e‑posta/şifre ile giriş/kayıt
-3) dashboard.html → Hedef & Bilgi: en fazla 3 hedef, spor geçmişi, seviye, sakatlık
-4) metrics.html → Yaş ve RHR girince HRmax/HRR otomatik; hedeflere göre test kartları
-5) Firestore:
-   - users/{uid}/profile/v1
-   - users/{uid}/metrics/v1
-
-Notlar
-- Kart içi “Nasıl?” butonu ile açıklama aç/kapat; ekran kilitlenmez.
-- Kaydet tuşu sağ altta; Geri/Çıkış üstte.
+If login/signup doesn't respond:
+- Check Console for 404s (wrong file paths). Ensure <script src="./config.js"> etc. exist in the SAME folder.
+- Make sure you pasted the correct firebaseConfig and enabled Email/Password in Firebase console.
+- GitHub Pages cache: Hard refresh (Ctrl+F5).

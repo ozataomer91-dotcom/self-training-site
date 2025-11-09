@@ -1,43 +1,42 @@
-<!doctype html>
-<html lang="tr">
+<!DOCTYPE html>
+<html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Self Training</title>
-  <link rel="stylesheet" href="icerik.css" />
+  <title>Self-Training – Sign up</title>
+  <link rel="stylesheet" href="./style.css" />
+  <script defer src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script defer src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script defer src="./config.js"></script>
+  <script defer src="./auth.js"></script>
 </head>
 <body>
-  <main class="card">
-    <h1>Self Training</h1>
-
-    <div class="tabs">
-      <button id="tab-login" class="active">Giriş</button>
-      <button id="tab-register">Kayıt</button>
-    </div>
-
-    <!-- GİRİŞ -->
-    <form id="form-login">
-      <label>E-posta</label>
-      <input id="loginEmail" type="email" placeholder="eposta@ornek.com" />
-
-      <label>Şifre</label>
-      <input id="loginPass" type="password" placeholder="••••••••" />
-
-      <button id="btnLogin" type="submit">Giriş Yap</button>
-      <p><a href="#" id="linkReset">Şifremi Unuttum</a></p>
-    </form>
-
-    <!-- KAYIT -->
-    <form id="form-register" style="display:none">
-      <label>E-posta</label>
-      <input id="regEmail" type="email" placeholder="eposta@ornek.com" />
-
-      <label>Şifre</label>
-      <input id="regPass" type="password" placeholder="En az 6 karakter" />
-
-      <button id="btnRegister" type="submit">Kayıt Ol</button>
-    </form>
+  <main class="container">
+    <h1>Create account</h1>
+    <label>Email</label>
+    <input id="email" type="email" autocomplete="email" />
+    <label>Password (min 6)</label>
+    <input id="password" type="password" autocomplete="new-password" />
+    <button class="btn" id="signupBtn">Sign up</button>
+    <a class="link" href="./index.html">I already have an account</a>
+    <p class="note" id="msg"></p>
   </main>
 
-  <!-- SCRIPTLER (SIRASI ÖNEMLİ) -->
-  <script
+  <script>
+  document.getElementById("signupBtn").addEventListener("click", async () => {
+    const email = document.getElementById("email").value.trim();
+    const pass = document.getElementById("password").value;
+    const msg = document.getElementById("msg");
+    msg.textContent = "Creating account...";
+    try{
+      await window.$auth.signup(email, pass);
+      msg.textContent = "Account created. Redirecting...";
+      location.href = "./dashboard.html";
+    }catch(err){
+      msg.textContent = err.message;
+      console.error(err);
+    }
+  });
+  </script>
+</body>
+</html>
