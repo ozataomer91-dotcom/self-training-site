@@ -1,44 +1,50 @@
 <!doctype html>
 <html lang="tr">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Self Training • Giriş / Kayıt</title>
-  <link rel="stylesheet" href="content.css">
+  <link rel="stylesheet" href="content.css?v=104">
 </head>
 <body>
-  <div class="wrap"><div class="card">
-    <h1>Self Training</h1>
-    <div class="tabs">
-      <button id="tabLogin" class="tab active" type="button">Giriş</button>
-      <button id="tabSignup" class="tab" type="button">Kayıt</button>
+  <div class="wrap">
+    <div class="card">
+      <h1>Self Training</h1>
+
+      <div class="tabs">
+        <button id="tabLogin"  class="tab active" type="button">Giriş</button>
+        <button id="tabSignup" class="tab"         type="button">Kayıt</button>
+      </div>
+
+      <section id="loginView">
+        <div class="row"><label for="loginEmail">E‑posta</label><input id="loginEmail" type="email" autocomplete="email"></div>
+        <div class="row"><label for="loginPassword">Şifre</label><input id="loginPassword" type="password" autocomplete="current-password"></div>
+        <div class="row">
+          <button id="btnLogin" class="btn" type="button">Giriş Yap</button>
+        </div>
+        <div class="row">
+          <button id="btnForgot" class="link" type="button">Şifremi Unuttum</button>
+        </div>
+      </section>
+
+      <section id="signupView" class="hide">
+        <div class="row"><label for="signupEmail">E‑posta</label><input id="signupEmail" type="email" autocomplete="email"></div>
+        <div class="row"><label for="signupPassword">Şifre</label><input id="signupPassword" type="password" autocomplete="new-password"></div>
+        <div class="row">
+          <button id="btnSignup" class="btn" type="button">Kayıt Ol</button>
+        </div>
+      </section>
+
+      <div id="globalMsg" class="msg"></div>
     </div>
+  </div>
 
-    <section id="loginView">
-      <div class="row"><label for="loginEmail">E-posta</label>
-        <input id="loginEmail" type="email" autocomplete="email"></div>
-      <div class="row"><label for="loginPassword">Şifre</label>
-        <input id="loginPassword" type="password" autocomplete="current-password"></div>
-      <div class="row"><button id="btnLogin" class="btn" type="button">Giriş Yap</button></div>
-      <div class="row"><button id="btnForgot" class="btn ghost" type="button">Şifremi Unuttum</button></div>
-    </section>
-
-    <section id="signupView" class="hide">
-      <div class="row"><label for="signupName">Ad Soyad</label><input id="signupName" type="text"></div>
-      <div class="row"><label for="signupEmail">E-posta</label><input id="signupEmail" type="email"></div>
-      <div class="row"><label for="signupPassword">Şifre</label><input id="signupPassword" type="password"></div>
-      <div class="row"><label for="signupPassword2">Şifre (tekrar)</label><input id="signupPassword2" type="password"></div>
-      <div class="row"><button id="btnSignup" class="btn" type="button">Kayıt Ol</button></div>
-    </section>
-
-    <div id="globalMsg" class="msg"></div>
-  </div></div>
-
-  <!-- SIRAYI BOZMA -->
+  <!-- Firebase compat (sırasıyla) -->
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
-  <script src="config.js"></script>
-  <script src="utils.js"></script>
-  <script src="signup.js"></script>
+  <!-- Proje dosyaları -->
+  <script src="utils.js?v=104"></script>
+  <script src="config.js?v=104"></script>
+  <script src="signup.js?v=104"></script>
 </body>
 </html>

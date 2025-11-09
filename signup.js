@@ -1,66 +1,90 @@
-const tabLogin=$("#tabLogin"), tabSignup=$("#tabSignup");
-const loginView=$("#loginView"), signupView=$("#signupView");
-const msg=$("#globalMsg");
+(function(){
+  console.log('[signup.js] yüklendi');
 
-function show(v){
-  if(v==="login"){ tabLogin.classList.add("active"); tabSignup.classList.remove("active");
-    loginView.classList.remove("hide"); signupView.classList.add("hide"); }
-  else { tabSignup.classList.add("active"); tabLogin.classList.remove("active");
-    signupView.classList.remove("hide"); loginView.classList.add("hide"); }
-  msg.textContent="";
-}
-tabLogin.onclick=()=>show("login");
-tabSignup.onclick=()=>show("signup");
+  const $ = window._q, $$ = window._qa;
 
-if(!ST.isConfigReady(window.firebaseConfig)){
-  msg.className="msg err";
-  msg.textContent="config.js içindeki Firebase alanlarını doldur. (apiKey/authDomain/projectId/appId)";
-  $("#btnLogin")?.setAttribute("disabled","true");
-  $("#btnSignup")?.setAttribute("disabled","true");
-}else{
-  ST.ensureFirebase();
-}
+  function bindTabs(){
+    const tabLogin = $('#tabLogin');
+    const tabSignup = $('#tabSignup');
+    const loginView = $('#loginView');
+    const signupView = $('#signupView');
 
-$("#btnLogin").onclick = async () => {
-  const email = $("#loginEmail").value.trim();
-  const pass  = $("#loginPassword").value;
-  msg.className="msg"; msg.textContent="[login]...";
+    if(!tabLogin || !tabSignup) return;
 
-  try{
-    await firebase.auth().signInWithEmailAndPassword(email, pass);
-    msg.className="msg ok"; msg.textContent="Giriş başarılı, yönlendiriliyor...";
-    location.href="dashboard.html";
-  }catch(e){
-    msg.className="msg err"; msg.textContent="Giriş başarısız: "+(e?.message||e);
+    tabLogin.addEventListener('click', () => {
+      tabLogin.classList.add('active'); tabSignup.classList.remove('active');
+      loginView.classList.remove('hide'); signupView.classList.add('hide');
+      setMsg('');
+    });
+
+    tabSignup.addEventListener('click', () => {
+      tabSignup.classList.add('active'); tabLogin.classList.remove('active');
+      signupView.classList.remove('hide'); loginView.classList.add('hide');
+      setMsg('');
+    });
   }
-};
 
-$("#btnSignup").onclick = async () => {
-  const name=$("#signupName").value.trim();
-  const email=$("#signupEmail").value.trim();
-  const p1=$("#signupPassword").value, p2=$("#signupPassword2").value;
-  msg.className="msg"; msg.textContent="[signup]...";
+  function bindAuth(){
+    const loginBtn  = $('#btnLogin');
+    const forgotBtn = $('#btnForgot');
+    const suBtn     = $('#btnSignup');
 
-  if(!name){ msg.className="msg err"; msg.textContent="Ad Soyad boş olamaz."; return; }
-  if(p1!==p2){ msg.className="msg err"; msg.textContent="Şifreler aynı olmalı."; return; }
+    if(loginBtn){
+      loginBtn.addEventListener('click', async () => {
+        const email = $('#loginEmail').value.trim();
+        const pass  = $('#loginPassword').value.trim();
+        const fb = ensureFirebase();
+        if(!fb.ok){ setMsg('config.js içindeki Firebase alanlarını doldur. (apiKey/authDomain/projectId vb.)', 'err'); return; }
+        try{
+          setMsg('Giriş yapılıyor...');
+          await firebase.auth().signInWithEmailAndPassword(email, pass);
+          setMsg('Giriş başarılı!', 'ok');
+          // yönlendir
+          window.location.href = 'dashboard.html?v=104';
+        }catch(e){
+          setMsg('Giriş başarısız: ' + (e.message || e.code), 'err');
+          console.warn('[login] hata:', e);
+        }
+      });
+    }
 
-  try{
-    const {user}=await firebase.auth().createUserWithEmailAndPassword(email,p1);
-    await user.updateProfile({displayName:name});
-    msg.className="msg ok"; msg.textContent="Kayıt başarılı, yönlendiriliyor...";
-    location.href="dashboard.html";
-  }catch(e){
-    msg.className="msg err"; msg.textContent="Kayıt başarısız: "+(e?.message||e);
+    if(forgotBtn){
+      forgotBtn.addEventListener('click', async () => {
+        const email = $('#loginEmail').value.trim();
+        const fb = ensureFirebase();
+        if(!fb.ok){ setMsg('config.js eksik olduğu için şifre sıfırlama devre dışı.', 'err'); return; }
+        try{
+          await firebase.auth().sendPasswordResetEmail(email);
+          setMsg('Sıfırlama bağlantısı e‑posta adresine gönderildi.', 'ok');
+        }catch(e){
+          setMsg('Gönderilemedi: ' + (e.message || e.code), 'err');
+        }
+      });
+    }
+
+    if(suBtn){
+      suBtn.addEventListener('click', async () => {
+        const email = $('#signupEmail').value.trim();
+        const pass  = $('#signupPassword').value.trim();
+        const fb = ensureFirebase();
+        if(!fb.ok){ setMsg('config.js eksik. Kayıt devre dışı.', 'err'); return; }
+        try{
+          setMsg('Kayıt oluşturuluyor...');
+          await firebase.auth().createUserWithEmailAndPassword(email, pass);
+          setMsg('Kayıt başarılı! Giriş yapabilirsiniz.', 'ok');
+          $('#tabLogin').click();
+        }catch(e){
+          setMsg('Kayıt başarısız: ' + (e.message || e.code), 'err');
+        }
+      });
+    }
   }
-};
 
-$("#btnForgot").onclick = async () => {
-  const email = $("#loginEmail").value.trim();
-  if(!email){ msg.className="msg err"; msg.textContent="E-posta gir."; return; }
-  try{
-    await firebase.auth().sendPasswordResetEmail(email);
-    msg.className="msg ok"; msg.textContent="Sıfırlama maili gönderildi.";
-  }catch(e){
-    msg.className="msg err"; msg.textContent="Gönderilemedi: "+(e?.message||e);
-  }
-};
+  document.addEventListener('DOMContentLoaded', () => {
+    console.log('[signup] hazır');
+    bindTabs();
+    bindAuth();
+    // İlk yükte login sekmesi açık kalsın
+    setMsg('');
+  });
+})();
