@@ -1,20 +1,17 @@
-
-:root{--bg:#f6f7fb;--card:#fff;--pri:#1f55ff;--err:#c62828;--ok:#237a3b;--txt:#111}
+:root{--bg:#f6f7fb;--card:#fff;--ink:#111827;--muted:#6b7280;--pri:#2563eb;--pri-ink:#fff}
 *{box-sizing:border-box}
-html,body{height:100%}
-body{margin:0;font-family:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--txt)}
+body{margin:0;background:var(--bg);font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:var(--ink)}
 .wrap{min-height:100dvh;display:grid;place-items:center;padding:24px}
-.card{width:100%;max-width:520px;background:var(--card);border-radius:16px;box-shadow:0 8px 28px rgba(0,0,0,.08);padding:20px 20px 24px}
-h1{margin:4px 0 14px;font-size:24px;text-align:center}
-.tabs{display:flex;gap:8px;margin-bottom:12px}
-.tab{flex:1;border:1px solid #d0d4e0;background:#eef1ff;color:#243b80;height:38px;border-radius:10px;cursor:pointer}
-.tab.active{background:var(--pri);color:#fff;border-color:var(--pri)}
+.card{width:100%;max-width:540px;background:#fff;border-radius:16px;box-shadow:0 10px 30px rgba(0,0,0,.08);padding:22px}
+h1{margin:0 0 12px;text-align:center}
+.tabs{display:flex;gap:8px;margin-bottom:14px}
+.tab{flex:1;height:44px;border-radius:10px;border:1px solid #d1d5db;background:#e5e7eb;font-weight:600}
+.tab.active{background:var(--pri);border-color:var(--pri);color:var(--pri-ink)}
 .row{display:flex;flex-direction:column;gap:6px;margin:10px 0}
-label{font-size:13px;color:#4a4f63}
-input{height:40px;border:1px solid #cfd4e3;border-radius:10px;padding:0 12px;font-size:15px;background:#fff}
-.btn{height:42px;border:none;background:var(--pri);color:#fff;border-radius:10px;font-weight:600;cursor:pointer}
-.link{background:none;border:none;color:#243b80;text-decoration:underline;cursor:pointer;padding:0;margin:0;font-size:14px}
-.msg{min-height:22px;margin-top:10px;font-size:14px}
-.err{color:var(--err)} .ok{color:var(--ok)} .hide{display:none}
-.warn{padding:16px;border:1px solid #ffd79c;background:#fff8e1;border-radius:10px;margin-top:8px}
-.small{font-size:12px;color:#666}
+label{font-size:13px;color:var(--muted)}
+input{height:42px;border:1px solid #cfd4e3;border-radius:10px;padding:0 12px}
+.btn{height:44px;border:none;border-radius:10px;background:var(--pri);color:#fff;font-weight:700;cursor:pointer}
+.btn.ghost{background:transparent;border:1px solid #d1d5db;color:#111}
+.msg{min-height:22px;margin-top:10px}
+.msg.err{color:#dc2626}.msg.ok{color:#16a34a}
+.hide{display:none}
