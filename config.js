@@ -1,11 +1,17 @@
-// /self-training-site/config.js
-// DOLDUR: Firebase Console → Project settings → Web app config
+// Firebase config — BURAYI KENDİ PROJENLE DOLDUR
 window.firebaseConfig = {
-  apiKey: "YOUR_REAL_API_KEY",
-  authDomain: "self-training-128b5.firebaseapp.com",
-  projectId: "self-training-128b5",
-  storageBucket: "self-training-128b5.appspot.com",
-  messagingSenderId: "61732879565",
-  appId: "1:61732879565:web:YOUR_APP_ID"
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_PROJECT.firebaseapp.com",
+  projectId: "YOUR_PROJECT",
+  storageBucket: "YOUR_PROJECT.appspot.com",
+  messagingSenderId: "YOUR_SENDER_ID",
+  appId: "YOUR_APP_ID"
 };
-console.log("CONFIG OK", window.firebaseConfig.projectId);
+
+(function(){
+  const hint = document.getElementById('cfgHint');
+  if(!hint) return;
+  const bad = !window.firebaseConfig || !window.firebaseConfig.apiKey || /YOUR_API_KEY/i.test(window.firebaseConfig.apiKey);
+  hint.textContent = bad ? "⚠️ config.js doldurulmadı (apiKey eksik). Giriş/Kayıt devre dışı." : "✔ Firebase ayarları yüklendi.";
+})();
+console.log("CONFIG OK");

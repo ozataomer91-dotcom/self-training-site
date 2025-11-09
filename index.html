@@ -1,22 +1,22 @@
 <!doctype html>
 <html lang="tr">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Self Training • Giriş / Kayıt</title>
-  <link rel="stylesheet" href="./assets/css/styles.css">
+  <link rel="stylesheet" href="./content.css">
 </head>
-<body class="bg">
+<body>
   <div class="wrap">
     <div class="card">
       <h1>Self Training</h1>
+
       <div class="tabs">
         <button id="tabLogin"  class="tab active" type="button">Giriş</button>
         <button id="tabSignup" class="tab"         type="button">Kayıt</button>
       </div>
 
       <section id="loginView">
-        <p class="hint">Girişte yalnızca e-posta ve şifre gerekir.</p>
         <div class="row"><label for="loginEmail">E-posta</label><input id="loginEmail" type="email" autocomplete="email"></div>
         <div class="row"><label for="loginPassword">Şifre</label><input id="loginPassword" type="password" autocomplete="current-password"></div>
         <div class="row" style="gap:8px">
@@ -34,13 +34,14 @@
       </section>
 
       <div id="globalMsg" class="msg"></div>
+      <p class="small" id="cfgHint"></p>
     </div>
   </div>
 
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
 
-  <script src="./assets/js/common.js"></script>
-  <script src="./signup.js"></script>
+  <script src="./config.js?v=1"></script>
+  <script src="./signup.js?v=1"></script>
 </body>
 </html>
