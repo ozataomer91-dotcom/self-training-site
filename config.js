@@ -1,17 +1,11 @@
-// Firebase config — BURAYI KENDİ PROJENLE DOLDUR
+// Firebase config şablonu
+// Kendi projenizdeki değerleri buraya yapıştırın.
 window.firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_PROJECT.firebaseapp.com",
-  projectId: "YOUR_PROJECT",
-  storageBucket: "YOUR_PROJECT.appspot.com",
-  messagingSenderId: "YOUR_SENDER_ID",
-  appId: "YOUR_APP_ID"
+  apiKey: "PASTE_YOUR_API_KEY",
+  authDomain: "your-project.firebaseapp.com",
+  projectId: "your-project",
+  storageBucket: "your-project.appspot.com",
+  messagingSenderId: "000000000000",
+  appId: "1:000000000000:web:XXXXXXXXXXXX"
 };
-
-(function(){
-  const hint = document.getElementById('cfgHint');
-  if(!hint) return;
-  const bad = !window.firebaseConfig || !window.firebaseConfig.apiKey || /YOUR_API_KEY/i.test(window.firebaseConfig.apiKey);
-  hint.textContent = bad ? "⚠️ config.js doldurulmadı (apiKey eksik). Giriş/Kayıt devre dışı." : "✔ Firebase ayarları yüklendi.";
-})();
 console.log("CONFIG OK");
