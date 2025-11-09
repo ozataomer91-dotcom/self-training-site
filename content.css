@@ -1,17 +1,16 @@
-:root{--bg:#f6f7fb;--card:#fff;--pri:#1f55ff;--err:#c62828;--ok:#237a3b;--txt:#243b80}
-*{box-sizing:border-box}
-html,body{height:100%}
-body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:#223}
-.wrap{min-height:100dvh;display:grid;place-items:center;padding:24px}
-.card{width:100%;max-width:520px;background:#fff;border-radius:16px;box-shadow:0 8px 28px rgba(0,0,0,.08);padding:20px 20px 24px}
-h1{margin:4px 0 14px;font-size:24px;text-align:center}
-.tabs{display:flex;gap:8px;margin-bottom:12px}
-.tab{flex:1;border:1px solid #d0d4e0;background:#eef1ff;color:#243b80;height:38px;border-radius:10px;cursor:pointer}
-.tab.active{background:var(--pri);color:#fff;border-color:var(--pri)}
-.row{display:flex;flex-direction:column;gap:6px;margin:10px 0}
-label{font-size:13px;color:#4a4f63}
-input{height:40px;border:1px solid #cfd4e3;border-radius:10px;padding:0 12px;font-size:15px;background:#fff}
-.btn{height:42px;border:none;background:var(--pri);color:#fff;border-radius:10px;font-weight:600;cursor:pointer}
-.link{background:none;border:none;color:#243b80;text-decoration:underline;cursor:pointer;padding:0;margin:0;font-size:14px}
-.msg{min-height:22px;margin-top:10px;font-size:14px}
-.err{color:var(--err)} .ok{color:var(--ok)} .hide{display:none}
+/* icerik.css */
+:root { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial; }
+body { margin: 0; background: #f5f6fa; display: grid; place-items: center; min-height: 100vh; }
+.card { width: 100%; max-width: 410px; background: #fff; padding: 20px 22px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,.08); }
+h1 { margin: 0 0 10px; font-size: 22px; }
+.tabs { display: flex; gap: 8px; margin: 8px 0 14px; }
+.tabs button { flex: 1; padding: 10px 12px; border-radius: 10px; border: 1px solid #e5e7eb; background:#f8fafc; cursor: pointer; }
+.tabs .active { background: #0ea5e9; color:#fff; border-color:#0ea5e9; }
+form { display: grid; gap: 8px; }
+label { font-size: 13px; color:#374151; }
+input { padding: 10px 12px; border:1px solid #e5e7eb; border-radius:10px; outline: none; }
+button[type="submit"] { margin-top: 6px; padding: 10px 12px; border:none; border-radius:10px; background:#22c55e; color:#fff; cursor:pointer; }
+button[type="submit"]:hover { filter: brightness(0.95); }
+p { margin: 6px 0 0; font-size: 13px; }
+a { color:#0ea5e9; text-decoration: none; }
+a:hover { text-decoration: underline; }
