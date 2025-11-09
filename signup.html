@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Self Training • Giriş / Kayıt</title>
-  <link rel="stylesheet" href="./content.css">
+  <link rel="stylesheet" href="./styles.css" />
 </head>
 <body>
   <div class="wrap">
@@ -34,14 +34,16 @@
       </section>
 
       <div id="globalMsg" class="msg"></div>
-      <p class="small" id="cfgHint"></p>
     </div>
+
+    <!-- INFO: Firebase doldurulmamışsa otomatik DEMO modu açılır -->
+    <p id="cfgHint" class="hint"></p>
   </div>
 
+  <!-- Sırayla: Firebase compat → config → signup -->
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
-
-  <script src="./config.js?v=1"></script>
-  <script src="./signup.js?v=1"></script>
+  <script src="./config.js?v=111"></script>
+  <script src="./signup.js?v=111"></script>
 </body>
 </html>
