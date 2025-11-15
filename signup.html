@@ -25,46 +25,38 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.6.0/firebase-app.js";
     import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.6.0/firebase-auth.js";
 
+    // Firebase yapılandırması (konsoldan alınan değerlerle)
     const firebaseConfig = {
-      apiKey: "AIzaSyAnMzCWonT_zLi0EnChIDYANBhDiiwmur4",
+      apiKey: "AIzaSyAnMzCWonT_zLi0eCnChIDYANBhDiiwmur4",
       authDomain: "self-training-128b5.firebaseapp.com",
       projectId: "self-training-128b5",
       storageBucket: "self-training-128b5.firebasestorage.app",
-      messagingSenderId: "61732879565",
-      appId: "1:61732879565:web:5a446fb7f6a88f1103bd84"
+      messagingSenderId: "617328795565",
+      appId: "1:617328795565:web:5a446fb76fa88f1103bd84"
     };
 
-    const app = initializeApp(firebaseConfig);
+    const app  = initializeApp(firebaseConfig);
     const auth = getAuth(app);
 
-    const emailInput = document.getElementById("email");
+    const emailInput    = document.getElementById("email");
     const passwordInput = document.getElementById("password");
-    const msg = document.getElementById("msg");
-    const signupBtn = document.getElementById("signupBtn");
+    const msg           = document.getElementById("msg");
+    const signupBtn     = document.getElementById("signupBtn");
 
     signupBtn.addEventListener("click", async () => {
       const email = emailInput.value.trim();
-      const pass = passwordInput.value;
-
-      if (!email || !pass) {
-        msg.textContent = "Email ve şifre boş olamaz.";
-        return;
-      }
-      if (pass.length < 6) {
-        msg.textContent = "Şifre en az 6 karakter olmalı.";
-        return;
-      }
+      const pass  = passwordInput.value;
 
       msg.textContent = "Creating account...";
 
       try {
         const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
-        console.log("Kullanıcı oluşturuldu:", userCredential.user);
         msg.textContent = "Account created. Redirecting...";
+        console.log("Kullanıcı oluşturuldu:", userCredential.user);
         location.href = "./dashboard.html";
       } catch (err) {
-        console.error(err);
         msg.textContent = err.message;
+        console.error(err);
       }
     });
   </script>
