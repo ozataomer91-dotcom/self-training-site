@@ -5,12 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Self-Training – Sign up</title>
   <link rel="stylesheet" href="./style.css" />
-  <script defer src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script defer src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-  <script defer src="./config.js"></script>
-  <script defer src="./auth.js"></script>
-</head>
+  </head>
 <body>
+  
   <main class="container">
     <h1>Create account</h1>
     <label>Email</label>
@@ -22,21 +19,59 @@
     <p class="note" id="msg"></p>
   </main>
 
-  <script>
-  document.getElementById("signupBtn").addEventListener("click", async () => {
-    const email = document.getElementById("email").value.trim();
-    const pass = document.getElementById("password").value;
-    const msg = document.getElementById("msg");
-    msg.textContent = "Creating account...";
-    try{
-      await window.$auth.signup(email, pass);
-      msg.textContent = "Account created. Redirecting...";
-      location.href = "./dashboard.html";
-    }catch(err){
-      msg.textContent = err.message;
-      console.error(err);
-    }
-  });
+  <script type="module">
+    
+    // 1. Gerekli Firebase kütüphanelerini çağırıyoruz (Uygulama ve Giriş Sistemi)
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.6.0/firebase-app.js";
+    import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.6.0/firebase-auth.js";
+  
+    // 2. Senin projenin "Config" bilgileri (Bu doğru, senin ekran görüntünden aldım) [3]
+    const firebaseConfig = {
+      apiKey: "AIzaSyDAeaMtuQWonf_cLiRzcHXIDYkANDHDiwmus4",
+      authDomain: "self-training-128b5.firebaseapp.com",
+      projectId: "self-training-128b5",
+      storageBucket: "self-training-128b5.firebasestorage.app",
+      messagingSenderId: "61732879565",
+      appId: "1:61732879565:web:5a446fb76fa88f1b03bd84"
+    };
+  
+    // 3. Firebase'i bu bilgilerle başlatıyoruz
+    const app = initializeApp(firebaseConfig); [4]
+    // 4. Firebase Giriş (Authentication) sistemini hazır hale getiriyoruz
+    const auth = getAuth(app);
+  
+    // 5. Şimdi, senin "Sign up" düğmene tıklandığında ne olacağını söylüyoruz
+    // (Bu, senin eski kodunun aynısı, sadece 'window.$auth.signup' yerine
+    //    doğru Firebase komutunu kullanacak şekilde düzeltildi) [5]
+    
+    document.getElementById("signupBtn").addEventListener("click", async () => {
+      
+      // Formdaki bilgileri al
+      const email = document.getElementById("email").value.trim();
+      const pass = document.getElementById("password").value;
+      const msg = document.getElementById("msg");
+      
+      msg.textContent = "Creating account...";
+      
+      try {
+        // İŞTE BURASI DÜZELTİLDİ:
+        // Firebase'e "Bu e-posta ve şifre ile yeni kullanıcı oluştur" komutunu veriyoruz
+        const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
+        
+        // Başarılı olursa...
+        msg.textContent = "Account created. Redirecting...";
+        console.log("Kullanıcı oluşturuldu:", userCredential.user);
+        
+        // Beni dashboard.html sayfasına yönlendir
+        location.href = "./dashboard.html";
+        
+      } catch (err) {
+        // Hata olursa (senin aldığın 'auth/api-key-not-valid' gibi)
+        // Artık hatanın gerçek sebebini buraya yazacak
+        msg.textContent = err.message;
+        console.error(err);
+      }
+    });
   </script>
-</body>
+  </body>
 </html>
