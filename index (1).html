@@ -3,28 +3,30 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Self-Training – Sign up</title>
+  <title>Self-Training - Giriş Yap</title>
   <link rel="stylesheet" href="./style.css" />
 </head>
 <body>
   <main class="container">
-    <h1>Create account</h1>
+    <h1>Giriş yapmak</h1>
 
-    <label>Email</label>
+    <label>E-posta</label>
     <input id="email" type="email" autocomplete="email" />
 
-    <label>Password (min 6)</label>
-    <input id="password" type="password" autocomplete="new-password" />
+    <label>Şifre</label>
+    <input id="password" type="password" autocomplete="current-password" />
 
-    <button class="btn" id="signupBtn">Sign up</button>
-    <a class="link" href="./index.html">I already have an account</a>
+    <button class="btn" id="signinBtn">Giriş yap</button>
+    <a class="link" href="./signup.html">Hesap oluşturmak</a>
     <p class="note" id="msg"></p>
   </main>
 
   <script type="module">
+    // Firebase SDK importları
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.6.0/firebase-app.js";
-    import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.6.0/firebase-auth.js";
+    import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.6.0/firebase-auth.js";
 
+    // *** BURASI DOĞRU KOPYALANMIŞ CONFIG ***
     const firebaseConfig = {
       apiKey: "AIzaSyAnMzCWonT_zLi0EnChIDYANBhDiiwmur4",
       authDomain: "self-training-128b5.firebaseapp.com",
@@ -34,33 +36,30 @@
       appId: "1:61732879565:web:5a446fb7f6a88f1103bd84"
     };
 
+    // Firebase başlat
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
 
     const emailInput = document.getElementById("email");
     const passwordInput = document.getElementById("password");
     const msg = document.getElementById("msg");
-    const signupBtn = document.getElementById("signupBtn");
+    const signinBtn = document.getElementById("signinBtn");
 
-    signupBtn.addEventListener("click", async () => {
+    signinBtn.addEventListener("click", async () => {
       const email = emailInput.value.trim();
       const pass = passwordInput.value;
 
       if (!email || !pass) {
-        msg.textContent = "Email ve şifre boş olamaz.";
-        return;
-      }
-      if (pass.length < 6) {
-        msg.textContent = "Şifre en az 6 karakter olmalı.";
+        msg.textContent = "E-posta ve şifre boş olamaz.";
         return;
       }
 
-      msg.textContent = "Creating account...";
+      msg.textContent = "Giriş yapılıyor...";
 
       try {
-        const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
-        console.log("Kullanıcı oluşturuldu:", userCredential.user);
-        msg.textContent = "Account created. Redirecting...";
+        const userCredential = await signInWithEmailAndPassword(auth, email, pass);
+        console.log("Kullanıcı giriş yaptı:", userCredential.user);
+        msg.textContent = "Başarılı! Yönlendiriliyor...";
         location.href = "./dashboard.html";
       } catch (err) {
         console.error(err);
