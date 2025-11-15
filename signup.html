@@ -22,10 +22,10 @@
   <script type="module">
     
     // 1. Gerekli Firebase kütüphanelerini çağırıyoruz (Uygulama ve Giriş Sistemi)
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.6.0/firebase-app.js";
-    import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.6.0/firebase-auth.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.6.0/firebase-app.js"; [1, 2]
+    import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.6.0/firebase-auth.js"; [2]
   
-    // 2. Senin projenin "Config" bilgileri (Bu doğru, senin ekran görüntünden aldım) [3]
+    // 2. Senin projenin "Config" bilgileri (Bu doğru, senin ekran görüntünden aldım)
     const firebaseConfig = {
       apiKey: "AIzaSyDAeaMtuQWonf_cLiRzcHXIDYkANDHDiwmus4",
       authDomain: "self-training-128b5.firebaseapp.com",
@@ -33,16 +33,14 @@
       storageBucket: "self-training-128b5.firebasestorage.app",
       messagingSenderId: "61732879565",
       appId: "1:61732879565:web:5a446fb76fa88f1b03bd84"
-    };
+    }; [1, 3, 2, 4, 5]
   
     // 3. Firebase'i bu bilgilerle başlatıyoruz
-    const app = initializeApp(firebaseConfig); [4]
+    const app = initializeApp(firebaseConfig); [1, 2]
     // 4. Firebase Giriş (Authentication) sistemini hazır hale getiriyoruz
-    const auth = getAuth(app);
+    const auth = getAuth(app); [2]
   
-    // 5. Şimdi, senin "Sign up" düğmene tıklandığında ne olacağını söylüyoruz
-    // (Bu, senin eski kodunun aynısı, sadece 'window.$auth.signup' yerine
-    //    doğru Firebase komutunu kullanacak şekilde düzeltildi) [5]
+    // 5. Şimdi, "Sign up" (signupBtn) düğmene tıklandığında ne olacağını söylüyoruz
     
     document.getElementById("signupBtn").addEventListener("click", async () => {
       
@@ -56,7 +54,7 @@
       try {
         // İŞTE BURASI DÜZELTİLDİ:
         // Firebase'e "Bu e-posta ve şifre ile yeni kullanıcı oluştur" komutunu veriyoruz
-        const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
+        const userCredential = await createUserWithEmailAndPassword(auth, email, pass); [6]
         
         // Başarılı olursa...
         msg.textContent = "Account created. Redirecting...";
