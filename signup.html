@@ -7,13 +7,15 @@
   <link rel="stylesheet" href="./style.css" />
 </head>
 <body>
-  
   <main class="container">
     <h1>Create account</h1>
+
     <label>Email</label>
     <input id="email" type="email" autocomplete="email" />
+
     <label>Password (min 6)</label>
     <input id="password" type="password" autocomplete="new-password" />
+
     <button class="btn" id="signupBtn">Sign up</button>
     <a class="link" href="./index.html">I already have an account</a>
     <p class="note" id="msg"></p>
@@ -23,36 +25,16 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.6.0/firebase-app.js";
     import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.6.0/firebase-auth.js";
 
-    // Bu yapılandırma konsolda gördüğün anahtarlara göre güncellendi
     const firebaseConfig = {
-      apiKey: "AIzaSyAnMzCWonT_zLi0eCnChIDYANBhDiiwmur4",
+      apiKey: "AIzaSyAnMzCWonT_2Li0EnChIDYANB0hiwmur4",
       authDomain: "self-training-128b5.firebaseapp.com",
       projectId: "self-training-128b5",
       storageBucket: "self-training-128b5.firebasestorage.app",
-      messagingSenderId: "617328795565",
-      appId: "1:617328795565:web:5a446fb76fa88f1103bd84"
+      messagingSenderId: "61732879655",
+      appId: "1:61732879655:web:5a446fb7f6a88f1103bd84"
     };
 
-    const app  = initializeApp(firebaseConfig);
+    const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
 
-    document.getElementById("signupBtn").addEventListener("click", async () => {
-      const email = document.getElementById("email").value.trim();
-      const pass  = document.getElementById("password").value;
-      const msg   = document.getElementById("msg");
-
-      msg.textContent = "Creating account...";
-
-      try {
-        const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
-        msg.textContent = "Account created. Redirecting...";
-        console.log("Kullanıcı oluşturuldu:", userCredential.user);
-        location.href = "./dashboard.html";
-      } catch (err) {
-        msg.textContent = err.message;
-        console.error(err);
-      }
-    });
-  </script>
-</body>
-</html>
+    const em
