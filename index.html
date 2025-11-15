@@ -3,41 +3,73 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Self-Training – Login</title>
+  <title>Self-Training - Giriş Yap</title>
   <link rel="stylesheet" href="./style.css" />
-  <!-- Firebase v9 compat CDN (Auth only) -->
-  <script defer src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script defer src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-  <script defer src="./config.js"></script>
-  <script defer src="./auth.js"></script>
-</head>
+  </head>
 <body>
+  
   <main class="container">
-    <h1>Login</h1>
-    <label>Email</label>
+    <h1>Giriş yapmak</h1>
+    <label>E-posta</label>
     <input id="email" type="email" autocomplete="email" />
-    <label>Password</label>
+    <label>Şifre</label>
     <input id="password" type="password" autocomplete="current-password" />
-    <button class="btn" id="loginBtn">Sign in</button>
-    <a class="link" href="./signup.html">Create account</a>
+    <button class="btn" id="signinBtn">Giriş yap</button>
+    <a class="link" href="./signup.html">Hesap oluşturmak</a>
     <p class="note" id="msg"></p>
   </main>
 
-  <script>
-  document.getElementById("loginBtn").addEventListener("click", async () => {
-    const email = document.getElementById("email").value.trim();
-    const pass = document.getElementById("password").value;
-    const msg = document.getElementById("msg");
-    msg.textContent = "Signing in...";
-    try{
-      await window.$auth.signin(email, pass);
-      msg.textContent = "OK, redirecting...";
-      location.href = "./dashboard.html";
-    }catch(err){
-      msg.textContent = err.message;
-      console.error(err);
-    }
-  });
+  <script type="module">
+    
+    // 1. Gerekli Firebase kütüphanelerini çağırıyoruz (Uygulama ve Giriş Sistemi)
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.6.0/firebase-app.js"; [4]
+    import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.6.0/firebase-auth.js"; [4]
+  
+    // 2. Senin projenin "Config" bilgileri (Bu doğru, senin ekran görüntünden aldım)
+    const firebaseConfig = {
+      apiKey: "AIzaSyDAeaMtuQWonf_cLiRzcHXIDYkANDHDiwmus4",
+      authDomain: "self-training-128b5.firebaseapp.com",
+      projectId: "self-training-128b5",
+      storageBucket: "self-training-128b5.firebasestorage.app",
+      messagingSenderId: "61732879565",
+      appId: "1:61732879565:web:5a446fb76fa88f1b03bd84"
+    }; [4]
+  
+    // 3. Firebase'i bu bilgilerle başlatıyoruz
+    const app = initializeApp(firebaseConfig); [4]
+    // 4. Firebase Giriş (Authentication) sistemini hazır hale getiriyoruz
+    const auth = getAuth(app); [4]
+  
+    // 5. Şimdi, "Giriş yap" (signinBtn) düğmene tıklandığında ne olacağını söylüyoruz
+    
+    document.getElementById("signinBtn").addEventListener("click", async () => {
+      
+      // Formdaki bilgileri al
+      const email = document.getElementById("email").value.trim();
+      const pass = document.getElementById("password").value;
+      const msg = document.getElementById("msg");
+      
+      msg.textContent = "Giriş yapılıyor...";
+      
+      try {
+        // İŞTE BURASI DÜZELTİLDİ:
+        // Firebase'e "Bu e-posta ve şifre ile giriş yap" komutunu veriyoruz
+        const userCredential = await signInWithEmailAndPassword(auth, email, pass); [3]
+        
+        // Başarılı olursa...
+        msg.textContent = "Başarılı! Yönlendiriliyor...";
+        console.log("Kullanıcı giriş yaptı:", userCredential.user);
+        
+        // Beni dashboard.html sayfasına yönlendir
+        location.href = "./dashboard.html";
+        
+      } catch (err) {
+        // Hata olursa (senin aldığın 'auth/api-key-not-valid' gibi)
+        // Artık hatanın gerçek sebebini buraya yazacak
+        msg.textContent = err.message;
+        console.error(err);
+      }
+    });
   </script>
-</body>
+  </body>
 </html>
